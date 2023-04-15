@@ -1,0 +1,18 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "C/C++: clang++ build for debug",
+            "command": "bash",
+            "args": ["build.sh"],
+            "options": {
+                "cwd": "${workspaceFolder}/platform/linux"
+            },
+            "group": {
+                "isDefault": true,
+                "kind": "build"
+            }
+        }
+    ]
+}
