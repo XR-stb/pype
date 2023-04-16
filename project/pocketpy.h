@@ -1039,6 +1039,9 @@ public:
         for(PyObject* p : list) _args[i++] = p;
     }
 
+    // TODO: poor performance
+    // List is allocated by pool128 while tuple is by pool64
+    // ...
     Tuple(List&& other) noexcept : Tuple(other.size()){
         for(int i=0; i<_size; i++) _args[i] = other[i];
         other.clear();
@@ -2019,6 +2022,10 @@ struct PyObject{
         if(_attr == nullptr) return;
         _attr->~NameDict();
         pool64.dealloc(_attr);
+    }
+
+    void enable_instance_dict(float lf=kInstAttrLoadFactor) noexcept {
+        _attr = new(pool64.alloc<NameDict>()) NameDict(lf);
     }
 };
 
@@ -3548,7 +3555,13 @@ inline PyObject* VM::_py_call(PyObject* callable, ArgsView args, ArgsView kwargs
 
     int i = 0;
     if(args.size() < fn.decl->args.size()){
-        vm->TypeError(fmt("expected ", fn.decl->args.size(), " positional arguments, but got ", args.size()));
+        vm->TypeError(fmt(
+            "expected ",
+            fn.decl->args.size(),
+            " positional arguments, but got ",
+            args.size(),
+            " (", fn.decl->code->name, ')'
+        ));
     }
 
     // prepare args
@@ -3570,7 +3583,7 @@ inline PyObject* VM::_py_call(PyObject* callable, ArgsView args, ArgsView kwargs
                 break;
             }
         }
-        if(i < args.size()) TypeError("too many arguments");
+        if(i < args.size()) TypeError(fmt("too many arguments", " (", fn.decl->code->name, ')'));
     }
     
     for(int i=0; i<kwargs.size(); i+=2){
@@ -3615,13 +3628,17 @@ inline PyObject* VM::call(PyObject* callable, Args args, const Args& kwargs, boo
         PyObject* new_f = callable->attr().try_get(__new__);
         PyObject* obj;
         if(new_f != nullptr){
-            obj = call(new_f, std::move(args), kwargs, false);
+            // should not use std::move here, since we will reuse args in possible __init__
+            obj = call(new_f, args, kwargs, false);
+            if(!isinstance(obj, OBJ_GET(Type, callable))) return obj;
         }else{
             obj = heap.gcnew<DummyInstance>(OBJ_GET(Type, callable), {});
-            PyObject* self;
-            PyObject* init_f = get_unbound_method(obj, __init__, &self, false);
+        }
+        PyObject* self;
+        PyObject* init_f = get_unbound_method(obj, __init__, &self, false);
+        if (self != _py_null) {
             args.extend_self(self);
-            if (self != _py_null) call(init_f, std::move(args), kwargs, false);
+            call(init_f, std::move(args), kwargs, false);
         }
         return obj;
     }
@@ -6254,6 +6271,39 @@ public:
 
 namespace pkpy{
 
+#ifdef _WIN32
+
+#include <Windows.h>
+
+inline std::string getline(bool* eof=nullptr) {
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    std::wstringstream wss;
+    WCHAR buf;
+    DWORD read;
+    while (ReadConsoleW(hStdin, &buf, 1, &read, NULL) && buf != L'\n') {
+        if(eof && buf == L'\x1A') *eof = true;  // Ctrl+Z
+        wss << buf;
+    }
+    std::wstring wideInput = wss.str();
+    int length = WideCharToMultiByte(CP_UTF8, 0, wideInput.c_str(), (int)wideInput.length(), NULL, 0, NULL, NULL);
+    std::string output;
+    output.resize(length);
+    WideCharToMultiByte(CP_UTF8, 0, wideInput.c_str(), (int)wideInput.length(), &output[0], length, NULL, NULL);
+    return output;
+}
+
+#else
+
+inline std::string getline(bool* eof=nullptr){
+    std::string line;
+    if(!std::getline(std::cin, line)){
+        if(eof) *eof = true;
+    }
+    return line;
+}
+
+#endif
+
 class REPL {
 protected:
     int need_more_lines = 0;
@@ -7005,7 +7055,7 @@ inline Str _read_file_cwd(const Str& name, bool* ok){
 
 #endif
 
-// generated on 2023-04-15 19:46:33
+// generated on 2023-04-16 15:23:56
 #include <map>
 #include <string>
 

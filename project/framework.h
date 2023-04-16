@@ -34,17 +34,12 @@ inline void traverse(PX_Object* obj, std::function<void(PX_Object*)> f){
 }
 
 
-// 记得写GC遍历方法
 struct GameObject {
     PY_CLASS(GameObject, PainterEngine, GameObject)
 
     PX_Object* obj;
-    Str name;
-    List components;
-    bool deleted;
 
     GameObject(){
-        deleted = false;
         PX_Object* px_root = nullptr;
         if(g_root != nullptr){
             px_root = CAST(GameObject&, g_root).obj;
@@ -89,19 +84,16 @@ struct PX_ChildrenIter: BaseIter{
 inline void python_init(){
     // vm init
     vm = pkpy_new_vm(true);
+    vm->bind_builtin_func<0>("input", [](pkpy::VM* vm, pkpy::Args& args){
+        return VAR(pkpy::getline());
+    });
     g_mod = vm->new_module("PainterEngine");
     PyObject* go_type = GameObject::register_class(vm, g_mod);
 
     vm->bind_func<1>(g_mod, "Destroy", [](VM* vm, const Args& args){
         GameObject& self = CAST(GameObject&, args[0]);
         PX_ObjectDelete(self.obj);
-        self.deleted = true;
-        return vm->None;
-    });
-
-    // 加载一个资源，根据文件后缀名返回相应的指针
-    vm->bind_func<1>(g_mod, "load", [](VM* vm, const Args& args){
-        Str& path = CAST(Str&, args[0]);
+        self.obj = NULL;
         return vm->None;
     });
 
@@ -111,19 +103,15 @@ inline void python_init(){
     // 创建根对象
     try{
         g_root = vm->call(go_type, Args{VAR("/")});
+        g_mod->attr().set("_root", g_root);
     }catch(Exception& e){
         std::cerr << e.summary() << std::endl;
         exit(1);
     }
-    g_mod->attr().set("_root", g_root);
 }
 
 namespace pkpy{
     template<> inline void gc_mark<GameObject>(GameObject& go){
-        for(PyObject* obj: go.components){
-            OBJ_MARK(obj);
-        }
-
         // only do mark on root
         if(go.obj->pParent != NULL) return;
         PX_Object* px_root = CAST(GameObject&, g_root).obj;
@@ -136,48 +124,29 @@ namespace pkpy{
 inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
     vm->bind_static_method<-1>(type, "__new__", [](VM* vm, const Args& args){
         PyObject* go = VAR_T(GameObject);
+        go->enable_instance_dict();
         GameObject& self = CAST(GameObject&, go);
         PX_ObjectSetUserPointer(self.obj, go);
-        if(args.size() > 1) vm->TypeError("GameObject() takes 1 or 0 arguments");
-        self.name = args.size()==0 ? "未命名物体" : CAST(Str&, args[0]);
         return go;
     });
 
-    vm->bind_method<1>(type, "AddComponent", [](VM* vm, const Args& args){
-        GameObject& self = CAST(GameObject&, args[0]);
-        PyObject* obj = vm->call(args[1], Args{args[0]});
-        self.components.push_back(obj);
-        return obj;
-    });
-
-    vm->bind_method<0>(type, "children", [](VM* vm, const Args& args){
-        // return vm->PyIter(PX_ChildrenIter(vm, args[0]));
-        auto iter = PX_ChildrenIter(vm, args[0]);
-        List list;
-        PyObject* obj = iter.next();
-        while(obj != nullptr){
-            list.push_back(obj);
-            obj = iter.next();
-        }
-        return VAR(Tuple(std::move(list)));
-    });
-
-    vm->bind_method<0>(type, "_update", [](VM* vm, const Args& args){
-        return vm->None;
-    });
-
-    vm->bind_method<0>(type, "components", [](VM* vm, const Args& args){
-        GameObject& self = CAST(GameObject&, args[0]);
-        Tuple t(self.components.size());
-        for(int i = 0; i < self.components.size(); i++){
-            t[i] = self.components[i];
-        }
-        return VAR(std::move(t));
-    });
-
-    type->attr().set("name", vm->property(
+    type->attr().set("children", vm->property(
+        [](VM* vm, const Args& args){
+            return vm->PyIter(PX_ChildrenIter(vm, args[0]));
+        }));
+    type->attr().set("Width", vm->property(
         [](VM* vm, const Args& args){
             GameObject& self = CAST(GameObject&, args[0]);
-            return VAR(self.name);
+            return VAR(self.obj->Width);
+        }));
+    type->attr().set("Height", vm->property(
+        [](VM* vm, const Args& args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            return VAR(self.obj->Height);
+        }));
+    type->attr().set("Length", vm->property(
+        [](VM* vm, const Args& args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            return VAR(self.obj->Length);
         }));
 }
