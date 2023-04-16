@@ -102,3 +102,32 @@ def GameObject::GetComponentInChildren(self, tp):
         if cpnt is not None:
             return cpnt
     return None
+
+################# Vector3 #################
+
+class Vector3:
+    def __init__(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def __repr__(self):
+        return "Vector3(" + repr(self.x) + ", " + repr(self.y) + ", " + repr(self.z) + ")"
+
+    def __add__(self, other):
+        return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    def __sub__(self, other):
+        return Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
+
+    def __mul__(self, other):
+        return Vector3(self.x * other, self.y * other, self.z * other)
+
+    def __truediv__(self, other):
+        return Vector3(self.x / other, self.y / other, self.z / other)
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y and self.z == other.z
+
+    def __ne__(self, other):
+        return self.x != other.x or self.y != other.y or self.z != other.z

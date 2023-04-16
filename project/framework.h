@@ -130,6 +130,17 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
         return go;
     });
 
+    type->attr().set("position", vm->property(
+        [](VM* vm, const Args& args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            float x = self.obj->x;
+            float y = self.obj->y;
+            float z = self.obj->z;
+            static StrName m_Vector3("Vector3");
+            PyObject* tp = g_mod->attr(m_Vector3);
+            return vm->call(tp, Args{VAR(x), VAR(y), VAR(z)});
+        }));
+
     type->attr().set("parent", vm->property(
         [](VM* vm, const Args& args){
             GameObject& self = CAST(GameObject&, args[0]);

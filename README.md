@@ -4,7 +4,7 @@
 
 - [x] `.name`，获取名字
 - [x] `.parent`，获取父物体
-- [ ] `.position`，获取世界坐标
+- [x] `.position`，获取世界坐标
 - [ ] `.rotation`，获取旋转量
 - [ ] `.scale`，获取缩放比例
 - [ ] `.localPosition`，获取相对于父物体的位置
