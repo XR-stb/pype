@@ -1,5 +1,10 @@
 ## PainterEngine in your pocket
 
+### 测试文件
+
++ `project/python/PainterEngine.py`
++ `project/python/main.py`
+
 ### `GameObject`
 
 - [x] `.name`，获取名字
@@ -31,7 +36,7 @@
 - [x] `Awake(self)`，在初始化时被调用一次
 - [x] `Update(self)`，每帧被调用一次
 - [x] `GetComponent(self, tp)`，相当于`self.gameObject.GetComponent`
-- [x] `GetComponentInChildren(self, tp)`，相当于`self.gameObject.GetComponentInChildrenInChildren`
+- [x] `GetComponentInChildren(self, tp)`，相当于`self.gameObject.GetComponentInChildren`
 
 ### `Time`
 
