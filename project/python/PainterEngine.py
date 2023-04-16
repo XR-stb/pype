@@ -25,21 +25,6 @@ class Time:
 
 ################# 内部函数 #################
 
-def _update(deltaTime: float):
-    # 先设置Time.deltaTime
-    Time.deltaTime = deltaTime
-
-    # 层序遍历对象树
-    q = deque()
-    q.append(_root)
-    while len(q) > 0:
-        curr = q.popleft()
-        # 遍历GameObject的组件，调用Update
-        for cpnt in curr.components:
-            cpnt.Update()
-        for child in curr.children:
-            q.append(child)
-
 def _print_tree(go=None):
     q = deque()
     q.append((go or _root, -1))
@@ -66,6 +51,10 @@ def GameObject::__init__(self, name=None):
 
 def GameObject::__repr__(self):
     return "GameObject(" + repr(self.name) + ")"
+
+def GameObject::_update(self):
+    for cpnt in self.components:
+        cpnt.Update()
 
 def GameObject::GetChild(self, index: int):
     i = 0

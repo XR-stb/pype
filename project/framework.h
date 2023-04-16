@@ -33,7 +33,6 @@ inline void traverse(PX_Object* obj, std::function<void(PX_Object*)> f){
     }
 }
 
-
 struct GameObject {
     PY_CLASS(GameObject, PainterEngine, GameObject)
 
@@ -54,6 +53,20 @@ struct GameObject {
             0,      // px_float Height,
             0       // px_float Length
         );
+
+        obj->Func_ObjectUpdate = [](PX_Object* obj, unsigned int _){
+            PyObject* py = (PyObject*)obj->User_ptr;
+            static StrName m_update = "_update";
+            PyObject* self;
+            try{
+                PyObject* callable = vm->get_unbound_method(py, m_update, &self);
+                if(self == vm->_py_null) return;
+                vm->call(callable, Args{self});
+            }catch(const pkpy::Exception& e){
+                std::cerr << e.summary() << std::endl;
+                exit(1);
+            }
+        };
     }
 
     static void _register(VM* vm, PyObject* mod, PyObject* type);

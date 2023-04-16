@@ -3,15 +3,12 @@ PX_Application App;
 
 #include "framework.h"
 using namespace pkpy;
-PyObject* _update;		// 缓存内部的_update函数，避免每次都去查找
 
 px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int screen_height)
 {
 	PX_ApplicationInitializeDefault(&pApp->runtime, screen_width, screen_height);
-
+	// 初始化Python环境
 	python_init();
-	_update = g_mod->attr().try_get("_update");
-	if(!_update) exit(1);
 
 	pkpy_vm_exec(vm, pe::kPythonLibs["main"]);
 	return PX_TRUE;
@@ -19,13 +16,12 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 
 px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed)
 {
-	float deltaTime = (float)elapsed / 1000.0f;
-	try{
-		vm->call(_update, Args{VAR(deltaTime)});
-	}catch(const pkpy::Exception& e){
-		std::cerr << e.summary() << std::endl;
-		exit(1);
-	}
+	// 设置Time.deltaTime
+	static StrName m_Time = "Time";
+	static StrName m_deltaTime = "deltaTime";
+	g_mod->attr(m_Time)->attr().set(m_deltaTime, VAR(elapsed/1000.0f));
+	PX_Object* px_root = CAST(GameObject&, g_root).obj;
+	PX_ObjectUpdate(px_root, elapsed);
 }
 
 px_void PX_ApplicationRender(PX_Application *pApp,px_dword elapsed)
