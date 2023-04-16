@@ -3,7 +3,7 @@
 ### `GameObject`
 
 - [x] `.name`，获取名字
-- [ ] `.parent`，获取父物体
+- [x] `.parent`，获取父物体
 - [ ] `.position`，获取世界坐标
 - [ ] `.rotation`，获取旋转量
 - [ ] `.scale`，获取缩放比例

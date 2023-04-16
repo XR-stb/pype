@@ -130,6 +130,12 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
         return go;
     });
 
+    type->attr().set("parent", vm->property(
+        [](VM* vm, const Args& args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            if(self.obj->pParent == NULL) return vm->None;
+            return (PyObject*)(self.obj->pParent->User_ptr);
+        }));
     type->attr().set("children", vm->property(
         [](VM* vm, const Args& args){
             return vm->PyIter(PX_ChildrenIter(vm, args[0]));
