@@ -1,15 +1,11 @@
 from collections import deque
 
 class Component:
+    Awake = None
+    Update = None
+
     def __init__(self, gameObject):
         self.gameObject = gameObject
-        self.Awake()
-
-    def Awake(self):
-        pass
-
-    def Update(self):
-        pass
 
     def GetComponent(self, tp):
         return self.gameObject.GetComponent(tp)
@@ -25,15 +21,19 @@ class Time:
 
 ################# 内部函数 #################
 
-def _print_tree(go=None):
+def traverse(go=None):
     q = deque()
     q.append((go or _root, -1))
     while len(q) > 0:
         curr, depth = q.popleft()
         if depth > -1:
-            print('    '*depth + curr.name)
+            yield curr, depth
         for child in curr.children:
             q.append((child, depth+1))
+
+def print_tree(go=None):
+    for curr, depth in traverse(go):
+        print('    '*depth + curr.name)
 
 def _repl():
     while True:
@@ -45,6 +45,13 @@ def _repl():
 
 ################# GameObject #################
 
+def GameObject::Find(name: str):
+    assert type(name) is str
+    for curr, depth in traverse():
+        if curr.name == name:
+            return curr
+    return None
+
 def GameObject::__init__(self, name=None):
     self.name = name or "未命名物体"
     self.components = []
@@ -54,7 +61,8 @@ def GameObject::__repr__(self):
 
 def GameObject::_update(self):
     for cpnt in self.components:
-        cpnt.Update()
+        if cpnt.Update is not None:
+            cpnt.Update()
 
 def GameObject::GetChild(self, index: int):
     i = 0
@@ -74,6 +82,8 @@ def GameObject::AddComponent(self, tp):
     cpnt = tp(self)
     assert isinstance(cpnt, Component)
     self.components.append(cpnt)
+    if cpnt.Awake is not None:
+        cpnt.Awake()
     return cpnt
 
 def GameObject::GetComponent(self, tp):
