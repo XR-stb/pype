@@ -1,6 +1,9 @@
 #pragma once
 
 #include <queue>
+#include <sstream>
+
+#include "PainterEngine_Application.h"
 #include "../architecture/PainterEngine.h"
 
 #include "pocketpy.h"
@@ -8,10 +11,7 @@
 
 using namespace pkpy;
 
-inline const size_t _global_pool_size = 1024 * 1024 * 10;   // 10MB
-inline void* _global_pool = malloc(_global_pool_size);
-inline px_memorypool _global_mp = MP_Create(_global_pool, _global_pool_size);
-
+inline PX_Application App;
 inline VM* vm = nullptr;                    // global python vm
 inline PyObject* g_mod = nullptr;           // global PainterEngine module
 inline PyObject* g_root = nullptr;          // global root gameObject
@@ -33,6 +33,24 @@ inline void traverse(PX_Object* obj, std::function<void(PX_Object*)> f){
     }
 }
 
+struct VoidP{
+    PY_CLASS(VoidP, PainterEngine, void_p)
+
+    void* ptr;
+    VoidP(void* ptr): ptr(ptr){}
+
+    static void _register(VM* vm, PyObject* mod, PyObject* type){
+        vm->bind_static_method<1>(type, "__new__", CPP_NOT_IMPLEMENTED());
+
+        vm->bind_static_method<1>(type, "__repr__", [](VM* vm, const Args& args){
+            VoidP& self = CAST(VoidP&, args[0]);
+            std::stringstream ss;
+            ss << "<void* at " << self.ptr << ">";
+            return VAR(ss.str());
+        });
+    }
+};
+
 struct GameObject {
     PY_CLASS(GameObject, PainterEngine, GameObject)
 
@@ -43,24 +61,15 @@ struct GameObject {
         if(g_root != nullptr){
             px_root = CAST(GameObject&, g_root).obj;
         }
-        obj = PX_ObjectCreate(
-            &_global_mp,
-            px_root,   // PX_Object* Parent,
-            0,      // px_float x,
-            0,      // px_float y,
-            0,      // px_float z,
-            0,      // px_float Width,
-            0,      // px_float Height,
-            0       // px_float Length
-        );
+        obj = PX_ObjectCreate(&App.runtime.mp_game, px_root, 0, 0, 0, 0, 0, 0);
 
         obj->Func_ObjectUpdate = [](PX_Object* obj, unsigned int _){
             PyObject* py = (PyObject*)obj->User_ptr;
             static StrName m_update = "_update";
             PyObject* self;
+            PyObject* callable = vm->get_unbound_method(py, m_update, &self);
+            if(self == vm->_py_null) return;
             try{
-                PyObject* callable = vm->get_unbound_method(py, m_update, &self);
-                if(self == vm->_py_null) return;
                 vm->call(callable, Args{self});
             }catch(const pkpy::Exception& e){
                 std::cerr << e.summary() << std::endl;
@@ -101,6 +110,7 @@ inline void python_init(){
         return VAR(pkpy::getline());
     });
     g_mod = vm->new_module("PainterEngine");
+    VoidP::register_class(vm, g_mod);
     PyObject* go_type = GameObject::register_class(vm, g_mod);
 
     vm->bind_func<1>(g_mod, "Destroy", [](VM* vm, const Args& args){
@@ -108,6 +118,20 @@ inline void python_init(){
         PX_ObjectDelete(self.obj);
         self.obj = NULL;
         return vm->None;
+    });
+
+    /*************全局私有函数*************/
+    vm->bind_func<1>(g_mod, "_PX_LoadTextureFromFile", [](VM* vm, const Args& args){
+        const Str& path = CAST(Str&, args[0]);
+        char* path_c = path.c_str_dup();
+        px_texture* tex = (px_texture*)malloc(sizeof(px_texture));
+        bool ok = PX_LoadTextureFromFile(&App.runtime.mp_resources, tex, path_c);
+        free(path_c);
+        if(!ok){
+            free(tex);
+            return vm->None;
+        }
+        return VAR_T(VoidP, tex);
     });
 
     CodeObject_ code = vm->compile(pe::kPythonLibs["PainterEngine"], "<PainterEngine>", EXEC_MODE);

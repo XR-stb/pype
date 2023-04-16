@@ -1,6 +1,3 @@
-#include "PainterEngine_Application.h"
-PX_Application App;
-
 #include "framework.h"
 using namespace pkpy;
 

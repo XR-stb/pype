@@ -1,4 +1,5 @@
-from PainterEngine import GameObject, Destroy, PainterBehaviour, Time, print_tree, _repl, _root
+from PainterEngine import _repl, _root
+from PainterEngine import *
 
 class Test(PainterBehaviour):
 	def Awake(self):
@@ -17,6 +18,9 @@ print(g.GetComponent(Test))
 GameObject("123"), GameObject("456"), GameObject("789")
 print_tree()
 
-# _repl()
+path = "/mnt/c/Users/bluel/Desktop/test.bmp"
+p = Resources.Load(path)
+print(p)
+_repl()
 
 print(_root.GetChildCount(), _root.GetChild(0), _root.GetChild(1))
