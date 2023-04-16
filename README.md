@@ -7,15 +7,15 @@
 - [x] `.position`，获取世界坐标
 - [ ] `.rotation`，获取旋转量
 - [ ] `.scale`，获取缩放比例
-- [ ] `.localPosition`，获取相对于父物体的位置
+- [ ] `.localPosition`，获取相对于父物体的坐标
 - [ ] `.localRotation`，获取相对于父物体的旋转量
 - [ ] `.localScale`，获取相对于父物体的缩放比例
-- [x] `GameObject(name='')`，构造函数
-- [x] `AddComponent(self, type)`，添加一个组件
+- [x] `GameObject(name=None)`，构造函数
+- [x] `AddComponent(self, tp)`，添加一个组件
 - [x] `GetChildCount(self)`，获取子物体的数量
 - [x] `GetChild(self, index: int)`，按索引获取子物体
-- [x] `GetComponent(self, type)`，在当前物体查找一个指定类型的组件
-- [x] `GetComponentInChildren(self, type)`，在当前物体及其子物体查找一个指定类型的组件
+- [x] `GetComponent(self, tp)`，在当前物体查找一个指定类型的组件
+- [x] `GetComponentInChildren(self, tp)`，在当前物体及其子物体查找一个指定类型的组件
 
 ---
 
@@ -30,8 +30,8 @@
 - [x] `.gameObject`，获取所属的`GameObject`
 - [x] `Awake(self)`，在初始化时被调用一次
 - [x] `Update(self)`，每帧被调用一次
-- [x] `GetComponent(self, type)`，相当于`self.gameObject.GetComponent`
-- [x] `GetComponentInChildren(self, type)`，相当于`self.gameObject.GetComponentInChildrenInChildren`
+- [x] `GetComponent(self, tp)`，相当于`self.gameObject.GetComponent`
+- [x] `GetComponentInChildren(self, tp)`，相当于`self.gameObject.GetComponentInChildrenInChildren`
 
 ### `Time`
 

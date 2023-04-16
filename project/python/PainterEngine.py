@@ -107,6 +107,9 @@ def GameObject::GetComponentInChildren(self, tp):
 
 class Vector3:
     def __init__(self, x, y, z):
+        assert type(x) is float
+        assert type(y) is float
+        assert type(z) is float
         self.x = x
         self.y = y
         self.z = z
