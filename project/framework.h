@@ -180,3 +180,35 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
             return VAR(self.obj->Length);
         }));
 }
+
+
+// 帧率控制
+struct FrameCounter{
+	px_dword update_freq = 1000 / 60;
+	px_dword accum_time = 0xffff;
+    px_dword elapsed = 0;
+	bool flag = false;
+
+	bool do_update(px_dword* delta){
+		if(flag) throw std::runtime_error("do_update() called twice in one frame");
+		accum_time += *delta;
+		if(accum_time >= update_freq){
+            elapsed = accum_time;
+            *delta = elapsed;
+			accum_time = 0;
+			flag = true;
+		}
+		return flag;
+	}
+
+	bool do_render(px_dword* delta){
+		if(flag){
+			flag = false;
+            *delta = elapsed;
+			return true;
+		}
+		return false;
+	}
+};
+
+inline FrameCounter g_frame_counter;
