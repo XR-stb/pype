@@ -33,24 +33,6 @@ inline void traverse(PX_Object* obj, std::function<void(PX_Object*)> f){
     }
 }
 
-struct VoidP{
-    PY_CLASS(VoidP, PainterEngine, void_p)
-
-    void* ptr;
-    VoidP(void* ptr): ptr(ptr){}
-
-    static void _register(VM* vm, PyObject* mod, PyObject* type){
-        vm->bind_static_method<1>(type, "__new__", CPP_NOT_IMPLEMENTED());
-
-        vm->bind_static_method<1>(type, "__repr__", [](VM* vm, const Args& args){
-            VoidP& self = CAST(VoidP&, args[0]);
-            std::stringstream ss;
-            ss << "<void* at " << self.ptr << ">";
-            return VAR(ss.str());
-        });
-    }
-};
-
 struct GameObject {
     PY_CLASS(GameObject, PainterEngine, GameObject)
 
@@ -68,9 +50,9 @@ struct GameObject {
             static StrName m_update = "_update";
             PyObject* self;
             PyObject* callable = vm->get_unbound_method(py, m_update, &self);
-            if(self == vm->_py_null) return;
+            if(self == PY_NULL) return;
             try{
-                vm->call(callable, Args{self});
+                vm->call_method(self, callable);
             }catch(const pkpy::Exception& e){
                 std::cerr << e.summary() << std::endl;
                 exit(1);
@@ -106,14 +88,14 @@ struct PX_ChildrenIter: BaseIter{
 inline void python_init(){
     // vm init
     vm = pkpy_new_vm(true);
-    vm->bind_builtin_func<0>("input", [](pkpy::VM* vm, pkpy::Args& args){
+    vm->bind_builtin_func<0>("input", [](VM* vm, ArgsView args){
         return VAR(pkpy::getline());
     });
     g_mod = vm->new_module("PainterEngine");
     VoidP::register_class(vm, g_mod);
     PyObject* go_type = GameObject::register_class(vm, g_mod);
 
-    vm->bind_func<1>(g_mod, "Destroy", [](VM* vm, const Args& args){
+    vm->bind_func<1>(g_mod, "Destroy", [](VM* vm, ArgsView args){
         GameObject& self = CAST(GameObject&, args[0]);
         PX_ObjectDelete(self.obj);
         self.obj = NULL;
@@ -121,7 +103,7 @@ inline void python_init(){
     });
 
     /*************全局私有函数*************/
-    vm->bind_func<1>(g_mod, "_PX_LoadTextureFromFile", [](VM* vm, const Args& args){
+    vm->bind_func<1>(g_mod, "_PX_LoadTextureFromFile", [](VM* vm, ArgsView args){
         const Str& path = CAST(Str&, args[0]);
         char* path_c = path.c_str_dup();
         px_texture* tex = (px_texture*)malloc(sizeof(px_texture));
@@ -139,7 +121,7 @@ inline void python_init(){
 
     // 创建根对象
     try{
-        g_root = vm->call(go_type, Args{VAR("/")});
+        g_root = vm->call(go_type, VAR("/"));
         g_mod->attr().set("_root", g_root);
     }catch(Exception& e){
         std::cerr << e.summary() << std::endl;
@@ -159,7 +141,7 @@ namespace pkpy{
 }
 
 inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
-    vm->bind_static_method<-1>(type, "__new__", [](VM* vm, const Args& args){
+    vm->bind_static_method<-1>(type, "__new__", [](VM* vm, ArgsView args){
         PyObject* go = VAR_T(GameObject);
         go->enable_instance_dict();
         GameObject& self = CAST(GameObject&, go);
@@ -168,38 +150,38 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
     });
 
     type->attr().set("position", vm->property(
-        [](VM* vm, const Args& args){
+        [](VM* vm, ArgsView args){
             GameObject& self = CAST(GameObject&, args[0]);
             float x = self.obj->x;
             float y = self.obj->y;
             float z = self.obj->z;
             static StrName m_Vector3("Vector3");
             PyObject* tp = g_mod->attr(m_Vector3);
-            return vm->call(tp, Args{VAR(x), VAR(y), VAR(z)});
+            return vm->call(tp, VAR(x), VAR(y), VAR(z));
         }));
 
     type->attr().set("parent", vm->property(
-        [](VM* vm, const Args& args){
+        [](VM* vm, ArgsView args){
             GameObject& self = CAST(GameObject&, args[0]);
             if(self.obj->pParent == NULL) return vm->None;
             return (PyObject*)(self.obj->pParent->User_ptr);
         }));
     type->attr().set("children", vm->property(
-        [](VM* vm, const Args& args){
+        [](VM* vm, ArgsView args){
             return vm->PyIter(PX_ChildrenIter(vm, args[0]));
         }));
     type->attr().set("Width", vm->property(
-        [](VM* vm, const Args& args){
+        [](VM* vm, ArgsView args){
             GameObject& self = CAST(GameObject&, args[0]);
             return VAR(self.obj->Width);
         }));
     type->attr().set("Height", vm->property(
-        [](VM* vm, const Args& args){
+        [](VM* vm, ArgsView args){
             GameObject& self = CAST(GameObject&, args[0]);
             return VAR(self.obj->Height);
         }));
     type->attr().set("Length", vm->property(
-        [](VM* vm, const Args& args){
+        [](VM* vm, ArgsView args){
             GameObject& self = CAST(GameObject&, args[0]);
             return VAR(self.obj->Length);
         }));
