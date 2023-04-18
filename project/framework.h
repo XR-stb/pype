@@ -92,7 +92,6 @@ inline void python_init(){
         return VAR(pkpy::getline());
     });
     g_mod = vm->new_module("PainterEngine");
-    VoidP::register_class(vm, g_mod);
     PyObject* go_type = GameObject::register_class(vm, g_mod);
 
     vm->bind_func<1>(g_mod, "Destroy", [](VM* vm, ArgsView args){
