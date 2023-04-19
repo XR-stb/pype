@@ -1,4 +1,9 @@
-## PainterEngine in your pocket
+# pype
+
+本仓库提供PainterEngine与 [PocketPy](https://github.com/blueloveTH/pocketpy) 的绑定，
+它允许用户使用高层次的Python语法和特性来编写游戏，同时具有跨平台的能力。
+
+> 运行一个Python解释器需要消耗较多的资源，你的目标平台应具备`50MB`以上的内存和C++17支持。
 
 ## 快速开始
 
@@ -27,6 +32,24 @@ PainterEngine.exe
 ```bash
 bash build_dev.sh
 bash run_dev.sh
+```
+
+构建完成后，在可执行程序的目录下建立一个`main.py`文件，并输入如下代码，
+运行后，你将会在控制台看到不断递增的数字。
+
+```python
+from PainterEngine import *
+
+class Test(PainterBehaviour):
+    def Awake(self):
+        self.counter = 1
+
+    def Update(self):
+        self.counter += 1
+        print(self.counter)
+
+go = GameObject()
+go.AddComponent(Test)
 ```
 
 ## 贡献代码
