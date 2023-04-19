@@ -14,6 +14,9 @@ class Test(PainterBehaviour):
         delta = Vector2(10, 0) * Time.deltaTime
         self.gameObject.position += delta
 
+        if Input.GetKey("A"):
+            print("A已经被按下啦！")
+
 g = GameObject("测试")
 g.AddComponent(Test)
 

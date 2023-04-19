@@ -86,6 +86,17 @@ class Test(PainterBehaviour):
         print("Hello World!")
 ```
 
+### `Input`
+
+- [x] [静态] `GetKey(code)`，检查当前帧某个按键是否被按下，返回`bool`
+
+    ```python
+    class Test(PainterBehaviour):
+        def Update(self):
+            if Input.GetKey("A"):
+                print("A已经被按下啦！")
+    ```
+
 ### `Time`
 
 - [x] [静态] `.deltaTime`，获取自上一帧经历的秒数，一个`float`值

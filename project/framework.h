@@ -3,6 +3,7 @@
 #include "Common.h"
 #include "GameObject.h"
 #include "Vector2.h"
+#include "Input.h"
 
 using namespace pkpy;
 
@@ -14,7 +15,8 @@ inline void python_init(){
     });
     g_mod = vm->new_module("PainterEngine");
     PyObject* go_type = GameObject::register_class(vm, g_mod);
-    PyObject* vec2_type = Vector2::register_class(vm, g_mod);
+    Vector2::register_class(vm, g_mod);
+    Input::register_class(vm, g_mod);
 
     /*************全局私有函数*************/
     vm->bind_func<1>(g_mod, "_PX_ObjectDelete", [](VM* vm, ArgsView args){

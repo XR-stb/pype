@@ -69,10 +69,18 @@ px_void PX_ApplicationRender(PX_Application *pApp, px_dword elapsed)
 		std::cerr << e.summary() << std::endl;
 		exit(1);
 	}
+
+	// reset CurrentKeycode at the end of frame
+	Input::CurrentKeycode = 0;
 }
 
-px_void PX_ApplicationPostEvent(PX_Application *pApp,PX_Object_Event e)
+px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 {
 	PX_ApplicationEventDefault(&pApp->runtime, e);
+
+	if(e.Event == PX_OBJECT_EVENT_KEYDOWN){
+		px_uint code = PX_Object_Event_GetKeyDown(e);
+		Input::CurrentKeycode = code;
+	}
 }
 
