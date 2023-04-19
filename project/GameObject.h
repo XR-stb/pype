@@ -94,7 +94,7 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
         return go;
     });
 
-    type->attr().set("position", vm->property(
+    type->attr().set("localPosition", vm->property(
         [](VM* vm, ArgsView args){
             GameObject& self = CAST(GameObject&, args[0]);
             float x = self.obj->x;
@@ -104,6 +104,33 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
         [](VM* vm, ArgsView args){
             GameObject& self = CAST(GameObject&, args[0]);
             Vector2& pos = CAST(Vector2&, args[1]);
+            self.obj->x = pos.x;
+            self.obj->y = pos.y;
+            return vm->None;
+        }));
+
+    type->attr().set("position", vm->property(
+        [](VM* vm, ArgsView args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            float x = self.obj->x;
+            float y = self.obj->y;
+            PX_Object* parent = self.obj->pParent;
+            while(parent != NULL){
+                x += parent->x;
+                y += parent->y;
+                parent = parent->pParent;
+            }
+            return VAR_T(Vector2, x, y);
+        },
+        [](VM* vm, ArgsView args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            Vector2& pos = CAST(Vector2&, args[1]);
+            PX_Object* parent = self.obj->pParent;
+            while(parent != NULL){
+                pos.x -= parent->x;
+                pos.y -= parent->y;
+                parent = parent->pParent;
+            }
             self.obj->x = pos.x;
             self.obj->y = pos.y;
             return vm->None;

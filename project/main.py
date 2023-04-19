@@ -7,6 +7,7 @@ class Test(PainterBehaviour):
 
     def coroutine(self):
         yield from WaitForSeconds(3.0)
+        _root.position += Vector2(0, 32)
         print("Hello World!")
 
     def Update(self):
@@ -14,10 +15,8 @@ class Test(PainterBehaviour):
         delta = Vector2(10, 0) * Time.deltaTime
         self.gameObject.position += delta
 
-        if Input.GetKey("A"):
-            print("A已经被按下啦！")
-        if Input.GetKey("G") and Input.GetKey("A"):
-            print("G和A都被按下啦！")
+        if Input.GetKey("R"):
+            _repl()
 
 g = GameObject("测试")
 g.AddComponent(Test)

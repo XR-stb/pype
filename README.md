@@ -36,12 +36,8 @@ bash run_dev.sh
 - [x] `.name`，获取名字，返回`str`
 - [x] `.parent`，获取父物体，返回`GameObject`
 - [x] `.position`，获取世界坐标，返回`Vector2`
+- [x] `.localPosition`，获取相对于父物体的坐标
 - [x] `.activeSelf`，获取是否激活，返回`bool`
-- [ ] `.rotation`，获取旋转量
-- [ ] `.scale`，获取缩放比例
-- [ ] `.localPosition`，获取相对于父物体的坐标
-- [ ] `.localRotation`，获取相对于父物体的旋转量
-- [ ] `.localScale`，获取相对于父物体的缩放比例
 - [x] `GameObject(name=None)`，构造函数
 - [x] `SetActive(self, active: bool)`，设置是否激活
 - [x] `AddComponent(self, tp)`，添加一个组件
