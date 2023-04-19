@@ -51,6 +51,18 @@
 - [ ] `WaitForEndOfFrame()`，等待一帧
 - [ ] `WaitForSeconds(seconds: float)`，等待`seconds`秒
 
+例如下面是一个简单的协程，它会在3秒后打印`Hello World!`。
+
+```python
+class Test(PainterBehaviour):
+    def Awake(self):
+        self.StartCoroutine(self.coroutine())
+
+    def coroutine(self):
+        yield WaitForSeconds(3.0)
+        print("Hello World!")
+```
+
 ### `Time`
 
 - [x] [静态] `.deltaTime`，获取自上一帧经历的秒数，一个`float`值
