@@ -6,8 +6,7 @@ class Test(PainterBehaviour):
         self.StartCoroutine(self.coroutine())
 
     def coroutine(self):
-        for _ in WaitForSeconds(3.0):
-            yield None
+        yield from WaitForSeconds(3.0)
         print("Hello World!")
 
     def Update(self):

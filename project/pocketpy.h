@@ -1427,7 +1427,7 @@ namespace pkpy{
 typedef uint8_t TokenIndex;
 
 constexpr const char* kTokens[] = {
-    "is not", "not in",
+    "is not", "not in", "yield from",
     "@eof", "@eol", "@sof",
     "@id", "@num", "@str", "@fstr",
     "@indent", "@dedent",
@@ -1647,6 +1647,12 @@ struct Lexer {
                 if(strncmp(curr_char, " not", 4) == 0){
                     curr_char += 4;
                     add_token(TK("is not"));
+                    return 0;
+                }
+            }else if(name == "yield"){
+                if(strncmp(curr_char, " from", 5) == 0){
+                    curr_char += 5;
+                    add_token(TK("yield from"));
                     return 0;
                 }
             }
@@ -6013,6 +6019,19 @@ __SUBSCR_END:
                 ctx()->emit(OP_YIELD_VALUE, BC_NOARG, kw_line);
                 consume_end_stmt();
                 break;
+            case TK("yield from"):
+                if (contexts.size() <= 1) SyntaxError("'yield from' outside function");
+                EXPR_TUPLE(false);
+                // if yield from present, mark the function as generator
+                ctx()->co->is_generator = true;
+                ctx()->emit(OP_GET_ITER, BC_NOARG, kw_line);
+                ctx()->enter_block(FOR_LOOP);
+                ctx()->emit(OP_FOR_ITER, BC_NOARG, BC_KEEPLINE);
+                ctx()->emit(OP_YIELD_VALUE, BC_NOARG, BC_KEEPLINE);
+                ctx()->emit(OP_LOOP_CONTINUE, BC_NOARG, BC_KEEPLINE);
+                ctx()->exit_block();
+                consume_end_stmt();
+                break;
             case TK("return"):
                 if (contexts.size() <= 1) SyntaxError("'return' outside function");
                 if(match_end_stmt()){
@@ -6804,7 +6823,7 @@ inline Str _read_file_cwd(const Str& name, bool* ok){
 
 #endif
 
-// generated on 2023-04-19 13:45:04
+// generated on 2023-04-19 13:56:18
 #include <map>
 #include <string>
 

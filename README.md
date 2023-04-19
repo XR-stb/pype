@@ -34,9 +34,9 @@
 ### `PainterBehaviour`
 
 - [x] `.gameObject`，获取所属的`GameObject`
-- [x] `Awake(self)`，在初始化时被调用一次
-- [x] `Update(self)`，每帧被调用一次
-- [x] `OnDestroy(self)`，在销毁时被调用一次
+- [x] [消息] `Awake(self)`，在初始化时被调用一次
+- [x] [消息] `Update(self)`，每帧被调用一次
+- [x] [消息] `OnDestroy(self)`，在销毁时被调用一次
 - [x] `GetComponent(self, tp)`，相当于`self.gameObject.GetComponent`
 - [x] `GetComponentInChildren(self, tp)`，相当于`self.gameObject.GetComponentInChildren`
 - [x] `StartCoroutine(self, obj)`，启动一个协程
@@ -56,8 +56,7 @@ class Test(PainterBehaviour):
         self.StartCoroutine(self.coroutine())
 
     def coroutine(self):
-        for _ in WaitForSeconds(3.0):
-            yield None
+        yield from WaitForSeconds(3.0)
         print("Hello World!")
 ```
 
