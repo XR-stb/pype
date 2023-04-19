@@ -22,6 +22,7 @@ class PainterBehaviour(Component):
 
     def StartCoroutine(self, coroutine):
         self.coroutines.append(coroutine)
+        return coroutine
 
     def StopCoroutine(self, coroutine):
         self.coroutines.remove(coroutine)
@@ -30,10 +31,14 @@ class PainterBehaviour(Component):
         self.coroutines.clear()
 
     def _update_coroutines(self):
+        alived = []
         for coroutine in self.coroutines:
             obj = next(coroutine)
             if obj is StopIteration:
-                self.coroutines.remove(coroutine)
+                pass
+            else:
+                alived.append(coroutine)
+        self.coroutines = alived
 
 
 def WaitForEndOfFrame():
