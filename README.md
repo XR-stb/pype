@@ -36,8 +36,20 @@
 - [x] `.gameObject`，获取所属的`GameObject`
 - [x] `Awake(self)`，在初始化时被调用一次
 - [x] `Update(self)`，每帧被调用一次
+- [x] `OnDestroy(self)`，在销毁时被调用一次
 - [x] `GetComponent(self, tp)`，相当于`self.gameObject.GetComponent`
 - [x] `GetComponentInChildren(self, tp)`，相当于`self.gameObject.GetComponentInChildren`
+
+---
+
+- [ ] `StartCoroutine(self, obj)`，启动一个协程
+- [ ] `StopCoroutine(self, obj)`，停止一个协程
+- [ ] `StopAllCoroutines(self)`，停止所有协程
+
+协程通常配合如下的函数来使用：
+
+- [ ] `WaitForEndOfFrame()`，等待一帧
+- [ ] `WaitForSeconds(seconds: float)`，等待`seconds`秒
 
 ### `Time`
 
