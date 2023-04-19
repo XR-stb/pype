@@ -3015,10 +3015,12 @@ public:
         return call_method(self, callable, args...);
     }
 
-    PyObject* property(NativeFuncC fget){
+    PyObject* property(NativeFuncC fget, NativeFuncC fset=nullptr){
         PyObject* p = builtins->attr("property");
-        PyObject* method = heap.gcnew(tp_native_func, NativeFunc(fget, 1, false));
-        return call(p, method);
+        PyObject* _0 = heap.gcnew(tp_native_func, NativeFunc(fget, 1, false));
+        PyObject* _1 = vm->None;
+        if(fset != nullptr) _1 = heap.gcnew(tp_native_func, NativeFunc(fset, 2, false));
+        return call(p, _0, _1);
     }
 
     PyObject* new_type_object(PyObject* mod, StrName name, Type base){
@@ -6798,7 +6800,7 @@ inline Str _read_file_cwd(const Str& name, bool* ok){
 
 #endif
 
-// generated on 2023-04-18 22:01:18
+// generated on 2023-04-19 12:10:09
 #include <map>
 #include <string>
 

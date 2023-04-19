@@ -44,13 +44,13 @@ struct Vector2 {
 
         vm->bind_method<1>(type, "__mul__", [](VM* vm, ArgsView args){
             Vector2& self = CAST(Vector2&, args[0]);
-            float other = vm->num_to_float(args[1]);
+            f64 other = vm->num_to_float(args[1]);
             return VAR_T(Vector2, self.x * other, self.y * other);
         });
 
         vm->bind_method<1>(type, "__truediv__", [](VM* vm, ArgsView args){
             Vector2& self = CAST(Vector2&, args[0]);
-            float other = vm->num_to_float(args[1]);
+            f64 other = vm->num_to_float(args[1]);
             return VAR_T(Vector2, self.x / other, self.y / other);
         });
 

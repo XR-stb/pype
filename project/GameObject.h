@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "Vector2.h"
 
 using namespace pkpy;
 
@@ -99,6 +100,13 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
             float x = self.obj->x;
             float y = self.obj->y;
             return vm->call(g_mod->attr(m_Vector2), VAR(x), VAR(y));
+        },
+        [](VM* vm, ArgsView args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            Vector2& pos = CAST(Vector2&, args[1]);
+            self.obj->x = pos.x;
+            self.obj->y = pos.y;
+            return vm->None;
         }));
 
     type->attr().set("parent", vm->property(
@@ -121,9 +129,15 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
             GameObject& self = CAST(GameObject&, args[0]);
             return VAR(self.obj->Height);
         }));
-    type->attr().set("Length", vm->property(
+
+    type->attr().set("activeSelf", vm->property(
         [](VM* vm, ArgsView args){
             GameObject& self = CAST(GameObject&, args[0]);
-            return VAR(self.obj->Length);
+            return VAR(self.obj->Enabled);
         }));
+    vm->bind_method<1>(type, "SetActive", [](VM* vm, ArgsView args){
+        GameObject& self = CAST(GameObject&, args[0]);
+        self.obj->Enabled = CAST(bool, args[1]);
+        return vm->None;
+    });
 }

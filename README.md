@@ -10,12 +10,14 @@
 - [x] `.name`，获取名字，返回`str`
 - [x] `.parent`，获取父物体，返回`GameObject`
 - [x] `.position`，获取世界坐标，返回`Vector2`
+- [x] `.activeSelf`，获取是否激活，返回`bool`
 - [ ] `.rotation`，获取旋转量
 - [ ] `.scale`，获取缩放比例
 - [ ] `.localPosition`，获取相对于父物体的坐标
 - [ ] `.localRotation`，获取相对于父物体的旋转量
 - [ ] `.localScale`，获取相对于父物体的缩放比例
 - [x] `GameObject(name=None)`，构造函数
+- [x] `SetActive(self, active: bool)`，设置是否激活
 - [x] `AddComponent(self, tp)`，添加一个组件
 - [x] `GetChildCount(self)`，获取子物体的数量
 - [x] `GetChild(self, index: int)`，按索引获取子物体
@@ -28,7 +30,6 @@
 - [x] `.components`，此物体包含的组件，是一个`list`。你不应该直接修改它
 - [x] `.Width`，获取宽度
 - [x] `.Height`，获取高度
-- [x] `.Length`，获取长度
 
 ### `PainterBehaviour`
 

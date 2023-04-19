@@ -3,13 +3,15 @@ from PainterEngine import *
 
 class Test(PainterBehaviour):
 	def Awake(self):
-		print("awake")
+		pass
 
 	def Update(self):
 		# print("update", Time.deltaTime)
-		pass
+		delta = Vector2(10, 0) * Time.deltaTime
+		self.gameObject.position += delta
 
 g = GameObject("测试")
+g.AddComponent(Test)
 
 # 添加一个精灵渲染器
 sp_renderer = g.AddComponent(SpriteRenderer)
@@ -19,9 +21,6 @@ path = "assets/ibb-and-obb.bmp"
 
 # 设置渲染器的纹理
 sp_renderer.sprite = Resources.Load(path)
-
-_repl()
-
 
 
 # print(g.GetComponent(Test))
