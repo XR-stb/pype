@@ -2,13 +2,18 @@ from PainterEngine import _repl, _root
 from PainterEngine import *
 
 class Test(PainterBehaviour):
-	def Awake(self):
-		pass
+    def Awake(self):
+        self.StartCoroutine(self.coroutine())
 
-	def Update(self):
-		# print("update", Time.deltaTime)
-		delta = Vector2(10, 0) * Time.deltaTime
-		self.gameObject.position += delta
+    def coroutine(self):
+        for _ in WaitForSeconds(3.0):
+            yield None
+        print("Hello World!")
+
+    def Update(self):
+        # print("update", Time.deltaTime)
+        delta = Vector2(10, 0) * Time.deltaTime
+        self.gameObject.position += delta
 
 g = GameObject("测试")
 g.AddComponent(Test)

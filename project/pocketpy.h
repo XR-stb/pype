@@ -2872,6 +2872,7 @@ public:
     PyObject* False;
     PyObject* Ellipsis;
     PyObject* builtins;         // builtins module
+    PyObject* StopIteration;
     PyObject* _main;            // __main__ module
 
     std::stringstream _stdout_buffer;
@@ -3530,6 +3531,7 @@ inline void VM::init_builtin_types(){
     this->Ellipsis = heap._new<Dummy>(_new_type_object("ellipsis"), {});
     this->True = heap._new<Dummy>(tp_bool, {});
     this->False = heap._new<Dummy>(tp_bool, {});
+    this->StopIteration = heap._new<Dummy>(_new_type_object("StopIterationType"), {});
 
     this->builtins = new_module("builtins");
     this->_main = new_module("__main__");
@@ -3544,6 +3546,7 @@ inline void VM::init_builtin_types(){
     builtins->attr().set("list", _t(tp_list));
     builtins->attr().set("tuple", _t(tp_tuple));
     builtins->attr().set("range", _t(tp_range));
+    builtins->attr().set("StopIteration", StopIteration);
 
     post_init();
     for(int i=0; i<_all_types.size(); i++){
@@ -4406,7 +4409,7 @@ __NEXT_STEP:;
         BaseIter* it = _PyIter_AS_C(TOP());
 #endif
         PyObject* obj = it->next();
-        if(obj != nullptr){
+        if(obj != StopIteration){
             PUSH(obj);
         }else{
             int target = co_blocks[byte.block].end;
@@ -4454,7 +4457,7 @@ __NEXT_STEP:;
         BaseIter* iter = PyIter_AS_C(obj);
         for(int i=0; i<byte.arg; i++){
             PyObject* item = iter->next();
-            if(item == nullptr) ValueError("not enough values to unpack");
+            if(item == StopIteration) ValueError("not enough values to unpack");
             PUSH(item);
         }
         // handle extra items
@@ -4462,12 +4465,12 @@ __NEXT_STEP:;
             List extras;
             while(true){
                 PyObject* item = iter->next();
-                if(item == nullptr) break;
+                if(item == StopIteration) break;
                 extras.push_back(item);
             }
             PUSH(VAR(extras));
         }else{
-            if(iter->next() != nullptr) ValueError("too many values to unpack");
+            if(iter->next() != StopIteration) ValueError("too many values to unpack");
         }
     } DISPATCH();
     TARGET(UNPACK_UNLIMITED) {
@@ -4475,7 +4478,7 @@ __NEXT_STEP:;
         PyObject* obj = asIter(POPX());
         BaseIter* iter = PyIter_AS_C(obj);
         obj = iter->next();
-        while(obj != nullptr){
+        while(obj != StopIteration){
             PUSH(obj);
             obj = iter->next();
         }
@@ -6421,7 +6424,7 @@ public:
     }
 
     PyObject* next(){
-        if(!_has_next()) return nullptr;
+        if(!_has_next()) return vm->StopIteration;
         current += r.step;
         return VAR(current-r.step);
     }
@@ -6439,7 +6442,7 @@ public:
     }
 
     PyObject* next() override{
-        if(index >= array->size()) return nullptr;
+        if(index >= array->size()) return vm->StopIteration;
         return array->operator[](index++);
     }
 
@@ -6458,7 +6461,7 @@ public:
         // TODO: optimize this to use iterator
         // operator[] is O(n) complexity
         Str* str = &OBJ_GET(Str, ref);
-        if(index == str->u8_length()) return nullptr;
+        if(index == str->u8_length()) return vm->StopIteration;
         return VAR(str->u8_getitem(index++));
     }
 
@@ -6468,7 +6471,7 @@ public:
 };
 
 inline PyObject* Generator::next(){
-    if(state == 2) return nullptr;
+    if(state == 2) return vm->StopIteration;
     // reset frame._sp_base
     frame._sp_base = frame._s->_sp;
     frame._locals.a = frame._s->_sp;
@@ -6484,10 +6487,11 @@ inline PyObject* Generator::next(){
         for(PyObject* obj: frame.stack_view()) s_backup.push_back(obj);
         vm->_pop_frame();
         state = 1;
+        if(ret == vm->StopIteration) state = 2;
         return ret;
     }else{
         state = 2;
-        return nullptr;
+        return vm->StopIteration;
     }
 }
 
@@ -6800,7 +6804,7 @@ inline Str _read_file_cwd(const Str& name, bool* ok){
 
 #endif
 
-// generated on 2023-04-19 12:10:09
+// generated on 2023-04-19 13:45:04
 #include <map>
 #include <string>
 
@@ -6973,6 +6977,11 @@ inline void init_builtins(VM* _vm) {
 
     _vm->bind_builtin_func<1>("iter", [](VM* vm, ArgsView args) {
         return vm->asIter(args[0]);
+    });
+
+    _vm->bind_builtin_func<1>("next", [](VM* vm, ArgsView args) {
+        BaseIter* iter = vm->PyIter_AS_C(args[0]);
+        return iter->next();
     });
 
     _vm->bind_builtin_func<1>("dir", [](VM* vm, ArgsView args) {

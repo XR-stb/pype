@@ -14,6 +14,8 @@ def GameObject::_update(self):
     for cpnt in self.components:
         if cpnt.Update is not None:
             cpnt.Update()
+        if cpnt._update_coroutines is not None:
+            cpnt._update_coroutines()
 
 def GameObject::__repr__(self):
     return "GameObject(" + repr(self.name) + ")"

@@ -3,6 +3,9 @@ class Component:
     Update = None
     OnDestroy = None
 
+    # 内部钩子
+    _update_coroutines = None
+
     def __init__(self, gameObject):
         self.gameObject = gameObject
 
@@ -25,5 +28,21 @@ class PainterBehaviour(Component):
 
     def StopAllCoroutines(self):
         self.coroutines.clear()
+
+    def _update_coroutines(self):
+        for coroutine in self.coroutines:
+            obj = next(coroutine)
+            if obj is StopIteration:
+                self.coroutines.remove(coroutine)
+
+
+def WaitForEndOfFrame():
+    yield None
+
+def WaitForSeconds(seconds):
+    total = 0
+    while total < seconds:
+        total += Time.deltaTime
+        yield None
 
     

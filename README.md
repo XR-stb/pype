@@ -39,17 +39,14 @@
 - [x] `OnDestroy(self)`，在销毁时被调用一次
 - [x] `GetComponent(self, tp)`，相当于`self.gameObject.GetComponent`
 - [x] `GetComponentInChildren(self, tp)`，相当于`self.gameObject.GetComponentInChildren`
-
----
-
-- [ ] `StartCoroutine(self, obj)`，启动一个协程
-- [ ] `StopCoroutine(self, obj)`，停止一个协程
-- [ ] `StopAllCoroutines(self)`，停止所有协程
+- [x] `StartCoroutine(self, obj)`，启动一个协程
+- [x] `StopCoroutine(self, obj)`，停止一个协程
+- [x] `StopAllCoroutines(self)`，停止所有协程
 
 协程通常配合如下的函数来使用：
 
-- [ ] `WaitForEndOfFrame()`，等待一帧
-- [ ] `WaitForSeconds(seconds: float)`，等待`seconds`秒
+- [x] `WaitForEndOfFrame()`，等待一帧
+- [x] `WaitForSeconds(seconds: float)`，等待`seconds`秒
 
 例如下面是一个简单的协程，它会在3秒后打印`Hello World!`。
 
@@ -59,7 +56,8 @@ class Test(PainterBehaviour):
         self.StartCoroutine(self.coroutine())
 
     def coroutine(self):
-        yield WaitForSeconds(3.0)
+        for _ in WaitForSeconds(3.0):
+            yield None
         print("Hello World!")
 ```
 
