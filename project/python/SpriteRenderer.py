@@ -14,3 +14,6 @@ class SpriteRenderer(Component):
         if self.gameObject.renderer is not None:
             raise ValueError("物体已经有渲染器了")
         self.gameObject.renderer = self
+
+    def OnDestroy(self):
+        self.gameObject.renderer = None

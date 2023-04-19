@@ -1,6 +1,7 @@
 class Component:
     Awake = None
     Update = None
+    OnDestroy = None
 
     def __init__(self, gameObject):
         self.gameObject = gameObject

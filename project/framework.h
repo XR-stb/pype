@@ -16,14 +16,14 @@ inline void python_init(){
     PyObject* go_type = GameObject::register_class(vm, g_mod);
     PyObject* vec2_type = Vector2::register_class(vm, g_mod);
 
-    vm->bind_func<1>(g_mod, "Destroy", [](VM* vm, ArgsView args){
+    /*************全局私有函数*************/
+    vm->bind_func<1>(g_mod, "_PX_ObjectDelete", [](VM* vm, ArgsView args){
         GameObject& self = CAST(GameObject&, args[0]);
         PX_ObjectDelete(self.obj);
         self.obj = NULL;
         return vm->None;
     });
 
-    /*************全局私有函数*************/
     vm->bind_func<1>(g_mod, "_PX_LoadTextureFromFile", [](VM* vm, ArgsView args){
         const Str& path = CAST(Str&, args[0]);
         char* path_c = path.c_str_dup();

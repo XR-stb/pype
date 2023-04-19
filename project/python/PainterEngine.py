@@ -1,5 +1,20 @@
 from collections import deque
 
+def Destroy(obj):
+    if type(obj) is GameObject:
+        for cpnt in obj.components:
+            if cpnt.OnDestroy is not None:
+                cpnt.OnDestroy()
+        _PX_ObjectDelete(obj)
+        return
+    if isinstance(obj, Component):
+        if obj.OnDestroy is not None:
+            obj.OnDestroy()
+        obj.gameObject.components.remove(obj)
+        return
+    raise ValueError("Destroy()的参数必须是GameObject或Component，你传入了" + type(obj).__name__)
+        
+
 def traverse(go=None):
     q = deque()
     q.append((go or _root, -1))

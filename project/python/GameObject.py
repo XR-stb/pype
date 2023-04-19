@@ -10,13 +10,13 @@ def GameObject::__init__(self, name=None):
     self.components = []
     self.renderer = None
 
-def GameObject::__repr__(self):
-    return "GameObject(" + repr(self.name) + ")"
-
 def GameObject::_update(self):
     for cpnt in self.components:
         if cpnt.Update is not None:
             cpnt.Update()
+
+def GameObject::__repr__(self):
+    return "GameObject(" + repr(self.name) + ")"
 
 def GameObject::GetChild(self, index: int):
     i = 0

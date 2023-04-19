@@ -66,7 +66,7 @@
               q.append((child, depth+1))
   ```
 - [x] `print_tree(go=None)`，用于调试，向控制台打印一个`GameObject`及其所有子物体，内部调用了`traverse`
-- [x] `Destroy(go)`，销毁一个`GameObject`
+- [x] `Destroy(go)`，销毁一个`GameObject`或`Component`
 - [x] `_root`，访问虚拟根`GameObject`，你可以使用`_root.children`来遍历世界中的顶层`GameObject`。你不应该删除或重置此变量，否则将会引发异常
 - [x] `_repl()`，打开一个简易REPL，请求用户输入并将结果`eval`后输出。可以使用`exit()`退出
 
