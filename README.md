@@ -1,9 +1,35 @@
 ## PainterEngine in your pocket
 
-### 测试文件
+## 快速开始
 
-+ `project/python/*.py`
-+ `project/main.py`
+要进行构建，首先切换到仓库的根目录。
+
+### Windows构建方法
+
+1. 确保`cl.exe`已安装。
+2. 确认CMake已安装。
+
+```
+python preprocess.py
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+cd Release
+PainterEngine.exe
+```
+### Linux/WSL构建方法
+
+1. 确保`clang++`和`libc++`已安装。
+2. 确认CMake已安装。
+3. 确保`freegult3-dev`已安装。
+
+```bash
+bash build_dev.sh
+bash run_dev.sh
+```
+
+## API参考
 
 ### `GameObject`
 
@@ -100,17 +126,3 @@ class Test(PainterBehaviour):
               break
           print(eval(_s))
   ```
-
-## 在Linux上开发
-
-1. 确保`clang++`和`libc++`已安装。
-2. 确认CMake已安装。
-3. 确保`freegult3-dev`已安装。
-
-```bash
-git clone https://github.com/blueloveTH/PainterEngine
-cd platform/linux
-bash build.sh
-
-build/PainterEngine
-```

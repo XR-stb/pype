@@ -3,10 +3,10 @@ from datetime import datetime
 
 def generate_python_sources():
     sources = {}
-    for file in os.listdir("python"):
+    for file in os.listdir("project/python"):
         assert file.endswith(".py")
         key = file.split(".")[0]
-        with open("python/" + file) as f:
+        with open("project/python/" + file) as f:
             value = f.read()
             value = value.encode('utf-8').hex(':')
             value = '\\x' + value.replace(':', '\\x')
@@ -32,5 +32,5 @@ namespace pe{
 '''
     return header
 
-with open("_generated.h", "w", encoding='utf-8') as f:
+with open("project/_generated.h", "w", encoding='utf-8') as f:
     f.write(generate_python_sources())
