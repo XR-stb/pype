@@ -5,6 +5,7 @@
 
 #include "PainterEngine_Application.h"
 #include "../architecture/PainterEngine.h"
+#include "../kernel/PX_World.h"
 
 #include "pocketpy.h"
 #include "_generated.h"
@@ -12,9 +13,13 @@
 using namespace pkpy;
 
 inline PX_Application App;
+inline PX_World World;
+
 inline VM* vm = nullptr;                    // global python vm
 inline PyObject* g_mod = nullptr;           // global PainterEngine module
 inline PyObject* g_root = nullptr;          // global root gameObject
+
+static StrName m_Vector2("Vector2");
 
 // 层序遍历对象树
 inline void traverse(PX_Object* obj, std::function<void(PX_Object*)> f){
@@ -43,20 +48,20 @@ struct GameObject {
         if(g_root != nullptr){
             px_root = CAST(GameObject&, g_root).obj;
         }
-        obj = PX_ObjectCreate(&App.runtime.mp_game, px_root, 0, 0, 0, 0, 0, 0);
 
+        obj = PX_ObjectCreate(&App.runtime.mp_game, px_root, 0, 0, 0, 0, 0, 0);
+        
         obj->Func_ObjectUpdate = [](PX_Object* obj, unsigned int _){
-            PyObject* py = (PyObject*)obj->User_ptr;
+            PyObject* self = (PyObject*)obj->User_ptr;
             static StrName m_update = "_update";
-            PyObject* self;
-            PyObject* callable = vm->get_unbound_method(py, m_update, &self);
-            if(self == PY_NULL) return;
-            try{
-                vm->call_method(self, callable);
-            }catch(const pkpy::Exception& e){
-                std::cerr << e.summary() << std::endl;
-                exit(1);
-            }
+            vm->call_method(self, m_update);
+        };
+
+        obj->Func_ObjectRender = [](px_surface* psurface, PX_Object* obj, px_uint elpased){
+            PyObject* self = (PyObject*)obj->User_ptr;
+            static StrName m_renderer = "renderer";
+            PyObject* r = self->attr(m_renderer);
+            if(r != vm->None) vm->call_method(r, __call__);
         };
     }
 
@@ -115,17 +120,39 @@ inline void python_init(){
         return VAR_T(VoidP, tex);
     });
 
+    vm->bind_func<2>(g_mod, "_PX_TextureRender", [](VM* vm, ArgsView args){
+        px_surface* psurface = &App.runtime.RenderSurface;
+        px_texture* tex = CAST(px_texture*, args[0]);
+        Type v2t = OBJ_GET(Type, g_mod->attr("Vector2"));
+        vm->check_type(args[1], v2t);
+        px_float x = CAST(px_float, args[1]->attr("x"));
+        px_float y = CAST(px_float, args[1]->attr("y"));
+        // PX_TEXTURERENDER_BLEND* blend = CAST(VoidP&, args[5]);
+        PX_TextureRender(psurface, tex, x, y, PX_ALIGN_LEFTTOP, NULL);
+        return vm->None;
+    });
+
+    vm->bind_func<1>(g_mod, "_PX_WorldObjectXYtoScreenXY", [](VM* vm, ArgsView args){
+        Type v2t = OBJ_GET(Type, g_mod->attr("Vector2"));
+        vm->check_type(args[0], v2t);
+        px_float x = CAST(px_float, args[0]->attr("x"));
+        px_float y = CAST(px_float, args[0]->attr("y"));
+        px_point ret = PX_WorldObjectXYtoScreenXY(&World, x, y);
+        return vm->call(g_mod->attr(m_Vector2), VAR(ret.x), VAR(ret.y));
+    });
+
     CodeObject_ code = vm->compile(pe::kPythonLibs["PainterEngine"], "<PainterEngine>", EXEC_MODE);
     vm->_exec(code, g_mod);
 
     // 创建根对象
-    try{
-        g_root = vm->call(go_type, VAR("/"));
-        g_mod->attr().set("_root", g_root);
-    }catch(Exception& e){
-        std::cerr << e.summary() << std::endl;
-        exit(1);
-    }
+    g_root = vm->call(go_type, VAR("/"));
+    g_mod->attr().set("_root", g_root);
+    PX_Object* px_root = CAST(GameObject&, g_root).obj;
+    // 将根对象加入世界
+    PX_WorldAddObject(&World, px_root);
+
+    // 设置相机指向(0, 0)
+    PX_WorldSetCamera(&World, px_point{0, 0, 0});
 }
 
 namespace pkpy{
@@ -153,10 +180,7 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
             GameObject& self = CAST(GameObject&, args[0]);
             float x = self.obj->x;
             float y = self.obj->y;
-            float z = self.obj->z;
-            static StrName m_Vector3("Vector3");
-            PyObject* tp = g_mod->attr(m_Vector3);
-            return vm->call(tp, VAR(x), VAR(y), VAR(z));
+            return vm->call(g_mod->attr(m_Vector2), VAR(x), VAR(y));
         }));
 
     type->attr().set("parent", vm->property(

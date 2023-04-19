@@ -39,7 +39,7 @@ def _repl():
     while True:
         print(">>> ", end="")
         _s = input()
-        if _s == "exit()":
+        if _s in ("exit()", ""):
             break
         print(eval(_s))
 
@@ -71,6 +71,7 @@ def GameObject::Find(name: str):
 def GameObject::__init__(self, name=None):
     self.name = name or "未命名物体"
     self.components = []
+    self.renderer = None
 
 def GameObject::__repr__(self):
     return "GameObject(" + repr(self.name) + ")"
@@ -118,34 +119,53 @@ def GameObject::GetComponentInChildren(self, tp):
             return cpnt
     return None
 
-################# Vector3 #################
+################# Vector2 #################
 
-class Vector3:
-    def __init__(self, x, y, z):
+class Vector2:
+    def __init__(self, x, y):
         assert type(x) is float
         assert type(y) is float
-        assert type(z) is float
         self.x = x
         self.y = y
-        self.z = z
 
     def __repr__(self):
-        return "Vector3(" + repr(self.x) + ", " + repr(self.y) + ", " + repr(self.z) + ")"
+        return "Vector2(" + repr(self.x) + ", " + repr(self.y) + ")"
 
     def __add__(self, other):
-        return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
+        return Vector2(self.x + other.x, self.y + other.y)
 
     def __sub__(self, other):
-        return Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
+        return Vector2(self.x - other.x, self.y - other.y)
 
     def __mul__(self, other):
-        return Vector3(self.x * other, self.y * other, self.z * other)
+        return Vector2(self.x * other, self.y * other)
 
     def __truediv__(self, other):
-        return Vector3(self.x / other, self.y / other, self.z / other)
+        return Vector2(self.x / other, self.y / other)
 
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y and self.z == other.z
+        return self.x == other.x and self.y == other.y
 
     def __ne__(self, other):
-        return self.x != other.x or self.y != other.y or self.z != other.z
+        return self.x != other.x or self.y != other.y
+
+################# Color #################
+
+################# SpriteRenderer #################
+
+class SpriteRenderer(Component):
+    def __init__(self, gameObject):
+        super(SpriteRenderer, self).__init__(gameObject)
+        self.sprite = None
+        # self.color = (1.0, 1.0, 1.0, 1.0)
+
+    def __call__(self):
+        if self.sprite is None:
+            return
+        screen_pos = _PX_WorldObjectXYtoScreenXY(self.gameObject.position)
+        _PX_TextureRender(self.sprite, screen_pos)
+
+    def Awake(self):
+        if self.gameObject.renderer is not None:
+            raise ValueError("物体已经有渲染器了")
+        self.gameObject.renderer = self

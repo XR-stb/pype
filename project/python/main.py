@@ -6,21 +6,27 @@ class Test(PainterBehaviour):
 		print("awake")
 
 	def Update(self):
-		print("update", Time.deltaTime)
+		# print("update", Time.deltaTime)
 		pass
 
 g = GameObject("测试")
-test = g.AddComponent(Test)
-print(g.components)
 
-print(g.GetComponent(Test))
+# 添加一个精灵渲染器
+sp_renderer = g.AddComponent(SpriteRenderer)
 
-GameObject("123"), GameObject("456"), GameObject("789")
-print_tree()
+# 加载纹理资源
+path = "/mnt/c/Users/bluel/Desktop/ibb-and-obb.bmp"
 
-path = "/mnt/c/Users/bluel/Desktop/test.bmp"
-p = Resources.Load(path)
-print(p)
-_repl()
+# 设置渲染器的纹理
+sp_renderer.sprite = Resources.Load(path)
 
-print(_root.GetChildCount(), _root.GetChild(0), _root.GetChild(1))
+
+
+
+
+# print(g.GetComponent(Test))
+# GameObject("123"), GameObject("456"), GameObject("789")
+# print_tree()
+
+# print(_root.GetChildCount(), _root.GetChild(0), _root.GetChild(1))
+# _repl()
