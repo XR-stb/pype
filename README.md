@@ -34,12 +34,14 @@ bash run_dev.sh
 你可以使用Python或者C++编写新的类实现，并提交Pull Request。
 
 + 若要编写纯Python类，将对应的Python源文件放置在`project/python/<类名>.py`。
-该目录下的代码会自动打包到二进制中，成为`PainterEngine`模块的一部分
+该目录下的代码会自动打包到二进制中，成为`PainterEngine`模块的一部分。
+你可以参考
+[Component](https://github.com/blueloveTH/pype/blob/master/project/python/Component.py) 的实现
 
-+ 若要编写C++类，将对应的头文件放置在`project/<类名>.h`，
-通过`A::register_class(...)`函数将C++类绑定到`PainterEngine`或自定义的Python模块中
++ 若要编写C++类，将对应的头文件放置在`project/<类名>.h`。你可以参考
+[Vector2](https://github.com/blueloveTH/pype/blob/master/project/Vector2.h) 的实现
 
-+ 你可以同时使用C++和Python编写类实现
++ 你可以同时使用C++和Python编写类，例如`GameObject`类就是使用这种方式实现的。
 
 ## API参考
 
