@@ -45,7 +45,7 @@
 
 ### `SpriteRenderer`
 
-- [ ] `.sprite`，设置精灵
+- [x] `.sprite`，设置精灵
 - [ ] `.color`，设置颜色
 
 ### `Resources`

@@ -99,7 +99,7 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
             GameObject& self = CAST(GameObject&, args[0]);
             float x = self.obj->x;
             float y = self.obj->y;
-            return vm->call(g_mod->attr(m_Vector2), VAR(x), VAR(y));
+            return VAR_T(Vector2, x, y);
         },
         [](VM* vm, ArgsView args){
             GameObject& self = CAST(GameObject&, args[0]);

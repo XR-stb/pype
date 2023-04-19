@@ -21,5 +21,3 @@ inline PX_World World;
 inline VM* vm = nullptr;                    // global python vm
 inline PyObject* g_mod = nullptr;           // global PainterEngine module
 inline PyObject* g_root = nullptr;          // global root gameObject
-
-static StrName m_Vector2("Vector2");
