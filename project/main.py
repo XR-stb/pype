@@ -16,6 +16,8 @@ class Test(PainterBehaviour):
 
         if Input.GetKey("A"):
             print("A已经被按下啦！")
+        if Input.GetKey("G") and Input.GetKey("A"):
+            print("G和A都被按下啦！")
 
 g = GameObject("测试")
 g.AddComponent(Test)

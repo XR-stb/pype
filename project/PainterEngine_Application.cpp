@@ -71,7 +71,7 @@ px_void PX_ApplicationRender(PX_Application *pApp, px_dword elapsed)
 	}
 
 	// reset CurrentKeycode at the end of frame
-	Input::CurrentKeycode = 0;
+	Input::PressedKeys.clear();
 }
 
 px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
@@ -80,7 +80,7 @@ px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 
 	if(e.Event == PX_OBJECT_EVENT_KEYDOWN){
 		px_uint code = PX_Object_Event_GetKeyDown(e);
-		Input::CurrentKeycode = code;
+		Input::PressedKeys.insert(code);
 	}
 }
 
