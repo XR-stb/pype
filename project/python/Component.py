@@ -13,4 +13,17 @@ class Component:
         return self.gameObject.GetComponentInChildren(tp)
 
 class PainterBehaviour(Component):
-    pass
+    def __init__(self, gameObject):
+        super(PainterBehaviour, self).__init__(gameObject)
+        self.coroutines = []
+
+    def StartCoroutine(self, coroutine):
+        self.coroutines.append(coroutine)
+
+    def StopCoroutine(self, coroutine):
+        self.coroutines.remove(coroutine)
+
+    def StopAllCoroutines(self):
+        self.coroutines.clear()
+
+    
