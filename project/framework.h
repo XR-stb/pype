@@ -1,94 +1,10 @@
 #pragma once
 
-#include <queue>
-#include <sstream>
-
-#include "PainterEngine_Application.h"
-#include "../architecture/PainterEngine.h"
-#include "../kernel/PX_World.h"
-
-#include "pocketpy.h"
-#include "_generated.h"
+#include "Common.h"
+#include "GameObject.h"
+#include "Vector2.h"
 
 using namespace pkpy;
-
-inline PX_Application App;
-inline PX_World World;
-
-inline VM* vm = nullptr;                    // global python vm
-inline PyObject* g_mod = nullptr;           // global PainterEngine module
-inline PyObject* g_root = nullptr;          // global root gameObject
-
-static StrName m_Vector2("Vector2");
-
-// 层序遍历对象树
-inline void traverse(PX_Object* obj, std::function<void(PX_Object*)> f){
-    if(obj == NULL) return;
-    // 层序遍历
-    std::queue<PX_Object*> q;
-    q.push(obj);
-    while(!q.empty()){
-        PX_Object* cur = q.front(); q.pop();
-        f(cur);    // 调用自定义函数
-        PX_Object* child = cur->pChilds;
-        while(child != NULL){
-            q.push(child);
-            child = child->pNextBrother;
-        }
-    }
-}
-
-struct GameObject {
-    PY_CLASS(GameObject, PainterEngine, GameObject)
-
-    PX_Object* obj;
-
-    GameObject(){
-        PX_Object* px_root = nullptr;
-        if(g_root != nullptr){
-            px_root = CAST(GameObject&, g_root).obj;
-        }
-
-        obj = PX_ObjectCreate(&App.runtime.mp_game, px_root, 0, 0, 0, 0, 0, 0);
-        
-        obj->Func_ObjectUpdate = [](PX_Object* obj, unsigned int _){
-            PyObject* self = (PyObject*)obj->User_ptr;
-            static StrName m_update = "_update";
-            vm->call_method(self, m_update);
-        };
-
-        obj->Func_ObjectRender = [](px_surface* psurface, PX_Object* obj, px_uint elpased){
-            PyObject* self = (PyObject*)obj->User_ptr;
-            static StrName m_renderer = "renderer";
-            PyObject* r = self->attr(m_renderer);
-            if(r != vm->None) vm->call_method(r, __call__);
-        };
-    }
-
-    static void _register(VM* vm, PyObject* mod, PyObject* type);
-};
-
-struct PX_ChildrenIter: BaseIter{
-    PyObject* ref;
-    PX_Object* curr;
-
-    PX_ChildrenIter(VM* vm, PyObject* ref): BaseIter(vm){
-        this->ref = ref;    // ref of GameObject
-        GameObject& go = CAST(GameObject&, ref);
-        curr = go.obj->pChilds;
-    }
-
-    PyObject* next() override{
-        if(curr == NULL) return nullptr;
-        PyObject* ret = (PyObject*)curr->User_ptr;
-        curr = curr->pNextBrother;
-        return ret;
-    }
-
-    void _gc_mark() const override {
-        OBJ_MARK(ref);
-    }
-};
 
 inline void python_init(){
     // vm init
@@ -98,6 +14,7 @@ inline void python_init(){
     });
     g_mod = vm->new_module("PainterEngine");
     PyObject* go_type = GameObject::register_class(vm, g_mod);
+    PyObject* vec2_type = Vector2::register_class(vm, g_mod);
 
     vm->bind_func<1>(g_mod, "Destroy", [](VM* vm, ArgsView args){
         GameObject& self = CAST(GameObject&, args[0]);
@@ -123,26 +40,29 @@ inline void python_init(){
     vm->bind_func<2>(g_mod, "_PX_TextureRender", [](VM* vm, ArgsView args){
         px_surface* psurface = &App.runtime.RenderSurface;
         px_texture* tex = CAST(px_texture*, args[0]);
-        Type v2t = OBJ_GET(Type, g_mod->attr("Vector2"));
-        vm->check_type(args[1], v2t);
-        px_float x = CAST(px_float, args[1]->attr("x"));
-        px_float y = CAST(px_float, args[1]->attr("y"));
+        const Vector2& vec = CAST(Vector2&, args[1]);
         // PX_TEXTURERENDER_BLEND* blend = CAST(VoidP&, args[5]);
-        PX_TextureRender(psurface, tex, x, y, PX_ALIGN_LEFTTOP, NULL);
+        PX_TextureRender(psurface, tex, vec.x, vec.y, PX_ALIGN_LEFTTOP, NULL);
         return vm->None;
     });
 
     vm->bind_func<1>(g_mod, "_PX_WorldObjectXYtoScreenXY", [](VM* vm, ArgsView args){
-        Type v2t = OBJ_GET(Type, g_mod->attr("Vector2"));
-        vm->check_type(args[0], v2t);
-        px_float x = CAST(px_float, args[0]->attr("x"));
-        px_float y = CAST(px_float, args[0]->attr("y"));
-        px_point ret = PX_WorldObjectXYtoScreenXY(&World, x, y);
-        return vm->call(g_mod->attr(m_Vector2), VAR(ret.x), VAR(ret.y));
+        const Vector2& vec = CAST(Vector2&, args[0]);
+        px_point ret = PX_WorldObjectXYtoScreenXY(&World, vec.x, vec.y);
+        return VAR_T(Vector2, ret.x, ret.y);
     });
 
-    CodeObject_ code = vm->compile(pe::kPythonLibs["PainterEngine"], "<PainterEngine>", EXEC_MODE);
-    vm->_exec(code, g_mod);
+
+    // 注册Python库源码
+    for(auto it = pe::kPythonLibs.begin(); it != pe::kPythonLibs.end(); ++it){
+        if(it->first == "main" || it->first == "__main__") continue;
+        CodeObject_ code = vm->compile(
+            it->second,
+            fmt("<", it->first, ">"),
+            EXEC_MODE
+        );
+        vm->_exec(code, g_mod);
+    }
 
     // 创建根对象
     g_root = vm->call(go_type, VAR("/"));
@@ -153,61 +73,6 @@ inline void python_init(){
 
     // 设置相机指向(0, 0)
     PX_WorldSetCamera(&World, px_point{0, 0, 0});
-}
-
-namespace pkpy{
-    template<> inline void gc_mark<GameObject>(GameObject& go){
-        // only do mark on root
-        if(go.obj->pParent != NULL) return;
-        PX_Object* px_root = CAST(GameObject&, g_root).obj;
-        traverse(px_root, [](PX_Object* obj){
-            OBJ_MARK((PyObject*)obj->User_ptr);
-        });
-    }
-}
-
-inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
-    vm->bind_static_method<-1>(type, "__new__", [](VM* vm, ArgsView args){
-        PyObject* go = VAR_T(GameObject);
-        go->enable_instance_dict();
-        GameObject& self = CAST(GameObject&, go);
-        PX_ObjectSetUserPointer(self.obj, go);
-        return go;
-    });
-
-    type->attr().set("position", vm->property(
-        [](VM* vm, ArgsView args){
-            GameObject& self = CAST(GameObject&, args[0]);
-            float x = self.obj->x;
-            float y = self.obj->y;
-            return vm->call(g_mod->attr(m_Vector2), VAR(x), VAR(y));
-        }));
-
-    type->attr().set("parent", vm->property(
-        [](VM* vm, ArgsView args){
-            GameObject& self = CAST(GameObject&, args[0]);
-            if(self.obj->pParent == NULL) return vm->None;
-            return (PyObject*)(self.obj->pParent->User_ptr);
-        }));
-    type->attr().set("children", vm->property(
-        [](VM* vm, ArgsView args){
-            return vm->PyIter(PX_ChildrenIter(vm, args[0]));
-        }));
-    type->attr().set("Width", vm->property(
-        [](VM* vm, ArgsView args){
-            GameObject& self = CAST(GameObject&, args[0]);
-            return VAR(self.obj->Width);
-        }));
-    type->attr().set("Height", vm->property(
-        [](VM* vm, ArgsView args){
-            GameObject& self = CAST(GameObject&, args[0]);
-            return VAR(self.obj->Height);
-        }));
-    type->attr().set("Length", vm->property(
-        [](VM* vm, ArgsView args){
-            GameObject& self = CAST(GameObject&, args[0]);
-            return VAR(self.obj->Length);
-        }));
 }
 
 

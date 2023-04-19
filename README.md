@@ -7,9 +7,9 @@
 
 ### `GameObject`
 
-- [x] `.name`，获取名字
-- [x] `.parent`，获取父物体
-- [x] `.position`，获取世界坐标
+- [x] `.name`，获取名字，返回`str`
+- [x] `.parent`，获取父物体，返回`GameObject`
+- [x] `.position`，获取世界坐标，返回`Vector2`
 - [ ] `.rotation`，获取旋转量
 - [ ] `.scale`，获取缩放比例
 - [ ] `.localPosition`，获取相对于父物体的坐标
@@ -74,7 +74,7 @@
       while True:
           print(">>> ", end="")
           _s = input()
-          if _s == "exit()":
+          if _s == "exit()" or _s == "":
               break
           print(eval(_s))
   ```

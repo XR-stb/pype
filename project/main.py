@@ -15,12 +15,12 @@ g = GameObject("测试")
 sp_renderer = g.AddComponent(SpriteRenderer)
 
 # 加载纹理资源
-path = "/mnt/c/Users/bluel/Desktop/ibb-and-obb.bmp"
+path = "assets/ibb-and-obb.bmp"
 
 # 设置渲染器的纹理
 sp_renderer.sprite = Resources.Load(path)
 
-
+_repl()
 
 
 

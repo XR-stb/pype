@@ -3,7 +3,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 //Configures
-#include "platform/modules/px_file.h"
+#include "../platform/modules/px_file.h"
 
 #define PX_APPLICATION_NAME "PainterEngine"
 #define PX_APPLICATION_SURFACE_SIZE 680
@@ -14,8 +14,8 @@
 #define PX_APPLICATION_MEMORYPOOL_SPACE_SIZE 1024*1024*8
 //////////////////////////////////////////////////////////////////////////
 
-#include "architecture/PainterEngine_Runtime.h"
-#include "platform/modules/px_tcp.h"
+#include "../architecture/PainterEngine_Runtime.h"
+// #include "../platform/modules/px_tcp.h"
 px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width, px_int screen_height);
 px_void PX_ApplicationEventDefault(PX_Runtime *runtime,PX_Object_Event e);
 

@@ -1,4 +1,4 @@
-#include "framework.h"
+#include "Framework.h"
 using namespace pkpy;
 
 px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int screen_height)
@@ -26,7 +26,9 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 		exit(1);
 	}
 
-	pkpy_vm_exec(vm, pe::kPythonLibs["main"]);
+	std::filesystem::current_path("/mnt/e/PainterEngine/project");
+	PX_IO_Data io_data = PX_LoadFileToIOData("main.py");
+	vm->exec(std::string_view((char*)io_data.buffer, io_data.size), "main.py", EXEC_MODE);
 	return PX_TRUE;
 }
 
