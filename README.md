@@ -20,21 +20,18 @@ mkdir build
 cd build
 cmake ..
 cmake --build . --config Release
-cd Release
-PainterEngine.exe
 ```
 ### Linux/WSL构建方法
 
 1. 确保`clang++`和`libc++`已安装。
 2. 确认CMake已安装。
-3. 确保`freegult3-dev`已安装。
+3. 确保`freeglut3-dev`已安装。
 
 ```bash
 bash build_dev.sh
-bash run_dev.sh
 ```
 
-构建完成后，在可执行程序的目录下建立一个`main.py`文件，并输入如下代码，
+构建完成后，切到可执行程序的目录，建立一个`main.py`文件并输入如下代码，
 运行后，你将会在控制台看到不断递增的数字。
 
 ```python
