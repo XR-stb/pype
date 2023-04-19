@@ -2,8 +2,8 @@
 
 ### 测试文件
 
-+ `project/python/PainterEngine.py`
-+ `project/python/main.py`
++ `project/python/*.py`
++ `project/main.py`
 
 ### `GameObject`
 
