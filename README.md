@@ -74,6 +74,7 @@ go.AddComponent(Test)
 - [x] `.activeSelf`，获取是否激活，返回`bool`
 - [x] `GameObject(name=None)`，构造函数
 - [x] `SetActive(self, active: bool)`，设置是否激活
+- [x] `SetParent(self, parent: GameObject)`，重设父物体
 - [x] `AddComponent(self, tp)`，添加一个组件
 - [x] `GetChildCount(self)`，获取子物体的数量
 - [x] `GetChild(self, index: int)`，按索引获取子物体
@@ -141,19 +142,8 @@ class Test(PainterBehaviour):
 - [x] [静态] `Load(path: str)`，加载一个资源并返回一个指针，此函数带有缓存，因此多次调用同一个资源不会重复加载
 
 ## 全局变量与函数
-- [x] `traverse(go=None)`，返回一个可以遍历`GameObject`及其所有子物体的迭代器，每个项`(GameObject, int)`表示物体及其深度（从0开始）
-  ```python
-  def traverse(go=None):
-      q = deque()
-      q.append((go or _root, -1))
-      while len(q) > 0:
-          curr, depth = q.popleft()
-          if depth > -1:
-              yield curr, depth
-          for child in curr.children:
-              q.append((child, depth+1))
-  ```
-- [x] `print_tree(go=None)`，用于调试，向控制台打印一个`GameObject`及其所有子物体，内部调用了`traverse`
+- [x] `traverse()`，返回一个可以遍历对象树所有物体的迭代器，每个项`(GameObject, int)`表示物体及其深度（从0开始）
+- [x] `print_tree()`，用于调试，向控制台打印对象树结构，内部调用了`traverse`
 - [x] `Destroy(go)`，销毁一个`GameObject`或`Component`
 - [x] `_root`，访问虚拟根`GameObject`，你可以使用`_root.children`来遍历世界中的顶层`GameObject`。你不应该删除或重置此变量，否则将会引发异常
 - [x] `_repl()`，打开一个简易REPL，请求用户输入并将结果`eval`后输出。可以使用`exit()`退出

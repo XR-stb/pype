@@ -15,9 +15,9 @@ def Destroy(obj):
     raise ValueError("Destroy()的参数必须是GameObject或Component，你传入了" + type(obj).__name__)
         
 
-def traverse(go=None):
+def traverse():
     q = deque()
-    q.append((go or _root, -1))
+    q.append((_root, -1))
     while len(q) > 0:
         curr, depth = q.popleft()
         if depth > -1:
@@ -25,8 +25,8 @@ def traverse(go=None):
         for child in curr.children:
             q.append((child, depth+1))
 
-def print_tree(go=None):
-    for curr, depth in traverse(go):
+def print_tree():
+    for curr, depth in traverse():
         print('    '*depth + curr.name)
 
 def _repl():

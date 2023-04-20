@@ -46,7 +46,7 @@ struct PX_ChildrenIter: BaseIter{
     }
 
     PyObject* next() override{
-        if(curr == NULL) return nullptr;
+        if(curr == NULL) return vm->StopIteration;
         PyObject* ret = (PyObject*)curr->User_ptr;
         curr = curr->pNextBrother;
         return ret;
@@ -165,6 +165,18 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
     vm->bind_method<1>(type, "SetActive", [](VM* vm, ArgsView args){
         GameObject& self = CAST(GameObject&, args[0]);
         self.obj->Enabled = CAST(bool, args[1]);
+        return vm->None;
+    });
+    vm->bind_method<1>(type, "SetParent", [](VM* vm, ArgsView args){
+        GameObject& self = CAST(GameObject&, args[0]);
+        PX_Object* pParent;
+        if(args[1] == vm->None){
+            pParent = CAST(GameObject&, g_root).obj;
+        }else{
+            GameObject& parent = CAST(GameObject&, args[1]);
+            pParent = parent.obj;
+        }
+        PX_ObjectSetParent(self.obj, pParent);
         return vm->None;
     });
 }

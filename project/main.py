@@ -21,6 +21,14 @@ class Test(PainterBehaviour):
 g = GameObject("测试")
 g.AddComponent(Test)
 
+b = GameObject("123")
+c = GameObject("456")
+b.SetParent(g)
+c.SetParent(b)
+print_tree()
+c.SetParent(None)
+print_tree()
+
 # 添加一个精灵渲染器
 sp_renderer = g.AddComponent(SpriteRenderer)
 
