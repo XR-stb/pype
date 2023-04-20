@@ -3364,6 +3364,7 @@ inline i64 VM::hash(PyObject* obj){
         return x;
     }
     if (is_non_tagged_type(obj, tp_type)) return BITS(obj);
+    if (is_non_tagged_type(obj, tp_iterator)) return BITS(obj);
     if (is_non_tagged_type(obj, tp_bool)) return _CAST(bool, obj) ? 1 : 0;
     if (is_float(obj)){
         f64 val = CAST(f64, obj);
@@ -6823,7 +6824,7 @@ inline Str _read_file_cwd(const Str& name, bool* ok){
 
 #endif
 
-// generated on 2023-04-20 10:26:36
+// generated on 2023-04-20 11:18:30
 #include <map>
 #include <string>
 

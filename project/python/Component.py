@@ -19,26 +19,26 @@ class PainterBehaviour(Component):
     def __init__(self, gameObject):
         super(PainterBehaviour, self).__init__(gameObject)
         self.coroutines = []
+        self._stopped_coroutines = []
 
     def StartCoroutine(self, coroutine):
         self.coroutines.append(coroutine)
         return coroutine
 
     def StopCoroutine(self, coroutine):
-        self.coroutines.remove(coroutine)
+        self._stopped_coroutines.append(coroutine)
 
     def StopAllCoroutines(self):
-        self.coroutines.clear()
+        self._stopped_coroutines = self.coroutines.copy()
 
     def _update_coroutines(self):
-        alived = []
         for coroutine in self.coroutines:
             obj = next(coroutine)
             if obj is StopIteration:
-                pass
-            else:
-                alived.append(coroutine)
-        self.coroutines = alived
+                self._stopped_coroutines.append(coroutine)
+        self.coroutines = [c for c in self.coroutines if c not in self._stopped_coroutines]
+        self._stopped_coroutines.clear()
+        
 
 
 def WaitForEndOfFrame():
