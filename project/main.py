@@ -23,10 +23,10 @@ g.AddComponent(Test)
 
 b = GameObject("123")
 c = GameObject("456")
-b.SetParent(g)
+b.parent = g
 c.SetParent(b)
 print_tree()
-c.SetParent(None)
+c.parent = None
 print_tree()
 
 # 添加一个精灵渲染器

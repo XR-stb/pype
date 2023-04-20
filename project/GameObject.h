@@ -136,12 +136,25 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
             return vm->None;
         }));
 
+    auto obj_set_parent = [](VM* vm, ArgsView args){
+        GameObject& self = CAST(GameObject&, args[0]);
+        PX_Object* pParent;
+        if(args[1] == vm->None){
+            pParent = CAST(GameObject&, g_root).obj;
+        }else{
+            GameObject& parent = CAST(GameObject&, args[1]);
+            pParent = parent.obj;
+        }
+        PX_ObjectSetParent(self.obj, pParent);
+        return vm->None;
+    };
+
     type->attr().set("parent", vm->property(
         [](VM* vm, ArgsView args){
             GameObject& self = CAST(GameObject&, args[0]);
             if(self.obj->pParent == NULL) return vm->None;
             return (PyObject*)(self.obj->pParent->User_ptr);
-        }));
+        }, obj_set_parent));
     type->attr().set("children", vm->property(
         [](VM* vm, ArgsView args){
             return vm->PyIter(PX_ChildrenIter(vm, args[0]));
@@ -167,16 +180,5 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
         self.obj->Enabled = CAST(bool, args[1]);
         return vm->None;
     });
-    vm->bind_method<1>(type, "SetParent", [](VM* vm, ArgsView args){
-        GameObject& self = CAST(GameObject&, args[0]);
-        PX_Object* pParent;
-        if(args[1] == vm->None){
-            pParent = CAST(GameObject&, g_root).obj;
-        }else{
-            GameObject& parent = CAST(GameObject&, args[1]);
-            pParent = parent.obj;
-        }
-        PX_ObjectSetParent(self.obj, pParent);
-        return vm->None;
-    });
+    vm->bind_method<1>(type, "SetParent", obj_set_parent);
 }
