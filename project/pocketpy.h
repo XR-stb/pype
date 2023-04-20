@@ -75,21 +75,42 @@
 
 #endif
 
-#if defined(__EMSCRIPTEN__) || defined(__arm__) || defined(__i386__)
-typedef int32_t i64;
-typedef float f64;
-#define S_TO_INT(...) static_cast<i64>(std::stoi(__VA_ARGS__))
-#define S_TO_FLOAT(...) static_cast<f64>(std::stof(__VA_ARGS__))
-#else
-typedef int64_t i64;
-typedef double f64;
-#define S_TO_INT(...) static_cast<i64>(std::stoll(__VA_ARGS__))
-#define S_TO_FLOAT(...) static_cast<f64>(std::stod(__VA_ARGS__))
-#endif
-
 namespace pkpy{
 
 namespace std = ::std;
+
+template <size_t T>
+struct NumberTraits;
+
+template <>
+struct NumberTraits<4> {
+	using int_t = int32_t;
+	using float_t = float;
+
+	template<typename... Args>
+	static int_t stoi(Args&&... args) { return std::stoi(std::forward<Args>(args)...); }
+	template<typename... Args>
+	static float_t stof(Args&&... args) { return std::stof(std::forward<Args>(args)...); }
+};
+
+template <>
+struct NumberTraits<8> {
+	using int_t = int64_t;
+	using float_t = double;
+
+	template<typename... Args>
+	static int_t stoi(Args&&... args) { return std::stoll(std::forward<Args>(args)...); }
+	template<typename... Args>
+	static float_t stof(Args&&... args) { return std::stod(std::forward<Args>(args)...); }
+};
+
+using Number = NumberTraits<sizeof(void*)>;
+using i64 = Number::int_t;
+using f64 = Number::float_t;
+
+static_assert(sizeof(i64) == sizeof(void*));
+static_assert(sizeof(f64) == sizeof(void*));
+static_assert(std::numeric_limits<f64>::is_iec559);
 
 struct Dummy { };
 struct DummyInstance { };
@@ -117,11 +138,6 @@ struct Type {
 
 inline const float kInstAttrLoadFactor = 0.67f;
 inline const float kTypeAttrLoadFactor = 0.5f;
-
-static_assert(sizeof(i64) == sizeof(int*));
-static_assert(sizeof(f64) == sizeof(int*));
-static_assert(std::numeric_limits<float>::is_iec559);
-static_assert(std::numeric_limits<double>::is_iec559);
 
 struct PyObject;
 #define BITS(p) (reinterpret_cast<i64>(p))
@@ -1765,9 +1781,9 @@ struct Lexer {
                 if (m[1].matched) base = 16;
                 if (m[2].matched) {
                     if(base == 16) SyntaxError("hex literal should not contain a dot");
-                    add_token(TK("@num"), S_TO_FLOAT(m[0], &size));
+                    add_token(TK("@num"), Number::stof(m[0], &size));
                 } else {
-                    add_token(TK("@num"), S_TO_INT(m[0], &size, base));
+                    add_token(TK("@num"), Number::stoi(m[0], &size, base));
                 }
                 if (size != m.length()) FATAL_ERROR();
             }
@@ -6824,7 +6840,7 @@ inline Str _read_file_cwd(const Str& name, bool* ok){
 
 #endif
 
-// generated on 2023-04-20 11:18:30
+// generated on 2023-04-20 12:29:47
 #include <map>
 #include <string>
 
@@ -7082,7 +7098,7 @@ inline void init_builtins(VM* _vm) {
             const Str& s = CAST(Str&, args[0]);
             try{
                 size_t parsed = 0;
-                i64 val = S_TO_INT(s.str(), &parsed, 10);
+                i64 val = Number::stoi(s.str(), &parsed, 10);
                 if(parsed != s.length()) throw std::invalid_argument("<?>");
                 return VAR(val);
             }catch(std::invalid_argument&){
@@ -7129,7 +7145,7 @@ inline void init_builtins(VM* _vm) {
             if(s == "inf") return VAR(INFINITY);
             if(s == "-inf") return VAR(-INFINITY);
             try{
-                f64 val = S_TO_FLOAT(s.str());
+                f64 val = Number::stof(s.str());
                 return VAR(val);
             }catch(std::invalid_argument&){
                 vm->ValueError("invalid literal for float(): '" + s + "'");
@@ -7766,8 +7782,8 @@ extern "C" {
         return strdup(ss.str().c_str());
     }
 
-    typedef i64 (*f_int_t)(char*);
-    typedef f64 (*f_float_t)(char*);
+    typedef pkpy::i64 (*f_int_t)(char*);
+    typedef pkpy::f64 (*f_float_t)(char*);
     typedef bool (*f_bool_t)(char*);
     typedef char* (*f_str_t)(char*);
     typedef void (*f_None_t)(char*);

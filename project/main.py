@@ -36,6 +36,10 @@ c.parent = None
 print('---------------------')
 print_tree()
 
+g.parent = e
+print('---------------------')
+print_tree()
+
 # 添加一个精灵渲染器
 sp_renderer = g.AddComponent(SpriteRenderer)
 
