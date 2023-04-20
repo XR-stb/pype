@@ -145,6 +145,7 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
             GameObject& parent = CAST(GameObject&, args[1]);
             pParent = parent.obj;
         }
+        if(self.obj == pParent) vm->ValueError("can't set parent to self");
         PX_ObjectSetParent(self.obj, pParent);
         return vm->None;
     };

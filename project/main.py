@@ -18,15 +18,22 @@ class Test(PainterBehaviour):
         if Input.GetKey("R"):
             _repl()
 
-g = GameObject("测试")
+g = GameObject("g#001")
+f = GameObject("f#002")
 g.AddComponent(Test)
 
-b = GameObject("123")
-c = GameObject("456")
+b = GameObject("b#003")
+c = GameObject("c#004")
+d = GameObject("d#005")
+e = GameObject("e#006")
 b.parent = g
+d.parent = b
+e.parent = c
 c.SetParent(b)
 print_tree()
+
 c.parent = None
+print('---------------------')
 print_tree()
 
 # 添加一个精灵渲染器
