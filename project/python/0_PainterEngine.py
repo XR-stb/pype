@@ -2,8 +2,8 @@ def destroy(obj):
     assert isinstance(obj, Node)
     if obj.on_destroy is not None:
         obj.on_destroy(obj)
-    obj._px_obj = None
     _PX_ObjectDelete(obj)
+    obj._px_obj = None
 
 def traverse(curr=None, depth=0):
     if curr is None:

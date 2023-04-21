@@ -1,3 +1,4 @@
+#include "Common.h"
 #include "Framework.h"
 using namespace pkpy;
 
@@ -37,7 +38,8 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 	}
 
 	PX_IO_Data io_data = PX_LoadFileToIOData("main.py");
-	PyObject* ret = vm->exec(std::string_view((char*)io_data.buffer, io_data.size), "main.py", EXEC_MODE);
+	g_user_code = std::string((char*)io_data.buffer, io_data.size);
+	PyObject* ret = vm->exec(g_user_code, "main.py", EXEC_MODE);
 	if(ret == nullptr) return PX_FALSE;
 	return PX_TRUE;
 }

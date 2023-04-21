@@ -1,4 +1,4 @@
-from pype import _repl, _root, _print_tree
+from pype import _repl, _root, _print_tree, _reload_current_scene
 from pype import *
 
 class LogoSprite(Sprite2D):
@@ -13,7 +13,8 @@ class LogoSprite(Sprite2D):
         self.angle += 180 * Time.delta_time
 
         if Input.get_key('R'):
-            _repl()
+            # _repl()
+            _reload_current_scene()
 
 LogoSprite()
 
