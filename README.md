@@ -85,8 +85,8 @@ LogoSprite()
 ---
 
 - [x] [只读] `.children`，返回一个迭代器，可用于遍历此对象的子物体
-- [x] [只读] `.width`，获取宽度
-- [x] [只读] `.height`，获取高度
+- [x] `.width`，获取宽度
+- [x] `.height`，获取高度
 
 ---
 
@@ -116,6 +116,9 @@ class Test(Node):
 - [x] `.texture`，设置纹理
 - [ ] `.color`，设置颜色
 
+### `Button(Node)`
+
+- [x] `.text`，设置文本
 
 ### `Input`
 

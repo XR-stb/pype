@@ -113,11 +113,21 @@ inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
         [](VM* vm, ArgsView args){
             PX_Object* obj = get_px_obj(args[0]);
             return VAR(obj->Width);
+        },
+        [](VM* vm, ArgsView args){
+            PX_Object* obj = get_px_obj(args[0]);
+            obj->Width = vm->num_to_float(args[1]);
+            return vm->None;
         }));
     type->attr().set("height", vm->property(
         [](VM* vm, ArgsView args){
             PX_Object* obj = get_px_obj(args[0]);
             return VAR(obj->Height);
+        },
+        [](VM* vm, ArgsView args){
+            PX_Object* obj = get_px_obj(args[0]);
+            obj->Height = vm->num_to_float(args[1]);
+            return vm->None;
         }));
 
     type->attr().set("enabled", vm->property(

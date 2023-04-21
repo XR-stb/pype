@@ -16,5 +16,11 @@ class LogoSprite(Sprite2D):
             # _repl()
             _reload_current_scene()
 
-LogoSprite()
+# LogoSprite()
 
+for i in range(5):
+    b = Button()
+    b.text = "Hello! (" + str(i) + ")"
+    b.width = 200
+    b.height = 50
+    b.position = Vector2(100, 100 + i * 60)

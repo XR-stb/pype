@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Button.h"
 #include "Common.h"
 #include "Node.h"
 #include "Vector2.h"
@@ -94,6 +95,9 @@ for obj in list(_root.children):
     // 初始化Node基类
     g_tp_node = OBJ_GET(Type, g_mod->attr("Node"));
     _register_node_type(vm, g_mod, vm->_t(g_tp_node));
+
+    // 注册其他类
+    _register_button_type(vm, g_mod, g_mod->attr("Button"));
 
     // 创建根对象
     g_root = vm->call(vm->_t(g_tp_node));
