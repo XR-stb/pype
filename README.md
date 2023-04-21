@@ -71,26 +71,16 @@ go.AddComponent(Test)
 
 ## API参考
 
-### `GameObject`
+### `Node`
 
 - [x] `.name`，获取名字，返回`str`
-- [x] `.parent`，获取父物体，返回`GameObject`
-- [x] `.position`，获取世界坐标，返回`Vector2`
-- [x] `.angle`，获取世界角度，返回`float`
-- [x] `.scale`，获取世界缩放，返回`float`
-- [x] `.localPosition`，获取相对于父物体的坐标
-- [x] `.localAngle`，获取相对于父物体的角度
-- [x] `.localScale`，获取相对于父物体的缩放
-- [x] `.activeSelf`，获取是否激活，返回`bool`
-- [x] `GameObject(name=None)`，构造函数
-- [x] `SetActive(self, active: bool)`，设置是否激活
-- [x] `SetParent(self, parent: GameObject)`，重设父物体
-- [x] `AddComponent(self, tp)`，添加一个组件
-- [x] `GetChildCount(self)`，获取子物体的数量
-- [x] `GetChild(self, index: int)`，按索引获取子物体
-- [x] `GetComponent(self, tp)`，在当前物体查找一个指定类型的组件
-- [x] `GetComponentInChildren(self, tp)`，在当前物体及其子物体查找一个指定类型的组件
-- [x] [静态] `Find(name: str)`，查找一个名字为`name`的物体
+- [x] `.parent`，获取父物体，返回`Node`
+- [x] `.position`，获取本地坐标，返回`Vector2`
+- [x] `.angle`，获取本地角度，返回`float`
+- [x] `.scale`，获取本地缩放，返回`float`
+- [x] `.enabled`，获取是否激活
+- [x] `childCount(self)`，获取子物体的数量
+- [x] `__getitem__(self, index: int)`，按索引获取子物体
 ---
 
 - [x] `.children`，返回一个迭代器，可用于遍历此对象的子物体
@@ -98,14 +88,8 @@ go.AddComponent(Test)
 - [x] `.Width`，获取宽度
 - [x] `.Height`，获取高度
 
-### `PainterBehaviour`
+---
 
-- [x] `.gameObject`，获取所属的`GameObject`
-- [x] [消息] `Awake(self)`，在初始化时被调用一次
-- [x] [消息] `Update(self)`，每帧被调用一次
-- [x] [消息] `OnDestroy(self)`，在销毁时被调用一次
-- [x] `GetComponent(self, tp)`，相当于`self.gameObject.GetComponent`
-- [x] `GetComponentInChildren(self, tp)`，相当于`self.gameObject.GetComponentInChildren`
 - [x] `StartCoroutine(self, obj)`，启动一个协程
 - [x] `StopCoroutine(self, obj)`，停止一个协程
 - [x] `StopAllCoroutines(self)`，停止所有协程
@@ -118,8 +102,8 @@ go.AddComponent(Test)
 例如下面是一个简单的协程，它会在3秒后打印`Hello World!`。
 
 ```python
-class Test(PainterBehaviour):
-    def Awake(self):
+class Test(Node):
+    def OnReady(self):
         self.StartCoroutine(self.coroutine())
 
     def coroutine(self):
@@ -132,8 +116,8 @@ class Test(PainterBehaviour):
 - [x] [静态] `GetKey(code)`，检查当前帧某个按键是否被按下，返回`bool`
 
     ```python
-    class Test(PainterBehaviour):
-        def Update(self):
+    class Test(Node):
+        def OnUpdate(self):
             if Input.GetKey("A"):
                 print("A已经被按下啦！")
     ```
@@ -142,7 +126,7 @@ class Test(PainterBehaviour):
 
 - [x] [静态] `.deltaTime`，获取自上一帧经历的秒数，一个`float`值
 
-### `SpriteRenderer`
+### `Sprite2D(Node)`
 
 - [x] `.sprite`，设置精灵
 - [ ] `.color`，设置颜色

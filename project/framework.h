@@ -1,28 +1,42 @@
 #pragma once
 
 #include "Common.h"
-#include "GameObject.h"
+#include "Node.h"
 #include "Vector2.h"
 #include "Input.h"
 
 using namespace pkpy;
 
+struct GCProxy{
+    PY_CLASS(GCProxy, PainterEngine, _GCProxy)
+
+    static void _register(VM* vm, PyObject* mod, PyObject* type){
+        vm->bind_static_method<-1>(type, "__new__", CPP_NOT_IMPLEMENTED());
+    }
+};
+
+namespace pkpy{
+    template<> inline void gc_mark<GCProxy>(GCProxy& proxy){
+        PX_Object* px_root = get_px_obj(g_root);
+        traverse(px_root, [](PX_Object* obj){
+            OBJ_MARK((PyObject*)obj->User_ptr);
+        });
+    }
+}
+
 inline void python_init(){
-    // vm init
     vm = pkpy_new_vm(true);
     vm->bind_builtin_func<0>("input", [](VM* vm, ArgsView args){
         return VAR(pkpy::getline());
     });
     g_mod = vm->new_module("PainterEngine");
-    PyObject* go_type = GameObject::register_class(vm, g_mod);
     Vector2::register_class(vm, g_mod);
     Input::register_class(vm, g_mod);
 
     /*************全局私有函数*************/
     vm->bind_func<1>(g_mod, "_PX_ObjectDelete", [](VM* vm, ArgsView args){
-        GameObject& self = CAST(GameObject&, args[0]);
-        PX_ObjectDelete(self.obj);
-        self.obj = NULL;
+        PX_Object* obj = get_px_obj(args[0]);
+        PX_ObjectDelete(obj);
         return vm->None;
     });
 
@@ -58,7 +72,6 @@ inline void python_init(){
 
     // 注册Python库源码
     for(auto it = pe::kPythonLibs.begin(); it != pe::kPythonLibs.end(); ++it){
-        if(it->first == "main" || it->first == "__main__") continue;
         CodeObject_ code = vm->compile(
             it->second,
             fmt("<", it->first, ">"),
@@ -67,15 +80,21 @@ inline void python_init(){
         vm->_exec(code, g_mod);
     }
 
+    // 初始化Node基类
+    g_tp_node = g_mod->attr("Node")->type;
+    _register_node_type(vm, g_mod, vm->_t(g_tp_node));
+
     // 创建根对象
-    g_root = vm->call(go_type, VAR("/"));
+    g_root = vm->call(vm->_t(g_tp_node));
     g_mod->attr().set("_root", g_root);
-    PX_Object* px_root = CAST(GameObject&, g_root).obj;
+    PX_Object* px_root = get_px_obj(g_root);
+
     // 将根对象加入世界
     PX_WorldAddObject(&World, px_root);
-
     // 设置相机指向(0, 0)
     PX_WorldSetCamera(&World, px_point{0, 0, 0});
+    // 创建GC代理，该代理用于对象树标记
+    g_mod->attr().set("_gc_proxy", VAR_T(GCProxy));
 }
 
 
