@@ -5,12 +5,6 @@
 
 > 运行一个Python解释器需要消耗较多的资源，你的目标平台应具备`50MB`以上的内存和C++17支持。
 
-## Rethinking the Design
-
-It seems like PE's UI is built on top of inheritance, instead of composition.
-This is hard to do Unity-style binding.
-We may need to re-implement a Node-based architecture.
-
 ## 快速开始
 
 要进行构建，首先切换到仓库的根目录。
@@ -45,7 +39,8 @@ from PainterEngine import *
 
 class LogoSprite(Sprite2D):
     def OnReady(self):
-        self.scale = 3
+        self.texture = Resources.Load("assets/logo.png")
+        self.scale = 3  # 放大3倍
 
     def OnUpdate(self):
         # 每秒向右下移动10个单位
@@ -53,8 +48,7 @@ class LogoSprite(Sprite2D):
         # 每秒旋转半圈
         self.angle += 180 * Time.deltaTime
 
-s = LogoSprite()
-s.texture = Resources.Load("assets/logo.png")
+LogoSprite()
 ```
 
 ## 贡献代码
@@ -64,12 +58,10 @@ s.texture = Resources.Load("assets/logo.png")
 + 若要编写纯Python类，将对应的Python源文件放置在`project/python/<类名>.py`。
 该目录下的代码会自动打包到二进制中，成为`PainterEngine`模块的一部分。
 你可以参考
-[Component](https://github.com/blueloveTH/pype/blob/master/project/python/Component.py) 的实现
+[Node](https://github.com/blueloveTH/pype/blob/master/project/python/Node.py) 的实现
 
 + 若要编写C++类，将对应的头文件放置在`project/<类名>.h`。你可以参考
 [Vector2](https://github.com/blueloveTH/pype/blob/master/project/Vector2.h) 的实现
-
-+ 你可以同时使用C++和Python编写类，例如`GameObject`类就是使用这种方式实现的。
 
 ## API参考
 
@@ -81,15 +73,15 @@ s.texture = Resources.Load("assets/logo.png")
 - [x] `.angle`，获取本地角度，返回`float`
 - [x] `.scale`，获取本地缩放，返回`float`
 - [x] `.enabled`，获取是否激活
+- [x] `.visible`，获取是否可见
 - [x] `childCount(self)`，获取子物体的数量
 - [x] `__getitem__(self, index: int)`，按索引获取子物体
-- [x] `OnReady(self)`，当物体被创建时调用
-- [x] `OnUpdate(self)`，每帧调用一次
-- [x] `OnDestroy(self)`，当物体被销毁时调用
+- [x] [消息] `OnReady(self)`，当物体被创建时调用
+- [x] [消息] `OnUpdate(self)`，每帧调用一次
+- [x] [消息] `OnDestroy(self)`，当物体被销毁时调用
 ---
 
 - [x] `.children`，返回一个迭代器，可用于遍历此对象的子物体
-- [x] `.components`，此物体包含的组件，是一个`list`。你不应该直接修改它
 - [x] `.width`，获取宽度
 - [x] `.height`，获取高度
 
@@ -142,8 +134,8 @@ class Test(Node):
 - [x] [静态] `Load(path: str)`，加载一个资源并返回一个指针，此函数带有缓存，因此多次调用同一个资源不会重复加载
 
 ## 全局变量与函数
-- [x] `traverse()`，返回一个可以遍历对象树所有物体的迭代器，每个项`(GameObject, int)`表示物体及其深度（从0开始）
-- [x] `print_tree()`，用于调试，向控制台打印对象树结构，内部调用了`traverse`
-- [x] `destroy(go)`，销毁一个`GameObject`或`Component`
-- [x] `_root`，访问虚拟根`GameObject`，你可以使用`_root.children`来遍历世界中的顶层`GameObject`。你不应该删除或重置此变量，否则将会引发异常
-- [x] `_repl()`，打开一个简易REPL，执行任意代码，可以使用`exit()`退出
+- [x] `traverse()`，返回一个可以遍历对象树所有物体的迭代器，每个项`(Node, int)`表示物体及其深度（从0开始）
+- [x] `destroy(obj)`，销毁一个`Node`
+- [x] `_root`，访问虚拟根`GameObject`，你可以使用`_root.children`来遍历世界中的顶层`Node`。你不应该删除或重置此变量，否则将会引发异常
+- [x] `_print_tree()`，用于调试，向控制台打印对象树结构，内部调用了`traverse`
+- [x] `_repl()`，打开一个简易REPL，`eval`用户输入的代码，并输出结果。可以使用`exit()`退出

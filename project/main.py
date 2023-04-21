@@ -1,8 +1,9 @@
-from PainterEngine import _repl, _root
+from PainterEngine import _repl, _root, _print_tree
 from PainterEngine import *
 
 class LogoSprite(Sprite2D):
     def OnReady(self):
+        self.texture = Resources.Load("assets/logo.png")
         self.scale = 3
 
     def OnUpdate(self):
@@ -14,6 +15,5 @@ class LogoSprite(Sprite2D):
         if Input.GetKey('R'):
             _repl()
 
-s = LogoSprite()
-s.texture = Resources.Load("assets/logo.png")
+LogoSprite()
 

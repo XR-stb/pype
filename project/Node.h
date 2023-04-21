@@ -123,11 +123,22 @@ inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
     type->attr().set("enabled", vm->property(
         [](VM* vm, ArgsView args){
             PX_Object* obj = get_px_obj(args[0]);
-            return VAR(obj->Enabled);
+            return VAR(obj->Enabled != 0);
         },
         [](VM* vm, ArgsView args){
             PX_Object* obj = get_px_obj(args[0]);
-            obj->Enabled = CAST(bool, args[1]);
+            obj->Enabled = (int)CAST(bool, args[1]);
+            return vm->None;
+        }));
+
+    type->attr().set("visible", vm->property(
+        [](VM* vm, ArgsView args){
+            PX_Object* obj = get_px_obj(args[0]);
+            return VAR(obj->Visible != 0);
+        },
+        [](VM* vm, ArgsView args){
+            PX_Object* obj = get_px_obj(args[0]);
+            obj->Visible = (int)CAST(bool, args[1]);
             return vm->None;
         }));
 }

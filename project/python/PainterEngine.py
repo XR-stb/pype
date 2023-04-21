@@ -1,5 +1,3 @@
-from collections import deque
-
 def destroy(obj):
     assert isinstance(obj, Node)
     if obj.OnDestroy is not None:
@@ -16,7 +14,7 @@ def traverse(curr=None, depth=0):
     for child in curr.children:
         yield from traverse(child, depth+1)
 
-def print_tree():
+def _print_tree():
     for curr, depth in traverse():
         indent = '    ' * depth
         prefix = '|-- ' if depth > 0 else ''
@@ -28,5 +26,7 @@ def _repl():
         s = input()
         if s in ("exit()", ""):
             break
-        exec(s)
+        ret = eval(s)
+        if ret is not None:
+            print(ret)
 
