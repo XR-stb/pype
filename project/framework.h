@@ -8,7 +8,7 @@
 using namespace pkpy;
 
 struct GCProxy{
-    PY_CLASS(GCProxy, PainterEngine, _GCProxy)
+    PY_CLASS(GCProxy, pype, _GCProxy)
 
     static void _register(VM* vm, PyObject* mod, PyObject* type){
         vm->bind_static_method<-1>(type, "__new__", CPP_NOT_IMPLEMENTED());
@@ -29,7 +29,7 @@ inline void python_init(){
     vm->bind_builtin_func<0>("input", [](VM* vm, ArgsView args){
         return VAR(pkpy::getline());
     });
-    g_mod = vm->new_module("PainterEngine");
+    g_mod = vm->new_module("pype");
     Vector2::register_class(vm, g_mod);
     Input::register_class(vm, g_mod);
     GCProxy::register_class(vm, g_mod);

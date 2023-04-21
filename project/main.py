@@ -1,5 +1,5 @@
-from PainterEngine import _repl, _root, _print_tree
-from PainterEngine import *
+from pype import _repl, _root, _print_tree
+from pype import *
 
 class LogoSprite(Sprite2D):
     def on_ready(self):

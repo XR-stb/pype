@@ -35,7 +35,7 @@ bash build_dev.sh
 运行后，你将会看到不断旋转的Logo。
 
 ```python
-from PainterEngine import *
+from pype import *
 
 class LogoSprite(Sprite2D):
     def on_ready(self):
@@ -56,7 +56,7 @@ LogoSprite()
 你可以使用Python或者C++编写新的类实现，并提交Pull Request。
 
 + 若要编写纯Python类，将对应的Python源文件放置在`project/python/<类名>.py`。
-该目录下的代码会自动打包到二进制中，成为`PainterEngine`模块的一部分。
+该目录下的代码会自动打包到二进制中，成为`pype`模块的一部分。
 你可以参考
 [Node](https://github.com/blueloveTH/pype/blob/master/project/python/Node.py) 的实现
 

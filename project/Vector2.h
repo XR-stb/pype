@@ -5,7 +5,7 @@
 using namespace pkpy;
 
 struct Vector2 {
-    PY_CLASS(Vector2, PainterEngine, Vector2)
+    PY_CLASS(Vector2, pype, Vector2)
     float x;
     float y;
 

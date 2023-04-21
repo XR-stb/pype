@@ -6,7 +6,7 @@
 using namespace pkpy;
 
 struct Input {
-    PY_CLASS(Input, PainterEngine, Input)
+    PY_CLASS(Input, pype, Input)
 
     inline static std::set<px_int> PressedKeys;
 
