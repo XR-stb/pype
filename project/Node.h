@@ -6,11 +6,15 @@
 
 using namespace pkpy;
 
-inline PX_Object* get_px_obj(PyObject* obj){
+inline PX_Object* _get_px_obj(PyObject* obj){
     static const StrName m_px_obj = "_px_obj";
-    vm->isinstance(obj, g_tp_node);
     PyObject* px_obj = obj->attr(m_px_obj);
     return _CAST(PX_Object*, px_obj);
+}
+
+inline PX_Object* get_px_obj(PyObject* obj){
+    vm->isinstance(obj, g_tp_node);
+    return _get_px_obj(obj);
 }
 
 struct PX_ChildrenIter: BaseIter{

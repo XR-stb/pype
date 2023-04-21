@@ -12,10 +12,15 @@ inline void _register_button_type(VM* vm, PyObject* mod, PyObject* type){
             0,
             120,
             40,
-            "按钮",             // const px_char *Text
+            "Button",             // const px_char *Text
             NULL                // PX_FontModule *fontmodule
         );
         PX_ObjectSetUserPointer(obj, args[0]);
+
+        PX_ObjectRegisterEvent(obj, PX_OBJECT_EVENT_EXECUTE, [](PX_Object* obj, PX_Object_Event e, void* _){
+            PyObject* py_obj = (PyObject*)obj->User_ptr;
+            std::cout << 111 << std::endl;
+        }, PX_NULL);
         return VAR(obj);
     });
 

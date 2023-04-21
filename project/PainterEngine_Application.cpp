@@ -83,9 +83,12 @@ px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 {
 	PX_ApplicationEventDefault(&pApp->runtime, e);
 
-	if(e.Event == PX_OBJECT_EVENT_KEYDOWN){
-		px_uint code = PX_Object_Event_GetKeyDown(e);
-		Input::PressedKeys.insert(code);
+	switch(e.Event){
+		case PX_OBJECT_EVENT_KEYDOWN: {
+			px_uint code = PX_Object_Event_GetKeyDown(e);
+			Input::PressedKeys.insert(code);
+		} break;
 	}
+	PX_WorldPostEvent(&World, e);
 }
 
