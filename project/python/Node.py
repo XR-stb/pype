@@ -1,13 +1,13 @@
 # 所有物体的虚基类
 class Node:
+    OnReady = None              # 初始化函数
     OnUpdate = None             # 更新函数
     OnDestroy = None            # 销毁函数
 
     children = ...          # 获取子节点迭代器（C实现）
     parent = ...            # 获取/设置父节点（C实现）
     position = ...          # 获取/设置本地位置（C实现）
-
-    # _draw = ...             # 绘制函数
+    _draw = ...             # 绘制函数
 
     # 指示如何初始化对应的PX_Object（C实现）
     def _px_obj_init(self):
@@ -23,6 +23,9 @@ class Node:
 
         self._coroutines = []           # 当前的协程列表
         self._stopped_coroutines = []   # 即将在帧结束后停止的协程列表
+
+        if self.OnReady is not None:
+            self.OnReady()
 
     def _update(self):
         if self.OnUpdate is not None:
