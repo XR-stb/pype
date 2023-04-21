@@ -39,12 +39,13 @@ inline void python_init(){
         return VAR_T(VoidP, tex);
     });
 
-    vm->bind_func<2>(g_mod, "_PX_TextureRender", [](VM* vm, ArgsView args){
+    vm->bind_func<4>(g_mod, "_PX_TextureRenderEx", [](VM* vm, ArgsView args){
         px_surface* psurface = &App.runtime.RenderSurface;
         px_texture* tex = CAST(px_texture*, args[0]);
-        const Vector2& vec = CAST(Vector2&, args[1]);
-        // PX_TEXTURERENDER_BLEND* blend = CAST(VoidP&, args[5]);
-        PX_TextureRender(psurface, tex, vec.x, vec.y, PX_ALIGN_LEFTTOP, NULL);
+        Vector2& pos = CAST(Vector2&, args[1]);
+        float angle = CAST(float, args[2]);
+        float scale = CAST(float, args[3]);
+        PX_TextureRenderEx(psurface, tex, pos.x, pos.y, PX_ALIGN_LEFTTOP, NULL, scale, angle);
         return vm->None;
     });
 

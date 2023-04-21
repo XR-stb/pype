@@ -7,8 +7,10 @@ class SpriteRenderer(Component):
     def __call__(self):
         if self.sprite is None:
             return
-        # screen_pos = _PX_WorldObjectXYtoScreenXY(self.gameObject.position)
-        _PX_TextureRender(self.sprite, self.gameObject.position)
+        pos = self.gameObject.position
+        angle = self.gameObject.angle
+        scale = self.gameObject.scale
+        _PX_TextureRenderEx(self.sprite, pos, angle, scale)
 
     def Awake(self):
         if self.gameObject.renderer is not None:

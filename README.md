@@ -70,7 +70,11 @@ go.AddComponent(Test)
 - [x] `.name`，获取名字，返回`str`
 - [x] `.parent`，获取父物体，返回`GameObject`
 - [x] `.position`，获取世界坐标，返回`Vector2`
+- [x] `.angle`，获取世界角度，返回`float`
+- [x] `.scale`，获取世界缩放，返回`float`
 - [x] `.localPosition`，获取相对于父物体的坐标
+- [x] `.localAngle`，获取相对于父物体的角度
+- [x] `.localScale`，获取相对于父物体的缩放
 - [x] `.activeSelf`，获取是否激活，返回`bool`
 - [x] `GameObject(name=None)`，构造函数
 - [x] `SetActive(self, active: bool)`，设置是否激活

@@ -8,9 +8,11 @@ using namespace pkpy;
 struct GameObject {
     PY_CLASS(GameObject, PainterEngine, GameObject)
 
+    float angle;
+    float scale;
     PX_Object* obj;
 
-    GameObject(){
+    GameObject(): angle(0.0f), scale(1.0f) {
         PX_Object* px_root = nullptr;
         if(g_root != nullptr){
             px_root = CAST(GameObject&, g_root).obj;
@@ -149,6 +151,78 @@ inline void GameObject::_register(VM* vm, PyObject* mod, PyObject* type){
         PX_ObjectSetParent(self.obj, pParent);
         return vm->None;
     };
+
+    type->attr().set("localScale", vm->property(
+        [](VM* vm, ArgsView args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            return VAR(self.scale);
+        },
+        [](VM* vm, ArgsView args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            self.scale = vm->num_to_float(args[1]);
+            return vm->None;
+        }));
+
+    type->attr().set("scale", vm->property(
+        [](VM* vm, ArgsView args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            float scale = self.scale;
+            PX_Object* parent = self.obj->pParent;
+            while(parent != NULL){
+                PyObject* go = (PyObject*)parent->User_ptr;
+                scale *= CAST(GameObject&, go).scale;
+                parent = parent->pParent;
+            }
+            return VAR(scale);
+        },
+        [](VM* vm, ArgsView args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            float scale = vm->num_to_float(args[1]);
+            PX_Object* parent = self.obj->pParent;
+            while(parent != NULL){
+                PyObject* go = (PyObject*)parent->User_ptr;
+                scale /= CAST(GameObject&, go).scale;
+                parent = parent->pParent;
+            }
+            self.scale = scale;
+            return vm->None;
+        }));
+
+    type->attr().set("localAngle", vm->property(
+        [](VM* vm, ArgsView args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            return VAR(self.angle);
+        },
+        [](VM* vm, ArgsView args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            self.angle = vm->num_to_float(args[1]);
+            return vm->None;
+        }));
+
+    type->attr().set("angle", vm->property(
+        [](VM* vm, ArgsView args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            float angle = self.angle;
+            PX_Object* parent = self.obj->pParent;
+            while(parent != NULL){
+                PyObject* go = (PyObject*)parent->User_ptr;
+                angle += CAST(GameObject&, go).angle;
+                parent = parent->pParent;
+            }
+            return VAR(angle);
+        },
+        [](VM* vm, ArgsView args){
+            GameObject& self = CAST(GameObject&, args[0]);
+            float angle = vm->num_to_float(args[1]);
+            PX_Object* parent = self.obj->pParent;
+            while(parent != NULL){
+                PyObject* go = (PyObject*)parent->User_ptr;
+                angle -= CAST(GameObject&, go).angle;
+                parent = parent->pParent;
+            }
+            self.angle = angle;
+            return vm->None;
+        }));
 
     type->attr().set("parent", vm->property(
         [](VM* vm, ArgsView args){
