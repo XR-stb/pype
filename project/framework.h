@@ -32,6 +32,7 @@ inline void python_init(){
     g_mod = vm->new_module("PainterEngine");
     Vector2::register_class(vm, g_mod);
     Input::register_class(vm, g_mod);
+    GCProxy::register_class(vm, g_mod);
 
     /*************全局私有函数*************/
     vm->bind_func<1>(g_mod, "_PX_ObjectDelete", [](VM* vm, ArgsView args){
@@ -81,7 +82,7 @@ inline void python_init(){
     }
 
     // 初始化Node基类
-    g_tp_node = g_mod->attr("Node")->type;
+    g_tp_node = OBJ_GET(Type, g_mod->attr("Node"));
     _register_node_type(vm, g_mod, vm->_t(g_tp_node));
 
     // 创建根对象

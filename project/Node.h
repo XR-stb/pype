@@ -8,7 +8,7 @@ using namespace pkpy;
 
 inline PX_Object* get_px_obj(PyObject* obj){
     static const StrName m_px_obj = "_px_obj";
-    vm->check_type(obj, g_tp_node);
+    vm->isinstance(obj, g_tp_node);
     PyObject* px_obj = obj->attr(m_px_obj);
     return _CAST(PX_Object*, px_obj);
 }

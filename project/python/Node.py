@@ -26,7 +26,7 @@ class Node:
 
     def _update(self):
         if self.OnUpdate is not None:
-            self.OnUpdate(delta)
+            self.OnUpdate()
         # 更新协程
         for coroutine in self._coroutines:
             obj = next(coroutine)
