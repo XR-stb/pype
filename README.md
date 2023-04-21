@@ -5,6 +5,12 @@
 
 > 运行一个Python解释器需要消耗较多的资源，你的目标平台应具备`50MB`以上的内存和C++17支持。
 
+## Rethinking the Design
+
+It seems like PE's UI is built on top of inheritance, instead of composition.
+This is hard to do Unity-style binding.
+We may need to re-implement a Node-based architecture.
+
 ## 快速开始
 
 要进行构建，首先切换到仓库的根目录。
