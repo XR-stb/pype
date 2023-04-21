@@ -35,8 +35,12 @@ class Node:
             obj = next(coroutine)
             if obj is StopIteration:
                 self._stopped_coroutines.append(coroutine)
-        self._coroutines = [c for c in self._coroutines if c not in self._stopped_coroutines]
-        self._stopped_coroutines.clear()
+        if self._stopped_coroutines:
+            self._coroutines = [
+                c for c in self._coroutines
+                if c not in self._stopped_coroutines
+            ]
+            self._stopped_coroutines.clear()
 
     def __getitem__(self, index):
         i = 0
