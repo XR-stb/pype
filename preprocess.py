@@ -6,7 +6,7 @@ def generate_python_sources():
     for file in os.listdir("project/python"):
         assert file.endswith(".py")
         key = file.split(".")[0]
-        with open("project/python/" + file) as f:
+        with open("project/python/" + file, encoding='utf-8') as f:
             value = f.read()
             value = value.encode('utf-8').hex(':')
             value = '\\x' + value.replace(':', '\\x')
