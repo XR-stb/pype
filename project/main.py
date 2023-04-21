@@ -12,7 +12,7 @@ class LogoSprite(Sprite2D):
         # 每秒旋转半圈
         self.angle += 180 * Time.delta_time
 
-        if Input.GetKey('R'):
+        if Input.get_key('R'):
             _repl()
 
 LogoSprite()

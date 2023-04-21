@@ -13,7 +13,7 @@ struct Input {
     static void _register(VM* vm, PyObject* mod, PyObject* type){
         vm->bind_static_method<-1>(type, "__new__", CPP_NOT_IMPLEMENTED());
 
-        vm->bind_static_method<1>(type, "GetKey", [](VM* vm, ArgsView args){
+        vm->bind_static_method<1>(type, "get_key", [](VM* vm, ArgsView args){
             if(is_non_tagged_type(args[0], vm->tp_str)) {
                 const Str& key = CAST(Str&, args[0]);
                 // TODO: check for multi char key
