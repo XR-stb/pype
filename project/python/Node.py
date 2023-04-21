@@ -98,5 +98,5 @@ def WaitForEndOfFrame():
 def WaitForSeconds(seconds):
     total = 0
     while total < seconds:
-        total += Time.deltaTime
+        total += Time.delta_time
         yield None

@@ -46,9 +46,9 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed)
 {
 	if(!g_frame_counter.do_update(&elapsed)) return;
 
-	// 设置Time.deltaTime
+	// 设置Time.delta_time
 	static StrName m_Time = "Time";
-	static StrName m_deltaTime = "deltaTime";
+	static StrName m_deltaTime = "delta_time";
 	g_mod->attr(m_Time)->attr().set(m_deltaTime, VAR(elapsed / 1000.0));
 
 	try{

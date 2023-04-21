@@ -1,2 +1,2 @@
 class Time:
-    deltaTime = 0
+    delta_time = 0
