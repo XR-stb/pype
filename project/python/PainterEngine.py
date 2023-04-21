@@ -1,7 +1,7 @@
 from collections import deque
 
-def Destroy(obj):
-    assert type(obj) is Node
+def destroy(obj):
+    assert isinstance(obj, Node)
     if obj.OnDestroy is not None:
         obj.OnDestroy(obj)
     obj._px_obj = None
@@ -25,8 +25,8 @@ def print_tree():
 def _repl():
     while True:
         print(">>> ", end="")
-        _s = input()
-        if _s in ("exit()", ""):
+        s = input()
+        if s in ("exit()", ""):
             break
-        print(eval(_s))
+        exec(s)
 

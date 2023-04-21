@@ -109,12 +109,12 @@ inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
             return vm->PyIter(PX_ChildrenIter(vm, args[0]));
         }));
 
-    type->attr().set("Width", vm->property(
+    type->attr().set("width", vm->property(
         [](VM* vm, ArgsView args){
             PX_Object* obj = get_px_obj(args[0]);
             return VAR(obj->Width);
         }));
-    type->attr().set("Height", vm->property(
+    type->attr().set("height", vm->property(
         [](VM* vm, ArgsView args){
             PX_Object* obj = get_px_obj(args[0]);
             return VAR(obj->Height);

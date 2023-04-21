@@ -38,21 +38,23 @@ bash build_dev.sh
 ```
 
 构建完成后，切到可执行程序的目录，建立一个`main.py`文件并输入如下代码，
-运行后，你将会在控制台看到不断递增的数字。
+运行后，你将会看到不断旋转的Logo。
 
 ```python
 from PainterEngine import *
 
-class Test(PainterBehaviour):
-    def Awake(self):
-        self.counter = 1
+class LogoSprite(Sprite2D):
+    def OnReady(self):
+        self.scale = 3
 
-    def Update(self):
-        self.counter += 1
-        print(self.counter)
+    def OnUpdate(self):
+        # 每秒向右下移动10个单位
+        self.position += Vector2(10, 10) * Time.deltaTime
+        # 每秒旋转半圈
+        self.angle += 180 * Time.deltaTime
 
-go = GameObject()
-go.AddComponent(Test)
+s = LogoSprite()
+s.texture = Resources.Load("assets/logo.png")
 ```
 
 ## 贡献代码
@@ -81,12 +83,15 @@ go.AddComponent(Test)
 - [x] `.enabled`，获取是否激活
 - [x] `childCount(self)`，获取子物体的数量
 - [x] `__getitem__(self, index: int)`，按索引获取子物体
+- [x] `OnReady(self)`，当物体被创建时调用
+- [x] `OnUpdate(self)`，每帧调用一次
+- [x] `OnDestroy(self)`，当物体被销毁时调用
 ---
 
 - [x] `.children`，返回一个迭代器，可用于遍历此对象的子物体
 - [x] `.components`，此物体包含的组件，是一个`list`。你不应该直接修改它
-- [x] `.Width`，获取宽度
-- [x] `.Height`，获取高度
+- [x] `.width`，获取宽度
+- [x] `.height`，获取高度
 
 ---
 
@@ -111,6 +116,12 @@ class Test(Node):
         print("Hello World!")
 ```
 
+### `Sprite2D(Node)`
+
+- [x] `.texture`，设置纹理
+- [ ] `.color`，设置颜色
+
+
 ### `Input`
 
 - [x] [静态] `GetKey(code)`，检查当前帧某个按键是否被按下，返回`bool`
@@ -126,11 +137,6 @@ class Test(Node):
 
 - [x] [静态] `.deltaTime`，获取自上一帧经历的秒数，一个`float`值
 
-### `Sprite2D(Node)`
-
-- [x] `.sprite`，设置精灵
-- [ ] `.color`，设置颜色
-
 ### `Resources`
 
 - [x] [静态] `Load(path: str)`，加载一个资源并返回一个指针，此函数带有缓存，因此多次调用同一个资源不会重复加载
@@ -138,16 +144,6 @@ class Test(Node):
 ## 全局变量与函数
 - [x] `traverse()`，返回一个可以遍历对象树所有物体的迭代器，每个项`(GameObject, int)`表示物体及其深度（从0开始）
 - [x] `print_tree()`，用于调试，向控制台打印对象树结构，内部调用了`traverse`
-- [x] `Destroy(go)`，销毁一个`GameObject`或`Component`
+- [x] `destroy(go)`，销毁一个`GameObject`或`Component`
 - [x] `_root`，访问虚拟根`GameObject`，你可以使用`_root.children`来遍历世界中的顶层`GameObject`。你不应该删除或重置此变量，否则将会引发异常
-- [x] `_repl()`，打开一个简易REPL，请求用户输入并将结果`eval`后输出。可以使用`exit()`退出
-
-  ```python
-  def _repl():
-      while True:
-          print(">>> ", end="")
-          _s = input()
-          if _s == "exit()" or _s == "":
-              break
-          print(eval(_s))
-  ```
+- [x] `_repl()`，打开一个简易REPL，执行任意代码，可以使用`exit()`退出

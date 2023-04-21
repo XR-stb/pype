@@ -11,6 +11,9 @@ class LogoSprite(Sprite2D):
         # 每秒旋转半圈
         self.angle += 180 * Time.deltaTime
 
+        if Input.GetKey('R'):
+            _repl()
+
 s = LogoSprite()
 s.texture = Resources.Load("assets/logo.png")
 
