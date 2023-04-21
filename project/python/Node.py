@@ -1,8 +1,8 @@
 # 所有物体的虚基类
 class Node:
-    OnReady = None              # 初始化函数
-    OnUpdate = None             # 更新函数
-    OnDestroy = None            # 销毁函数
+    on_ready = None              # 初始化函数
+    on_update = None             # 更新函数
+    on_destroy = None            # 销毁函数
 
     children = ...          # 获取子节点迭代器（C实现）
     parent = ...            # 获取/设置父节点（C实现）
@@ -24,12 +24,12 @@ class Node:
         self._coroutines = []           # 当前的协程列表
         self._stopped_coroutines = []   # 即将在帧结束后停止的协程列表
 
-        if self.OnReady is not None:
-            self.OnReady()
+        if self.on_ready is not None:
+            self.on_ready()
 
     def _update(self):
-        if self.OnUpdate is not None:
-            self.OnUpdate()
+        if self.on_update is not None:
+            self.on_update()
         # 更新协程
         for coroutine in self._coroutines:
             obj = next(coroutine)
@@ -47,14 +47,14 @@ class Node:
         raise IndexError
 
     @property
-    def childCount(self):
+    def child_count(self):
         i = 0
         for child in self.children:
             i += 1
         return i
 
     @property
-    def globalPosition(self):
+    def global_position(self):
         pos = self.position
         obj = self.parent
         while obj is not None:
@@ -63,7 +63,7 @@ class Node:
         return pos
 
     @property
-    def globalAngle(self):
+    def global_angle(self):
         angle = self.angle
         obj = self.parent
         while obj is not None:
@@ -72,7 +72,7 @@ class Node:
         return angle
 
     @property
-    def globalScale(self):
+    def global_scale(self):
         scale = self.scale
         obj = self.parent
         while obj is not None:
@@ -80,14 +80,14 @@ class Node:
             obj = obj.parent
         return scale
 
-    def StartCoroutine(self, coroutine):
+    def start_coroutine(self, coroutine):
         self.coroutines.append(coroutine)
         return coroutine
 
-    def StopCoroutine(self, coroutine):
+    def stop_coroutine(self, coroutine):
         self._stopped_coroutines.append(coroutine)
 
-    def StopAllCoroutines(self):
+    def stop_all_coroutines(self):
         self._stopped_coroutines = self.coroutines.copy()
 
 

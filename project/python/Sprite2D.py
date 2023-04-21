@@ -8,7 +8,7 @@ class Sprite2D(Node):
             return
         _PX_TextureRenderEx(
             self.texture,
-            self.globalPosition,
-            self.globalAngle,
-            self.globalScale
+            self.global_position,
+            self.global_angle,
+            self.global_scale
         )

@@ -38,11 +38,11 @@ bash build_dev.sh
 from PainterEngine import *
 
 class LogoSprite(Sprite2D):
-    def OnReady(self):
+    def on_ready(self):
         self.texture = Resources.Load("assets/logo.png")
         self.scale = 3  # 放大3倍
 
-    def OnUpdate(self):
+    def on_update(self):
         # 每秒向右下移动10个单位
         self.position += Vector2(10, 10) * Time.deltaTime
         # 每秒旋转半圈
@@ -74,11 +74,11 @@ LogoSprite()
 - [x] `.scale`，获取本地缩放，返回`float`
 - [x] `.enabled`，获取是否激活
 - [x] `.visible`，获取是否可见
-- [x] `childCount(self)`，获取子物体的数量
+- [x] `child_count(self)`，获取子物体的数量
 - [x] `__getitem__(self, index: int)`，按索引获取子物体
-- [x] [消息] `OnReady(self)`，当物体被创建时调用
-- [x] [消息] `OnUpdate(self)`，每帧调用一次
-- [x] [消息] `OnDestroy(self)`，当物体被销毁时调用
+- [x] [消息] `on_ready(self)`，当物体被创建时调用
+- [x] [消息] `on_update(self)`，每帧调用一次
+- [x] [消息] `on_destroy(self)`，当物体被销毁时调用
 ---
 
 - [x] `.children`，返回一个迭代器，可用于遍历此对象的子物体
@@ -87,9 +87,9 @@ LogoSprite()
 
 ---
 
-- [x] `StartCoroutine(self, obj)`，启动一个协程
-- [x] `StopCoroutine(self, obj)`，停止一个协程
-- [x] `StopAllCoroutines(self)`，停止所有协程
+- [x] `start_coroutine(self, obj)`，启动一个协程
+- [x] `stop_coroutine(self, obj)`，停止一个协程
+- [x] `stop_all_coroutines(self)`，停止所有协程
 
 协程通常配合如下的函数来使用：
 
@@ -100,8 +100,8 @@ LogoSprite()
 
 ```python
 class Test(Node):
-    def OnReady(self):
-        self.StartCoroutine(self.coroutine())
+    def on_ready(self):
+        self.start_coroutine(self.coroutine())
 
     def coroutine(self):
         yield from WaitForSeconds(3.0)
@@ -120,7 +120,7 @@ class Test(Node):
 
     ```python
     class Test(Node):
-        def OnUpdate(self):
+        def on_update(self):
             if Input.GetKey("A"):
                 print("A已经被按下啦！")
     ```

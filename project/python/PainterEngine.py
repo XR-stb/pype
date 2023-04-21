@@ -1,7 +1,7 @@
 def destroy(obj):
     assert isinstance(obj, Node)
-    if obj.OnDestroy is not None:
-        obj.OnDestroy(obj)
+    if obj.on_destroy is not None:
+        obj.on_destroy(obj)
     obj._px_obj = None
     _PX_ObjectDelete(obj)
 
