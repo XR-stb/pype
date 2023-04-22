@@ -79,9 +79,9 @@ LogoSprite()
 - [x] `.visible`，获取是否可见
 - [x] [只读] `child_count(self)`，获取子物体的数量
 - [x] `__getitem__(self, index: int)`，按索引获取子物体
-- [x] [消息] `on_ready(self)`，当物体被创建时调用
-- [x] [消息] `on_update(self)`，每帧调用一次
-- [x] [消息] `on_destroy(self)`，当物体被销毁时调用
+- [x] [虚函数] `on_ready(self)`，当物体被创建时调用
+- [x] [虚函数] `on_update(self)`，每帧调用一次
+- [x] [虚函数] `on_destroy(self)`，当物体被销毁时调用
 ---
 
 - [x] [只读] `.children`，返回一个迭代器，可用于遍历此对象的子物体
@@ -119,6 +119,7 @@ class Test(Node):
 ### `Button(Node)`
 
 - [x] `.text`，设置文本
+- [x] [信号] `.clicked`，当按钮被点击时触发
 
 ### `Input`
 

@@ -24,3 +24,4 @@ for i in range(5):
     b.width = 200
     b.height = 50
     b.position = Vector2(100, 100 + i * 60)
+    b.clicked.connect(lambda: print("Hello!"))

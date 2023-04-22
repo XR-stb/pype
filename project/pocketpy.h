@@ -28,7 +28,6 @@
 #include <string_view>
 #include <iomanip>
 #include <memory>
-#include <functional>
 #include <iostream>
 #include <map>
 #include <set>
@@ -1953,18 +1952,14 @@ struct Function;
 class VM;
 
 typedef PyObject* (*NativeFuncC)(VM*, ArgsView);
-typedef std::function<PyObject*(VM*, ArgsView)> NativeFuncCpp;
-
 typedef shared_ptr<CodeObject> CodeObject_;
 
 struct NativeFunc {
     NativeFuncC f;
-    NativeFuncCpp f_cpp;
     int argc;       // DONOT include self
     bool method;
     
     NativeFunc(NativeFuncC f, int argc, bool method) : f(f), argc(argc), method(method) {}
-    NativeFunc(NativeFuncCpp f, int argc, bool method) : f(nullptr), f_cpp(f), argc(argc), method(method) {}
     PyObject* operator()(VM* vm, ArgsView args) const;
 };
 
@@ -1991,9 +1986,9 @@ struct Function{
 };
 
 struct BoundMethod {
-    PyObject* obj;
-    PyObject* method;
-    BoundMethod(PyObject* obj, PyObject* method) : obj(obj), method(method) {}
+    PyObject* self;
+    PyObject* func;
+    BoundMethod(PyObject* self, PyObject* func) : self(self), func(func) {}
 };
 
 struct Range {
@@ -2799,8 +2794,8 @@ template<> inline void gc_mark<NameDict>(NameDict& t){
 }
 
 template<> inline void gc_mark<BoundMethod>(BoundMethod& t){
-    OBJ_MARK(t.obj);
-    OBJ_MARK(t.method);
+    OBJ_MARK(t.self);
+    OBJ_MARK(t.func);
 }
 
 template<> inline void gc_mark<Function>(Function& t){
@@ -3191,10 +3186,6 @@ public:
     void bind_method(PyObject*, Str, NativeFuncC);
     template<int ARGC>
     void bind_func(PyObject*, Str, NativeFuncC);
-    template<int ARGC>
-    void bind_cpp_method(PyObject*, Str, NativeFuncCpp);
-    template<int ARGC>
-    void bind_cpp_func(PyObject*, Str, NativeFuncCpp);
     void _error(Exception);
     PyObject* _run_top_frame();
     void post_init();
@@ -3205,8 +3196,7 @@ inline PyObject* NativeFunc::operator()(VM* vm, ArgsView args) const{
     if(argc != -1 && args_size != argc) {
         vm->TypeError(fmt("expected ", argc, " arguments, but got ", args_size));
     }
-    if(f != nullptr) return f(vm, args);
-    return f_cpp(vm, args);
+    return f(vm, args);
 }
 
 inline void CodeObject::optimize(VM* vm){
@@ -3601,9 +3591,9 @@ inline PyObject* VM::vectorcall(int ARGC, int KWARGC, bool op_call){
     if(is_non_tagged_type(callable, tp_bound_method)){
         if(method_call) FATAL_ERROR();
         auto& bm = CAST(BoundMethod&, callable);
-        callable = bm.method;      // get unbound method
-        p1[-(ARGC + 2)] = bm.method;
-        p1[-(ARGC + 1)] = bm.obj;
+        callable = bm.func;      // get unbound method
+        p1[-(ARGC + 2)] = bm.func;
+        p1[-(ARGC + 1)] = bm.self;
         method_call = true;
         // [unbound, self, args..., kwargs...]
     }
@@ -3858,18 +3848,7 @@ void VM::bind_method(PyObject* obj, Str name, NativeFuncC fn) {
 }
 
 template<int ARGC>
-void VM::bind_cpp_method(PyObject* obj, Str name, NativeFuncCpp fn) {
-    check_type(obj, tp_type);
-    obj->attr().set(name, VAR(NativeFunc(fn, ARGC, true)));
-}
-
-template<int ARGC>
 void VM::bind_func(PyObject* obj, Str name, NativeFuncC fn) {
-    obj->attr().set(name, VAR(NativeFunc(fn, ARGC, false)));
-}
-
-template<int ARGC>
-void VM::bind_cpp_func(PyObject* obj, Str name, NativeFuncCpp fn) {
     obj->attr().set(name, VAR(NativeFunc(fn, ARGC, false)));
 }
 
@@ -6548,72 +6527,72 @@ void gc_mark(T& t) {
 
 namespace pkpy {
 
-template<typename Ret, typename... Params>
-struct NativeProxyFunc {
-    static constexpr int N = sizeof...(Params);
-    using _Fp = Ret(*)(Params...);
-    _Fp func;
-    NativeProxyFunc(_Fp func) : func(func) {}
+// template<typename Ret, typename... Params>
+// struct NativeProxyFunc {
+//     static constexpr int N = sizeof...(Params);
+//     using _Fp = Ret(*)(Params...);
+//     _Fp func;
+//     NativeProxyFunc(_Fp func) : func(func) {}
 
-    PyObject* operator()(VM* vm, ArgsView args) {
-        if (args.size() != N) {
-            vm->TypeError("expected " + std::to_string(N) + " arguments, but got " + std::to_string(args.size()));
-        }
-        return call<Ret>(vm, args, std::make_index_sequence<N>());
-    }
+//     PyObject* operator()(VM* vm, ArgsView args) {
+//         if (args.size() != N) {
+//             vm->TypeError("expected " + std::to_string(N) + " arguments, but got " + std::to_string(args.size()));
+//         }
+//         return call<Ret>(vm, args, std::make_index_sequence<N>());
+//     }
 
-    template<typename __Ret, size_t... Is>
-    std::enable_if_t<std::is_void_v<__Ret>, PyObject*> call(VM* vm, ArgsView args, std::index_sequence<Is...>) {
-        func(py_cast<Params>(vm, args[Is])...);
-        return vm->None;
-    }
+//     template<typename __Ret, size_t... Is>
+//     std::enable_if_t<std::is_void_v<__Ret>, PyObject*> call(VM* vm, ArgsView args, std::index_sequence<Is...>) {
+//         func(py_cast<Params>(vm, args[Is])...);
+//         return vm->None;
+//     }
 
-    template<typename __Ret, size_t... Is>
-    std::enable_if_t<!std::is_void_v<__Ret>, PyObject*> call(VM* vm, ArgsView args, std::index_sequence<Is...>) {
-        __Ret ret = func(py_cast<Params>(vm, args[Is])...);
-        return VAR(std::move(ret));
-    }
-};
+//     template<typename __Ret, size_t... Is>
+//     std::enable_if_t<!std::is_void_v<__Ret>, PyObject*> call(VM* vm, ArgsView args, std::index_sequence<Is...>) {
+//         __Ret ret = func(py_cast<Params>(vm, args[Is])...);
+//         return VAR(std::move(ret));
+//     }
+// };
 
-template<typename Ret, typename T, typename... Params>
-struct NativeProxyMethod {
-    static constexpr int N = sizeof...(Params);
-    using _Fp = Ret(T::*)(Params...);
-    _Fp func;
-    NativeProxyMethod(_Fp func) : func(func) {}
+// template<typename Ret, typename T, typename... Params>
+// struct NativeProxyMethod {
+//     static constexpr int N = sizeof...(Params);
+//     using _Fp = Ret(T::*)(Params...);
+//     _Fp func;
+//     NativeProxyMethod(_Fp func) : func(func) {}
 
-    PyObject* operator()(VM* vm, ArgsView args) {
-        int actual_size = args.size() - 1;
-        if (actual_size != N) {
-            vm->TypeError("expected " + std::to_string(N) + " arguments, but got " + std::to_string(actual_size));
-        }
-        return call<Ret>(vm, args, std::make_index_sequence<N>());
-    }
+//     PyObject* operator()(VM* vm, ArgsView args) {
+//         int actual_size = args.size() - 1;
+//         if (actual_size != N) {
+//             vm->TypeError("expected " + std::to_string(N) + " arguments, but got " + std::to_string(actual_size));
+//         }
+//         return call<Ret>(vm, args, std::make_index_sequence<N>());
+//     }
 
-    template<typename __Ret, size_t... Is>
-    std::enable_if_t<std::is_void_v<__Ret>, PyObject*> call(VM* vm, ArgsView args, std::index_sequence<Is...>) {
-        T& self = py_cast<T&>(vm, args[0]);
-        (self.*func)(py_cast<Params>(vm, args[Is+1])...);
-        return vm->None;
-    }
+//     template<typename __Ret, size_t... Is>
+//     std::enable_if_t<std::is_void_v<__Ret>, PyObject*> call(VM* vm, ArgsView args, std::index_sequence<Is...>) {
+//         T& self = py_cast<T&>(vm, args[0]);
+//         (self.*func)(py_cast<Params>(vm, args[Is+1])...);
+//         return vm->None;
+//     }
 
-    template<typename __Ret, size_t... Is>
-    std::enable_if_t<!std::is_void_v<__Ret>, PyObject*> call(VM* vm, ArgsView args, std::index_sequence<Is...>) {
-        T& self = py_cast<T&>(vm, args[0]);
-        __Ret ret = (self.*func)(py_cast<Params>(vm, args[Is+1])...);
-        return VAR(std::move(ret));
-    }
-};
+//     template<typename __Ret, size_t... Is>
+//     std::enable_if_t<!std::is_void_v<__Ret>, PyObject*> call(VM* vm, ArgsView args, std::index_sequence<Is...>) {
+//         T& self = py_cast<T&>(vm, args[0]);
+//         __Ret ret = (self.*func)(py_cast<Params>(vm, args[Is+1])...);
+//         return VAR(std::move(ret));
+//     }
+// };
 
-template<typename Ret, typename... Params>
-auto native_proxy_callable(Ret(*func)(Params...)) {
-    return NativeProxyFunc<Ret, Params...>(func);
-}
+// template<typename Ret, typename... Params>
+// auto native_proxy_callable(Ret(*func)(Params...)) {
+//     return NativeProxyFunc<Ret, Params...>(func);
+// }
 
-template<typename Ret, typename T, typename... Params>
-auto native_proxy_callable(Ret(T::*func)(Params...)) {
-    return NativeProxyMethod<Ret, T, Params...>(func);
-}
+// template<typename Ret, typename T, typename... Params>
+// auto native_proxy_callable(Ret(T::*func)(Params...)) {
+//     return NativeProxyMethod<Ret, T, Params...>(func);
+// }
 
 struct VoidP{
     PY_CLASS(VoidP, c, void_p)
@@ -6840,7 +6819,7 @@ inline Str _read_file_cwd(const Str& name, bool* ok){
 
 #endif
 
-// generated on 2023-04-20 12:29:47
+// generated on 2023-04-22 10:40:40
 #include <map>
 #include <string>
 
@@ -7483,7 +7462,7 @@ inline void add_module_dis(VM* vm){
     PyObject* mod = vm->new_module("dis");
     vm->bind_func<1>(mod, "dis", [](VM* vm, ArgsView args) {
         PyObject* f = args[0];
-        if(is_type(f, vm->tp_bound_method)) f = CAST(BoundMethod, args[0]).method;
+        if(is_type(f, vm->tp_bound_method)) f = CAST(BoundMethod, args[0]).func;
         CodeObject_ code = CAST(Function&, f).decl->code;
         (*vm->_stdout) << vm->disassemble(code);
         return vm->None;
@@ -7575,31 +7554,36 @@ struct Random{
         gen.seed(std::chrono::high_resolution_clock::now().time_since_epoch().count());
     }
 
-    i64 randint(i64 a, i64 b) {
-        std::uniform_int_distribution<i64> dis(a, b);
-        return dis(gen);
-    }
-
-    f64 random() {
-        std::uniform_real_distribution<f64> dis(0.0, 1.0);
-        return dis(gen);
-    }
-
-    f64 uniform(f64 a, f64 b) {
-        std::uniform_real_distribution<f64> dis(a, b);
-        return dis(gen);
-    }
-
-    void seed(i64 seed) {
-        gen.seed(seed);
-    }
-
     static void _register(VM* vm, PyObject* mod, PyObject* type){
         vm->bind_static_method<0>(type, "__new__", CPP_LAMBDA(VAR_T(Random)));
-        vm->bind_cpp_method<1>(type, "seed", native_proxy_callable(&Random::seed));
-        vm->bind_cpp_method<2>(type, "randint", native_proxy_callable(&Random::randint));
-        vm->bind_cpp_method<0>(type, "random", native_proxy_callable(&Random::random));
-        vm->bind_cpp_method<2>(type, "uniform", native_proxy_callable(&Random::uniform));
+
+        vm->bind_method<1>(type, "seed", [](VM* vm, ArgsView args) {
+            Random& self = CAST(Random&, args[0]);
+            self.gen.seed(CAST(i64, args[1]));
+            return vm->None;
+        });
+
+        vm->bind_method<2>(type, "randint", [](VM* vm, ArgsView args) {
+            Random& self = CAST(Random&, args[0]);
+            i64 a = CAST(i64, args[1]);
+            i64 b = CAST(i64, args[2]);
+            std::uniform_int_distribution<i64> dis(a, b);
+            return VAR(dis(self.gen));
+        });
+
+        vm->bind_method<0>(type, "random", [](VM* vm, ArgsView args) {
+            Random& self = CAST(Random&, args[0]);
+            std::uniform_real_distribution<f64> dis(0.0, 1.0);
+            return VAR(dis(self.gen));
+        });
+
+        vm->bind_method<2>(type, "uniform", [](VM* vm, ArgsView args) {
+            Random& self = CAST(Random&, args[0]);
+            f64 a = CAST(f64, args[1]);
+            f64 b = CAST(f64, args[2]);
+            std::uniform_real_distribution<f64> dis(a, b);
+            return VAR(dis(self.gen));
+        });
     }
 };
 
@@ -7650,6 +7634,13 @@ inline void VM::post_init(){
     _t(tp_type)->attr().set(__name__, property([](VM* vm, ArgsView args){
         const PyTypeInfo& info = vm->_all_types[OBJ_GET(Type, args[0])];
         return VAR(info.name);
+    }));
+
+    _t(tp_bound_method)->attr().set("__self__", property([](VM* vm, ArgsView args){
+        return CAST(BoundMethod&, args[0]).self;
+    }));
+    _t(tp_bound_method)->attr().set("__func__", property([](VM* vm, ArgsView args){
+        return CAST(BoundMethod&, args[0]).func;
     }));
 #endif
 }
@@ -7780,64 +7771,6 @@ extern "C" {
         ss << ", " << "\"stderr\": " << _stderr.escape(false) << '}';
         s_out->str(""); s_err->str("");
         return strdup(ss.str().c_str());
-    }
-
-    typedef pkpy::i64 (*f_int_t)(char*);
-    typedef pkpy::f64 (*f_float_t)(char*);
-    typedef bool (*f_bool_t)(char*);
-    typedef char* (*f_str_t)(char*);
-    typedef void (*f_None_t)(char*);
-
-    static f_int_t f_int = nullptr;
-    static f_float_t f_float = nullptr;
-    static f_bool_t f_bool = nullptr;
-    static f_str_t f_str = nullptr;
-    static f_None_t f_None = nullptr;
-
-    __EXPORT
-    /// Setup the callback functions.
-    void pkpy_setup_callbacks(f_int_t _f_int, f_float_t _f_float, f_bool_t _f_bool, f_str_t _f_str, f_None_t _f_None){
-        f_int = _f_int;
-        f_float = _f_float;
-        f_bool = _f_bool;
-        f_str = _f_str;
-        f_None = _f_None;
-    }
-
-    __EXPORT
-    /// Bind a function to a virtual machine.
-    char* pkpy_vm_bind(pkpy::VM* vm, const char* mod, const char* name, int ret_code){
-        if(!f_int || !f_float || !f_bool || !f_str || !f_None) return nullptr;
-        static int kGlobalBindId = 0;
-        for(int i=0; mod[i]; i++) if(mod[i] == ' ') return nullptr;
-        for(int i=0; name[i]; i++) if(name[i] == ' ') return nullptr;
-        std::string f_header = std::string(mod) + '.' + name + '#' + std::to_string(kGlobalBindId++);
-        pkpy::PyObject* obj = vm->_modules.contains(mod) ? vm->_modules[mod] : vm->new_module(mod);
-        vm->bind_cpp_func<-1>(obj, name, [ret_code, f_header](pkpy::VM* vm, pkpy::ArgsView args){
-            std::stringstream ss;
-            ss << f_header;
-            for(int i=0; i<args.size(); i++){
-                ss << ' ';
-                pkpy::PyObject* x = vm->call_method(args[i], pkpy::__json__);
-                ss << pkpy::CAST(pkpy::Str&, x);
-            }
-            char* packet = strdup(ss.str().c_str());
-            switch(ret_code){
-                case 'i': return VAR(f_int(packet));
-                case 'f': return VAR(f_float(packet));
-                case 'b': return VAR(f_bool(packet));
-                case 's': {
-                    char* p = f_str(packet);
-                    if(p == nullptr) return vm->None;
-                    return VAR(p); // no need to free(p)
-                }
-                case 'N': f_None(packet); return vm->None;
-            }
-            free(packet);
-            FATAL_ERROR();
-            return vm->None;
-        });
-        return strdup(f_header.c_str());
     }
 }
 

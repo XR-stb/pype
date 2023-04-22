@@ -20,7 +20,7 @@ inline void _register_button_type(VM* vm, PyObject* mod, PyObject* type){
         PX_ObjectRegisterEvent(obj, PX_OBJECT_EVENT_EXECUTE, [](PX_Object* obj, PX_Object_Event e, void* _){
             PyObject* py_obj = (PyObject*)obj->User_ptr;
             static const StrName m_on_click = "on_click";
-            vm->call_method(py_obj, m_on_click);
+            ::vm->call_method(py_obj, m_on_click);
         }, PX_NULL);
         return VAR(obj);
     });
