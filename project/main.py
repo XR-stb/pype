@@ -20,8 +20,8 @@ class LogoSprite(Sprite2D):
 
 for i in range(5):
     b = Button()
-    b.text = "Hello! (" + str(i) + ")"
+    b.text = f"Hello! {i}"
     b.width = 200
     b.height = 50
-    b.position = Vector2(100, 100 + i * 60)
+    b.position = Vector2(100, 100+i*60)
     b.clicked.connect(lambda: print("Hello!"))
