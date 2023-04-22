@@ -54,7 +54,7 @@
 #if (defined(__ANDROID__) && __ANDROID_API__ <= 22) || defined(__EMSCRIPTEN__)
 #define PK_ENABLE_FILEIO 			0
 #else
-#define PK_ENABLE_FILEIO 			0	// TODO: refactor this
+#define PK_ENABLE_FILEIO 			1
 #endif
 
 // This is the maximum number of arguments in a function declaration
@@ -813,11 +813,10 @@ struct Str{
                 case '\r': ss << "\\r"; break;
                 case '\t': ss << "\\t"; break;
                 default:
-                    if ('\x00' <= c && c <= '\x1f') {
-                        ss << "\\u"
-                        << std::hex << std::setw(4) << std::setfill('0') << static_cast<int>(c);
-                    } else {
+                    if (c >= 32 && c <= 126) {
                         ss << c;
+                    } else {
+                        ss << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(uint8_t)c;
                     }
             }
         }
@@ -1997,6 +1996,16 @@ struct Range {
     i64 step = 1;
 };
 
+struct Bytes{
+    std::string _data;
+
+    int size() const noexcept { return _data.size(); }
+    int operator[](int i) const noexcept { return (int)(uint8_t)_data[i]; }
+
+    bool operator==(const Bytes& rhs) const noexcept { return _data == rhs._data; }
+    bool operator!=(const Bytes& rhs) const noexcept { return _data != rhs._data; }
+};
+
 using Super = std::pair<PyObject*, Type>;
 
 // TODO: re-examine the design of Slice
@@ -2291,8 +2300,8 @@ OPCODE(BEGIN_CLASS)
 OPCODE(END_CLASS)
 OPCODE(STORE_CLASS_ATTR)
 /**************************/
-// OPCODE(WITH_ENTER)
-// OPCODE(WITH_EXIT)
+OPCODE(WITH_ENTER)
+OPCODE(WITH_EXIT)
 /**************************/
 OPCODE(ASSERT)
 OPCODE(EXCEPTION_MATCH)
@@ -2409,8 +2418,8 @@ OPCODE(BEGIN_CLASS)
 OPCODE(END_CLASS)
 OPCODE(STORE_CLASS_ATTR)
 /**************************/
-// OPCODE(WITH_ENTER)
-// OPCODE(WITH_EXIT)
+OPCODE(WITH_ENTER)
+OPCODE(WITH_EXIT)
 /**************************/
 OPCODE(ASSERT)
 OPCODE(EXCEPTION_MATCH)
@@ -2826,7 +2835,7 @@ namespace pkpy{
 #define POPX()            (s_data.popx())
 #define STACK_VIEW(n)     (s_data.view(n))
 
-Str _read_file_cwd(const Str& name, bool* ok);
+Bytes _read_file_cwd(const Str& name, bool* ok);
 
 #define DEF_NATIVE_2(ctype, ptype)                                      \
     template<> inline ctype py_cast<ctype>(VM* vm, PyObject* obj) {     \
@@ -2904,7 +2913,7 @@ public:
     Type tp_list, tp_tuple;
     Type tp_function, tp_native_func, tp_iterator, tp_bound_method;
     Type tp_slice, tp_range, tp_module;
-    Type tp_super, tp_exception;
+    Type tp_super, tp_exception, tp_bytes;
 
     VM(bool use_stdio) : heap(this){
         this->vm = this;
@@ -3214,6 +3223,7 @@ DEF_NATIVE_2(BoundMethod, tp_bound_method)
 DEF_NATIVE_2(Range, tp_range)
 DEF_NATIVE_2(Slice, tp_slice)
 DEF_NATIVE_2(Exception, tp_exception)
+DEF_NATIVE_2(Bytes, tp_bytes)
 
 #define PY_CAST_INT(T)                                  \
 template<> inline T py_cast<T>(VM* vm, PyObject* obj){  \
@@ -3539,6 +3549,7 @@ inline void VM::init_builtin_types(){
     tp_bound_method = _new_type_object("bound_method");
     tp_super = _new_type_object("super");
     tp_exception = _new_type_object("Exception");
+    tp_bytes = _new_type_object("bytes");
 
     this->None = heap._new<Dummy>(_new_type_object("NoneType"), {});
     this->Ellipsis = heap._new<Dummy>(_new_type_object("ellipsis"), {});
@@ -3559,6 +3570,7 @@ inline void VM::init_builtin_types(){
     builtins->attr().set("list", _t(tp_list));
     builtins->attr().set("tuple", _t(tp_tuple));
     builtins->attr().set("range", _t(tp_range));
+    builtins->attr().set("bytes", _t(tp_bytes));
     builtins->attr().set("StopIteration", StopIteration);
 
     post_init();
@@ -4016,8 +4028,8 @@ OPCODE(BEGIN_CLASS)
 OPCODE(END_CLASS)
 OPCODE(STORE_CLASS_ATTR)
 /**************************/
-// OPCODE(WITH_ENTER)
-// OPCODE(WITH_EXIT)
+OPCODE(WITH_ENTER)
+OPCODE(WITH_EXIT)
 /**************************/
 OPCODE(ASSERT)
 OPCODE(EXCEPTION_MATCH)
@@ -4427,7 +4439,8 @@ __NEXT_STEP:;
             auto it = _lazy_modules.find(name);
             if(it == _lazy_modules.end()){
                 bool ok = false;
-                source = _read_file_cwd(fmt(name, ".py"), &ok);
+                Bytes b = _read_file_cwd(fmt(name, ".py"), &ok);
+                source = Str(b._data);
                 if(!ok) _error("ImportError", fmt("module ", name.escape(), " not found"));
             }else{
                 source = it->second;
@@ -4506,8 +4519,12 @@ __NEXT_STEP:;
     } DISPATCH();
     /*****************************************/
     // // TODO: using "goto" inside with block may cause __exit__ not called
-    // TARGET(WITH_ENTER) call(frame->pop_value(this), __enter__, no_arg()); DISPATCH();
-    // TARGET(WITH_EXIT) call(frame->pop_value(this), __exit__, no_arg()); DISPATCH();
+    TARGET(WITH_ENTER)
+        call_method(POPX(), __enter__);
+        DISPATCH();
+    TARGET(WITH_EXIT)
+        call_method(POPX(), __exit__);
+        DISPATCH();
     /*****************************************/
     TARGET(ASSERT) {
         PyObject* obj = TOP();
@@ -6080,17 +6097,16 @@ __SUBSCR_END:
                 consume_end_stmt();
             } break;
             case TK("with"): {
-                // TODO: reimpl this
                 EXPR(false);
-                ctx()->emit(OP_POP_TOP, BC_NOARG, prev().line);
                 consume(TK("as"));
                 consume(TK("@id"));
-                // emit(OP_STORE_NAME, index);
-                // emit(OP_LOAD_NAME_REF, index);
-                // emit(OP_WITH_ENTER);
+                StrName name(prev().str());
+                ctx()->emit(OP_STORE_NAME, name.index, prev().line);
+                ctx()->emit(OP_LOAD_NAME, name.index, prev().line);
+                ctx()->emit(OP_WITH_ENTER, BC_NOARG, prev().line);
                 compile_block_body();
-                // emit(OP_LOAD_NAME_REF, index);
-                // emit(OP_WITH_EXIT);
+                ctx()->emit(OP_LOAD_NAME, name.index, prev().line);
+                ctx()->emit(OP_WITH_EXIT, BC_NOARG, prev().line);
             } break;
             /*************************************************/
             // TODO: refactor goto/label use special $ syntax
@@ -6660,18 +6676,18 @@ T py_pointer_cast(VM* vm, PyObject* var){
 
 namespace pkpy{
 
-inline Str _read_file_cwd(const Str& name, bool* ok){
-    std::filesystem::path path(name.c_str());
+inline Bytes _read_file_cwd(const Str& name, bool* ok){
+    std::filesystem::path path(name.sv());
     bool exists = std::filesystem::exists(path);
     if(!exists){
         *ok = false;
-        return Str();
+        return Bytes();
     }
     std::ifstream ifs(path);
     std::string buffer((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
     ifs.close();
     *ok = true;
-    return Str(std::move(buffer));
+    return Bytes({std::move(buffer)});
 }
 
 struct FileIO {
@@ -6681,13 +6697,17 @@ struct FileIO {
     Str mode;
     std::fstream _fs;
 
+    bool is_text() const { return mode != "rb" && mode != "wb" && mode != "ab"; }
+
     FileIO(VM* vm, Str file, Str mode): file(file), mode(mode) {
-        if(mode == "rt" || mode == "r"){
-            _fs.open(file, std::ios::in);
-        }else if(mode == "wt" || mode == "w"){
-            _fs.open(file, std::ios::out);
-        }else if(mode == "at" || mode == "a"){
-            _fs.open(file, std::ios::app);
+        if(mode == "rt" || mode == "r" || mode == "rb"){
+            _fs.open(file.sv(), std::ios::in);
+        }else if(mode == "wt" || mode == "w" || mode == "wb"){
+            _fs.open(file.sv(), std::ios::out);
+        }else if(mode == "at" || mode == "a" || mode == "ab"){
+            _fs.open(file.sv(), std::ios::app);
+        }else{
+            vm->ValueError("invalid mode");
         }
         if(!_fs.is_open()) vm->IOError(strerror(errno));
     }
@@ -6701,14 +6721,19 @@ struct FileIO {
 
         vm->bind_method<0>(type, "read", [](VM* vm, ArgsView args){
             FileIO& io = CAST(FileIO&, args[0]);
-            std::string buffer;
-            io._fs >> buffer;
+            Bytes buffer;
+            io._fs >> buffer._data;
+            if(io.is_text()) return VAR(Str(buffer._data));
             return VAR(buffer);
         });
 
         vm->bind_method<1>(type, "write", [](VM* vm, ArgsView args){
             FileIO& io = CAST(FileIO&, args[0]);
-            io._fs << CAST(Str&, args[1]);
+            if(io.is_text()) io._fs << CAST(Str&, args[1]);
+            else{
+                Bytes& buffer = CAST(Bytes&, args[1]);
+                io._fs << buffer._data;
+            }
             return vm->None;
         });
 
@@ -6730,35 +6755,40 @@ struct FileIO {
 
 inline void add_module_io(VM* vm){
     PyObject* mod = vm->new_module("io");
-    PyObject* type = FileIO::register_class(vm, mod);
-    vm->bind_builtin_func<2>("open", [type](VM* vm, ArgsView args){
-        return vm->call(type, args);
+    FileIO::register_class(vm, mod);
+    vm->bind_builtin_func<2>("open", [](VM* vm, ArgsView args){
+        static StrName m_io("io");
+        static StrName m_FileIO("FileIO");
+        return vm->call(vm->_modules[m_io]->attr(m_FileIO), args[0], args[1]);
     });
 }
 
 inline void add_module_os(VM* vm){
     PyObject* mod = vm->new_module("os");
+    PyObject* path_obj = vm->heap.gcnew<DummyInstance>(vm->tp_object, {});
+    mod->attr().set("path", path_obj);
+    
     // Working directory is shared by all VMs!!
     vm->bind_func<0>(mod, "getcwd", [](VM* vm, ArgsView args){
         return VAR(std::filesystem::current_path().string());
     });
 
     vm->bind_func<1>(mod, "chdir", [](VM* vm, ArgsView args){
-        std::filesystem::path path(CAST(Str&, args[0]).c_str());
+        std::filesystem::path path(CAST(Str&, args[0]).sv());
         std::filesystem::current_path(path);
         return vm->None;
     });
 
     vm->bind_func<1>(mod, "listdir", [](VM* vm, ArgsView args){
-        std::filesystem::path path(CAST(Str&, args[0]).c_str());
+        std::filesystem::path path(CAST(Str&, args[0]).sv());
         std::filesystem::directory_iterator di;
         try{
             di = std::filesystem::directory_iterator(path);
         }catch(std::filesystem::filesystem_error& e){
-            Str msg = e.what();
+            std::string msg = e.what();
             auto pos = msg.find_last_of(":");
-            if(pos != Str::npos) msg = msg.substr(pos + 1);
-            vm->IOError(msg.lstrip());
+            if(pos != std::string::npos) msg = msg.substr(pos + 1);
+            vm->IOError(Str(msg).lstrip());
         }
         List ret;
         for(auto& p: di) ret.push_back(VAR(p.path().filename().string()));
@@ -6766,36 +6796,36 @@ inline void add_module_os(VM* vm){
     });
 
     vm->bind_func<1>(mod, "remove", [](VM* vm, ArgsView args){
-        std::filesystem::path path(CAST(Str&, args[0]).c_str());
+        std::filesystem::path path(CAST(Str&, args[0]).sv());
         bool ok = std::filesystem::remove(path);
         if(!ok) vm->IOError("operation failed");
         return vm->None;
     });
 
     vm->bind_func<1>(mod, "mkdir", [](VM* vm, ArgsView args){
-        std::filesystem::path path(CAST(Str&, args[0]).c_str());
+        std::filesystem::path path(CAST(Str&, args[0]).sv());
         bool ok = std::filesystem::create_directory(path);
         if(!ok) vm->IOError("operation failed");
         return vm->None;
     });
 
     vm->bind_func<1>(mod, "rmdir", [](VM* vm, ArgsView args){
-        std::filesystem::path path(CAST(Str&, args[0]).c_str());
+        std::filesystem::path path(CAST(Str&, args[0]).sv());
         bool ok = std::filesystem::remove(path);
         if(!ok) vm->IOError("operation failed");
         return vm->None;
     });
 
-    vm->bind_func<-1>(mod, "path_join", [](VM* vm, ArgsView args){
+    vm->bind_func<-1>(path_obj, "join", [](VM* vm, ArgsView args){
         std::filesystem::path path;
         for(int i=0; i<args.size(); i++){
-            path /= CAST(Str&, args[i]).c_str();
+            path /= CAST(Str&, args[i]).sv();
         }
         return VAR(path.string());
     });
 
-    vm->bind_func<1>(mod, "path_exists", [](VM* vm, ArgsView args){
-        std::filesystem::path path(CAST(Str&, args[0]).c_str());
+    vm->bind_func<1>(path_obj, "exists", [](VM* vm, ArgsView args){
+        std::filesystem::path path(CAST(Str&, args[0]).sv());
         bool exists = std::filesystem::exists(path);
         return VAR(exists);
     });
@@ -6810,16 +6840,16 @@ namespace pkpy{
 inline void add_module_io(VM* vm){}
 inline void add_module_os(VM* vm){}
 
-inline Str _read_file_cwd(const Str& name, bool* ok){
+inline Bytes _read_file_cwd(const Str& name, bool* ok){
     *ok = false;
-    return Str();
+    return Bytes();
 }
 
 } // namespace pkpy
 
 #endif
 
-// generated on 2023-04-22 10:40:40
+// generated on 2023-04-22 22:09:50
 #include <map>
 #include <string>
 
@@ -7184,15 +7214,15 @@ inline void init_builtins(VM* _vm) {
     });
 
     _vm->bind_method<1>("str", "__eq__", [](VM* vm, ArgsView args) {
-        if(is_type(args[0], vm->tp_str) && is_type(args[1], vm->tp_str))
-            return VAR(CAST(Str&, args[0]) == CAST(Str&, args[1]));
-        return VAR(args[0] == args[1]);
+        const Str& self = CAST(Str&, args[0]);
+        if(!is_type(args[1], vm->tp_str)) return VAR(false);
+        return VAR(self == CAST(Str&, args[1]));
     });
 
     _vm->bind_method<1>("str", "__ne__", [](VM* vm, ArgsView args) {
-        if(is_type(args[0], vm->tp_str) && is_type(args[1], vm->tp_str))
-            return VAR(CAST(Str&, args[0]) != CAST(Str&, args[1]));
-        return VAR(args[0] != args[1]);
+        const Str& self = CAST(Str&, args[0]);
+        if(!is_type(args[1], vm->tp_str)) return VAR(true);
+        return VAR(self != CAST(Str&, args[1]));
     });
 
     _vm->bind_method<1>("str", "__getitem__", [](VM* vm, ArgsView args) {
@@ -7241,6 +7271,11 @@ inline void init_builtins(VM* _vm) {
         if(offset < 0) return vm->False;
         bool ok = memcmp(self.data+offset, suffix.data, suffix.length()) == 0;
         return VAR(ok);
+    });
+
+    _vm->bind_method<0>("str", "encode", [](VM* vm, ArgsView args) {
+        const Str& self = CAST(Str&, args[0]);
+        return VAR(Bytes{self.str()});
     });
 
     _vm->bind_method<1>("str", "join", [](VM* vm, ArgsView args) {
@@ -7382,7 +7417,7 @@ inline void init_builtins(VM* _vm) {
         return VAR(self.size());
     });
 
-    /************ PyBool ************/
+    /************ bool ************/
     _vm->bind_static_method<1>("bool", "__new__", CPP_LAMBDA(VAR(vm->asBool(args[0]))));
 
     _vm->bind_method<0>("bool", "__repr__", [](VM* vm, ArgsView args) {
@@ -7402,6 +7437,52 @@ inline void init_builtins(VM* _vm) {
     });
 
     _vm->bind_method<0>("ellipsis", "__repr__", CPP_LAMBDA(VAR("Ellipsis")));
+
+    /************ bytes ************/
+    _vm->bind_static_method<1>("bytes", "__new__", CPP_NOT_IMPLEMENTED());
+
+    _vm->bind_method<1>("bytes", "__getitem__", [](VM* vm, ArgsView args) {
+        const Bytes& self = CAST(Bytes&, args[0]);
+        int index = CAST(int, args[1]);
+        index = vm->normalized_index(index, self.size());
+        return VAR(self[index]);
+    });
+
+    _vm->bind_method<0>("bytes", "__repr__", [](VM* vm, ArgsView args) {
+        const Bytes& self = CAST(Bytes&, args[0]);
+        std::stringstream ss;
+        ss << "b'";
+        for(int i=0; i<self.size(); i++){
+            ss << "\\x" << std::hex << std::setw(2) << std::setfill('0') << self[i];
+        }
+        ss << "'";
+        return VAR(ss.str());
+    });
+
+    _vm->bind_method<0>("bytes", "__len__", [](VM* vm, ArgsView args) {
+        const Bytes& self = CAST(Bytes&, args[0]);
+        return VAR(self.size());
+    });
+
+    _vm->bind_method<0>("bytes", "decode", [](VM* vm, ArgsView args) {
+        const Bytes& self = CAST(Bytes&, args[0]);
+        // TODO: check encoding is utf-8
+        return VAR(Str(self._data));
+    });
+
+    _vm->bind_method<1>("bytes", "__eq__", [](VM* vm, ArgsView args) {
+        const Bytes& self = CAST(Bytes&, args[0]);
+        if(!is_type(args[1], vm->tp_bytes)) return VAR(false);
+        const Bytes& other = CAST(Bytes&, args[1]);
+        return VAR(self == other);
+    });
+
+    _vm->bind_method<1>("bytes", "__ne__", [](VM* vm, ArgsView args) {
+        const Bytes& self = CAST(Bytes&, args[0]);
+        if(!is_type(args[1], vm->tp_bytes)) return VAR(true);
+        const Bytes& other = CAST(Bytes&, args[1]);
+        return VAR(self != other);
+    });
 }
 
 #ifdef _WIN32

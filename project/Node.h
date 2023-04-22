@@ -38,8 +38,8 @@ struct PX_ChildrenIter: BaseIter{
     }
 };
 
-// 层序遍历对象树
-inline void traverse(PX_Object* obj, std::function<void(PX_Object*)> f){
+
+inline void traverse(PX_Object* obj, void (*f)(PX_Object*)){
     if(obj == NULL) return;
     // 层序遍历
     std::queue<PX_Object*> q;

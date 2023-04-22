@@ -3,9 +3,10 @@
 using namespace pkpy;
 
 bool _execute_user_script(){
-	PX_IO_Data io_data = PX_LoadFileToIOData("main.py");
-	auto view = std::string_view((char*)io_data.buffer, io_data.size);
-	PyObject* ret = vm->exec(view, "main.py", EXEC_MODE);
+	bool ok;
+	Bytes content = _read_file_cwd("main.py", &ok);
+	if(!ok) return false;
+	PyObject* ret = vm->exec(content._data, "main.py", EXEC_MODE);
 	return ret != nullptr;
 }
 

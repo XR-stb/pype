@@ -4,4 +4,4 @@ class Button(Node):
         super(Button, self).__init__()
 
     def on_click(self):
-        self.clicked.emit()
+        self.clicked.emit(self)
