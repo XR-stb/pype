@@ -85,14 +85,14 @@ class Node:
         return scale
 
     def start_coroutine(self, coroutine):
-        self.coroutines.append(coroutine)
+        self._coroutines.append(coroutine)
         return coroutine
 
     def stop_coroutine(self, coroutine):
         self._stopped_coroutines.append(coroutine)
 
     def stop_all_coroutines(self):
-        self._stopped_coroutines = self.coroutines.copy()
+        self._stopped_coroutines = self._coroutines.copy()
 
 
 # 全局协程创建函数

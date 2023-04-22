@@ -77,7 +77,7 @@ LogoSprite()
 - [x] [只读] `.global_scale`，获取全局缩放
 - [x] `.enabled`，获取是否激活
 - [x] `.visible`，获取是否可见
-- [x] [只读] `child_count(self)`，获取子物体的数量
+- [x] [只读] `.child_count(self)`，获取子物体的数量
 - [x] `__getitem__(self, index: int)`，按索引获取子物体
 - [x] [虚函数] `on_ready(self)`，当物体被创建时调用
 - [x] [虚函数] `on_update(self)`，每帧调用一次
@@ -143,3 +143,8 @@ class Test(Node):
 - [x] `_root`，访问虚拟根`Node`，你可以使用`_root.children`来遍历世界中的顶层`Node`。你不应该删除或重置此变量，否则将会引发异常
 - [x] `_print_tree()`，用于调试，向控制台打印对象树结构，内部调用了`traverse`
 - [x] `_repl()`，打开一个简易REPL，`eval`用户输入的代码，并输出结果。可以使用`exit()`退出
+
+## 热重载（实验）
+
+你可以按下`F5`键执行热重载，这将会重新加载你的Python脚本，并将更新后的代码应用到场景中。
+而不用重新编译或重启引擎。
