@@ -1,4 +1,4 @@
-from pype import _repl, _root, _print_tree, _reload_current_scene
+from pype import _repl, _root, _print_tree
 from pype import *
 
 class LogoSprite(Sprite2D):
@@ -12,13 +12,9 @@ class LogoSprite(Sprite2D):
         # 每秒旋转半圈
         self.angle += 180 * Time.delta_time
 
-        if Input.get_key('R'):
-            # _repl()
-            _reload_current_scene()
-
 # LogoSprite()
 
-for i in range(5):
+for i in range(4):
     b = Button()
     b.text = f"Hello! {i}"
     b.width = 200

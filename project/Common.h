@@ -22,4 +22,3 @@ inline VM* vm = nullptr;                    // global python vm
 inline PyObject* g_mod = nullptr;           // global PainterEngine module
 inline PyObject* g_root = nullptr;          // global root gameObject
 inline Type g_tp_node;                      // global Node type cache
-inline std::string g_user_code;             // global user code

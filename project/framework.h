@@ -71,17 +71,6 @@ inline void python_init(){
         return VAR_T(Vector2, ret.x, ret.y);
     });
 
-    vm->bind_func<0>(g_mod, "_reload_current_scene", [](VM* vm, ArgsView args){
-        vm->exec(R"(
-for obj in list(_root.children):
-    destroy(obj)
-        )", "<PainterEngine>", EXEC_MODE, g_mod);
-        PyObject* ret = vm->exec(g_user_code, "main.py", EXEC_MODE);
-        if(ret == nullptr) exit(1);
-        return vm->None;
-    });
-
-
     // 注册Python库源码
     for(auto it = pe::kPythonLibs.begin(); it != pe::kPythonLibs.end(); ++it){
         CodeObject_ code = vm->compile(

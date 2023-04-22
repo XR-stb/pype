@@ -2,6 +2,13 @@
 #include "Framework.h"
 using namespace pkpy;
 
+bool _execute_user_script(){
+	PX_IO_Data io_data = PX_LoadFileToIOData("main.py");
+	auto view = std::string_view((char*)io_data.buffer, io_data.size);
+	PyObject* ret = vm->exec(view, "main.py", EXEC_MODE);
+	return ret != nullptr;
+}
+
 px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int screen_height)
 {
 	PX_ApplicationInitializeDefault(&pApp->runtime, screen_width, screen_height);
@@ -37,11 +44,8 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 		}
 	}
 
-	PX_IO_Data io_data = PX_LoadFileToIOData("main.py");
-	g_user_code = std::string((char*)io_data.buffer, io_data.size);
-	PyObject* ret = vm->exec(g_user_code, "main.py", EXEC_MODE);
-	if(ret == nullptr) return PX_FALSE;
-	return PX_TRUE;
+	ok = _execute_user_script();
+	return ok;
 }
 
 px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed)
@@ -86,6 +90,12 @@ px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 	switch(e.Event){
 		case PX_OBJECT_EVENT_KEYDOWN: {
 			px_uint code = PX_Object_Event_GetKeyDown(e);
+			if(code == 5){
+				PyObject* ret = vm->exec("for obj in list(_root.children):\n  destroy(obj)", "<PainterEngine>", EXEC_MODE, g_mod);
+				if(ret == nullptr) exit(1);
+				bool ok = _execute_user_script();
+				if(!ok) exit(1);
+			}
 			Input::PressedKeys.insert(code);
 		} break;
 	}
