@@ -18,9 +18,9 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 		&World,
 		0xffffff,			// px_int world_width,
 		0xffffff,			// px_int world_height,
-		screen_width,		// px_int surface_width,
-		screen_height,		// px_int surface_height,
-		(px_dword)65535		// px_dword calcsize
+		pApp->runtime.surface_width,
+		pApp->runtime.surface_height,
+		PE_MEMORY_CALC_SIZE		// px_dword calcsize
 	);
 	if(!ok){
 		std::cerr << "PX_WorldInitialize failed" << std::endl;
