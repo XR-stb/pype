@@ -140,6 +140,7 @@ class Test(Node):
 - [x] `load(path: str)`，加载一个资源并返回一个指针，此函数带有缓存，因此多次调用同一个资源不会重复加载
 - [x] `traverse()`，返回一个可以遍历对象树所有物体的迭代器，每个项`(Node, int)`表示物体及其深度（从0开始）
 - [x] `destroy(obj)`，销毁一个`Node`
+- [x] `memory_usage()`，返回一个当前内存使用信息的字符串
 - [x] `_root`，访问虚拟根`Node`，你可以使用`_root.children`来遍历世界中的顶层`Node`。你不应该删除或重置此变量，否则将会引发异常
 - [x] `_print_tree()`，用于调试，向控制台打印对象树结构，内部调用了`traverse`
 - [x] `_repl()`，打开一个简易REPL，`eval`用户输入的代码，并输出结果。可以使用`exit()`退出

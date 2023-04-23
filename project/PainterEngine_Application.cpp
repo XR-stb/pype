@@ -32,24 +32,18 @@ px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width
 		delete vm;
 		return PX_FALSE;
 	}else{
-		try{
-			PyObject* val;
-			val = vm->_main->attr().try_get("PX_APPLICATION_SURFACE_SIZE");
-			if(val != nullptr) PX_APPLICATION_SURFACE_SIZE = CAST(i64, val);
-			val = vm->_main->attr().try_get("PX_APPLICATION_MEMORYPOOL_UI_SIZE");
-			if(val != nullptr) PX_APPLICATION_MEMORYPOOL_UI_SIZE = CAST(i64, val) * 1024 * 1024;
-			val = vm->_main->attr().try_get("PX_APPLICATION_MEMORYPOOL_RESOURCES_SIZE");
-			if(val != nullptr) PX_APPLICATION_MEMORYPOOL_RESOURCES_SIZE = CAST(i64, val) * 1024 * 1024;
-			val = vm->_main->attr().try_get("PX_APPLICATION_MEMORYPOOL_GAME_SIZE");
-			if(val != nullptr) PX_APPLICATION_MEMORYPOOL_GAME_SIZE = CAST(i64, val) * 1024 * 1024;
-			val = vm->_main->attr().try_get("PX_APPLICATION_MEMORYPOOL_SPACE_SIZE");
-			if(val != nullptr) PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = CAST(i64, val) * 1024 * 1024;
-			delete vm;
-		}catch(Exception& e){
-			std::cerr << e.summary() << std::endl;
-			delete vm;
-			return PX_FALSE;
-		}
+		PyObject* val;
+		val = vm->_main->attr("PX_APPLICATION_SURFACE_SIZE");
+		PX_APPLICATION_SURFACE_SIZE = CAST(i64, val);
+		val = vm->_main->attr("PX_APPLICATION_MEMORYPOOL_UI_SIZE");
+		PX_APPLICATION_MEMORYPOOL_UI_SIZE = CAST(i64, val) * 1024 * 1024;
+		val = vm->_main->attr("PX_APPLICATION_MEMORYPOOL_RESOURCES_SIZE");
+		PX_APPLICATION_MEMORYPOOL_RESOURCES_SIZE = CAST(i64, val) * 1024 * 1024;
+		val = vm->_main->attr("PX_APPLICATION_MEMORYPOOL_GAME_SIZE");
+		PX_APPLICATION_MEMORYPOOL_GAME_SIZE = CAST(i64, val) * 1024 * 1024;
+		val = vm->_main->attr("PX_APPLICATION_MEMORYPOOL_SPACE_SIZE");
+		PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = CAST(i64, val) * 1024 * 1024;
+		delete vm;
 	}
 
 	px_int surface_width=0,surface_height=0;

@@ -12,7 +12,9 @@ class LogoSprite(Sprite2D):
         # 每秒旋转半圈
         self.angle += 180 * Time.delta_time
 
-# LogoSprite()
+        # print(memory_usage())
+
+LogoSprite()
 
 for i in range(4):
     b = Button()

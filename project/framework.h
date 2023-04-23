@@ -74,6 +74,27 @@ inline void python_init(){
         return VAR_T(Vector2, ret.x, ret.y);
     });
 
+    vm->bind_func<0>(g_mod, "memory_usage", [](VM* vm, ArgsView args){
+        auto f = [](px_memorypool* mp){
+            size_t used = mp->Size - mp->FreeSize;
+            double percent = (double)used / mp->Size * 100;
+            double used_mb = used/1024.0/1024.0;
+            double total_mb = mp->Size/1024.0/1024.0;
+            percent = (int)(percent * 100 + 0.5) / 100.0;
+            used_mb = (int)(used_mb * 100 + 0.5) / 100.0;
+            total_mb = (int)(total_mb * 100 + 0.5) / 100.0;
+            return fmt(used_mb, " / ", total_mb, " MB\t(", percent, "%)");
+        };
+        std::stringstream ss;
+        ss << "UI:        " << f(&App.runtime.mp_ui) << std::endl;
+        ss << "RESOURCES: " << f(&App.runtime.mp_resources) << std::endl;
+        ss << "GAME:      " << f(&App.runtime.mp_game) << std::endl;
+        double vm_usage = memory_usage()/1024.0/1024.0;
+        vm_usage = (int)(vm_usage * 100 + 0.5) / 100.0;
+        ss << "Python VM: " << vm_usage << " MB";
+        return VAR(ss.str());
+    });
+
     // 注册Python库源码
     for(auto it = pe::kPythonLibs.begin(); it != pe::kPythonLibs.end(); ++it){
         CodeObject_ code = vm->compile(
