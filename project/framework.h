@@ -92,7 +92,8 @@ inline void python_init(){
         double vm_usage = memory_usage()/1024.0/1024.0;
         vm_usage = (int)(vm_usage * 100 + 0.5) / 100.0;
         ss << "Python VM: " << vm_usage << " MB";
-        return VAR(ss.str());
+        (*vm->_stdout) << ss.str() << std::endl;
+        return vm->None;
     });
 
     // 注册Python库源码

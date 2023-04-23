@@ -12,7 +12,7 @@ class LogoSprite(Sprite2D):
         # 每秒旋转半圈
         self.angle += 180 * Time.delta_time
 
-        # print(memory_usage())
+        memory_usage()
 
 LogoSprite()
 
