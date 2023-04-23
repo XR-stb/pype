@@ -2,6 +2,13 @@
 #include "Framework.h"
 using namespace pkpy;
 
+px_uint PX_APPLICATION_SURFACE_SIZE = 680;
+
+px_uint PX_APPLICATION_MEMORYPOOL_UI_SIZE = 1024*1024*8;
+px_uint PX_APPLICATION_MEMORYPOOL_RESOURCES_SIZE = 1024*1024*64;
+px_uint PX_APPLICATION_MEMORYPOOL_GAME_SIZE = 1024*1024*8;
+px_uint PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = 1024*1024*8;
+
 bool _execute_user_script(){
 	bool ok;
 	Bytes content = _read_file_cwd("main.py", &ok);
@@ -10,10 +17,83 @@ bool _execute_user_script(){
 	return ret != nullptr;
 }
 
+px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width, px_int screen_height)
+{
+	bool ok;
+	Bytes content = _read_file_cwd("config.py", &ok);
+	if(!ok){
+		std::cout << "config.py文件未找到" << std::endl;
+		return PX_FALSE;
+	}
+
+	VM* vm = new VM(true);
+	PyObject* ret = vm->exec(content._data, "config.py", EXEC_MODE);
+	if(ret == nullptr){
+		delete vm;
+		return PX_FALSE;
+	}else{
+		try{
+			PyObject* val;
+			val = vm->_main->attr().try_get("PX_APPLICATION_SURFACE_SIZE");
+			if(val != nullptr) PX_APPLICATION_SURFACE_SIZE = CAST(i64, val);
+			val = vm->_main->attr().try_get("PX_APPLICATION_MEMORYPOOL_UI_SIZE");
+			if(val != nullptr) PX_APPLICATION_MEMORYPOOL_UI_SIZE = CAST(i64, val) * 1024 * 1024;
+			val = vm->_main->attr().try_get("PX_APPLICATION_MEMORYPOOL_RESOURCES_SIZE");
+			if(val != nullptr) PX_APPLICATION_MEMORYPOOL_RESOURCES_SIZE = CAST(i64, val) * 1024 * 1024;
+			val = vm->_main->attr().try_get("PX_APPLICATION_MEMORYPOOL_GAME_SIZE");
+			if(val != nullptr) PX_APPLICATION_MEMORYPOOL_GAME_SIZE = CAST(i64, val) * 1024 * 1024;
+			val = vm->_main->attr().try_get("PX_APPLICATION_MEMORYPOOL_SPACE_SIZE");
+			if(val != nullptr) PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = CAST(i64, val) * 1024 * 1024;
+			delete vm;
+		}catch(Exception& e){
+			std::cerr << e.summary() << std::endl;
+			delete vm;
+			return PX_FALSE;
+		}
+	}
+
+	px_int surface_width=0,surface_height=0;
+	px_int window_width=0,window_height=0;
+	px_double wdh;
+	if (screen_width==0|| screen_height==0)
+	{
+		window_width = 0;
+		window_height = 0;
+	}
+	else
+	{
+		wdh = screen_width * 1.0 / screen_height;
+		surface_height = (px_int)(PX_sqrtd(PX_APPLICATION_SURFACE_SIZE * PX_APPLICATION_SURFACE_SIZE / wdh));
+		surface_width = (px_int)(surface_height * wdh);
+		window_width = screen_width / 2;
+		window_height = screen_height / 2;
+	}
+	
+	// 使用动态内存分配
+	const px_uint PX_ApplicationRuntimeSize = PX_APPLICATION_MEMORYPOOL_UI_SIZE+PX_APPLICATION_MEMORYPOOL_RESOURCES_SIZE+PX_APPLICATION_MEMORYPOOL_GAME_SIZE+PX_APPLICATION_MEMORYPOOL_SPACE_SIZE;
+	void* PX_ApplicationRuntime = malloc(PX_ApplicationRuntimeSize);
+	if(!PX_RuntimeInitialize(runtime,surface_width,surface_height,window_width,window_height,PX_ApplicationRuntime,PX_ApplicationRuntimeSize,PX_APPLICATION_MEMORYPOOL_UI_SIZE,PX_APPLICATION_MEMORYPOOL_RESOURCES_SIZE,PX_APPLICATION_MEMORYPOOL_GAME_SIZE))
+		return PX_FALSE;
+	return PX_TRUE;
+}
+
 px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int screen_height)
 {
-	PX_ApplicationInitializeDefault(&pApp->runtime, screen_width, screen_height);
-	px_bool ok = PX_WorldInitialize(
+	// 设置工作目录
+	bool curr_is_ok = std::filesystem::exists("main.py");
+	if(!curr_is_ok){
+		if(std::filesystem::exists("../../project/main.py")){
+			std::filesystem::current_path("../../project");
+		}else{
+			std::cerr << "main.py文件未找到" << std::endl;
+			return PX_FALSE;
+		}
+	}
+
+	px_bool ok = PX_ApplicationInitializeDefault(&pApp->runtime, screen_width, screen_height);
+	if(!ok) return PX_FALSE;
+
+	ok = PX_WorldInitialize(
 		&pApp->runtime.mp_game,
 		&World,
 		0xffffff,			// px_int world_width,
@@ -33,16 +113,6 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 	}catch(Exception& e){
 		std::cerr << e.summary() << std::endl;
 		return PX_FALSE;
-	}
-
-	bool curr_is_ok = std::filesystem::exists("main.py");
-	if(!curr_is_ok){
-		if(std::filesystem::exists("../../project/main.py")){
-			std::filesystem::current_path("../../project");
-		}else{
-			std::cerr << "main.py文件未找到" << std::endl;
-			return PX_FALSE;
-		}
 	}
 
 	ok = _execute_user_script();
@@ -86,7 +156,19 @@ px_void PX_ApplicationRender(PX_Application *pApp, px_dword elapsed)
 
 px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 {
-	PX_ApplicationEventDefault(&pApp->runtime, e);
+	// PX_ApplicationEventDefault
+	if (e.Event==PX_OBJECT_EVENT_WINDOWRESIZE)
+	{
+		px_int surface_width=0,surface_height=0;
+		px_double wdh;
+
+		wdh=PX_Object_Event_GetWidth(e)*1.0/PX_Object_Event_GetHeight(e);
+		surface_height=(px_int)(PX_sqrtd(PX_APPLICATION_SURFACE_SIZE*PX_APPLICATION_SURFACE_SIZE/wdh));
+		surface_width=(px_int)(surface_height*wdh);
+
+		PX_RuntimeResize(&pApp->runtime,surface_width,surface_height,(px_int)PX_Object_Event_GetWidth(e),(px_int)PX_Object_Event_GetHeight(e));
+		return;
+	}
 
 	switch(e.Event){
 		case PX_OBJECT_EVENT_KEYDOWN: {

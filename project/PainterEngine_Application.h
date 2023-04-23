@@ -5,7 +5,12 @@
 extern "C"{
 #endif
 
-#include "PainterEngine_Startup.h"
+#define PX_APPLICATION_NAME "PainterEngine"
+
+//////////////////////////////////////////////////////////////////////////
+#include "../architecture/PainterEngine_Runtime.h"
+
+
 	typedef struct
 	{
 		PX_Runtime runtime;
