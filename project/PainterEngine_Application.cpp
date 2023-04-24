@@ -178,6 +178,12 @@ px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 			Input::PressedKeys.insert(code);
 		} break;
 	}
-	PX_WorldPostEvent(&World, e);
+
+	try{
+		PX_WorldPostEvent(&World, e);
+	}catch(Exception& e){
+		std::cerr << e.summary() << std::endl;
+		exit(1);
+	}
 }
 
