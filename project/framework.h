@@ -49,15 +49,14 @@ inline void python_init(){
 
     vm->bind_func<1>(g_mod, "_PX_LoadTextureFromFile", [](VM* vm, ArgsView args){
         const Str& path = CAST(Str&, args[0]);
-        bool ok;
-        Bytes content = _read_file_cwd(path, &ok);
-        if(!ok){
+        Bytes content = _read_file_cwd(path);
+        if(!content){
             vm->IOError(fmt("cannot read file: ", path));
             return vm->None;
         }
 
         px_texture* tex = (px_texture*)malloc(sizeof(px_texture));
-    	ok = PX_TextureCreateFromMemory(&App.runtime.mp_resources, (char*)content._data.c_str(), content._data.size(), tex);
+    	bool ok = PX_TextureCreateFromMemory(&App.runtime.mp_resources, (char*)content.data(), content.size(), tex);
         if(!ok){
             free(tex);
             PXError(fmt("PX_TextureCreateFromMemory failed: ", path));

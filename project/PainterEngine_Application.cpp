@@ -12,24 +12,22 @@ px_uint PX_APPLICATION_MEMORYPOOL_GAME_SIZE = 1024*1024*8;
 px_uint PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = 1024*1024*8;
 
 bool _execute_user_script(){
-	bool ok;
-	Bytes content = _read_file_cwd("main.py", &ok);
-	if(!ok) return false;
-	PyObject* ret = vm->exec(content._data, "main.py", EXEC_MODE);
+	Bytes content = _read_file_cwd("main.py");
+	if(!content) return false;
+	PyObject* ret = vm->exec(content.str(), "main.py", EXEC_MODE);
 	return ret != nullptr;
 }
 
 px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width, px_int screen_height)
 {
-	bool ok;
-	Bytes content = _read_file_cwd("config.py", &ok);
-	if(!ok){
+	Bytes content = _read_file_cwd("config.py");
+	if(!content){
 		std::cout << "config.py文件未找到" << std::endl;
 		return PX_FALSE;
 	}
 
 	VM* vm = new VM(true);
-	PyObject* ret = vm->exec(content._data, "config.py", EXEC_MODE);
+	PyObject* ret = vm->exec(content.str(), "config.py", EXEC_MODE);
 	if(ret == nullptr){
 		delete vm;
 		return PX_FALSE;

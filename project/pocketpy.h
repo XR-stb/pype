@@ -822,10 +822,10 @@ struct Str{
                 case '\r': ss << "\\r"; break;
                 case '\t': ss << "\\t"; break;
                 default:
-                    if (c >= 32 && c <= 126) {
-                        ss << c;
+                    if ('\x00' <= c && c <= '\x1f') {
+                        ss << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)c;
                     } else {
-                        ss << "\\x" << std::hex << std::setw(2) << std::setfill('0') << (int)(uint8_t)c;
+                        ss << c;
                     }
             }
         }
@@ -2006,13 +2006,25 @@ struct Range {
 };
 
 struct Bytes{
-    std::string _data;
+    std::vector<char> _data;
+    bool _ok;
 
     int size() const noexcept { return _data.size(); }
     int operator[](int i) const noexcept { return (int)(uint8_t)_data[i]; }
+    const char* data() const noexcept { return _data.data(); }
 
-    bool operator==(const Bytes& rhs) const noexcept { return _data == rhs._data; }
-    bool operator!=(const Bytes& rhs) const noexcept { return _data != rhs._data; }
+    bool operator==(const Bytes& rhs) const noexcept {
+        return _data == rhs._data;
+    }
+    bool operator!=(const Bytes& rhs) const noexcept {
+        return _data != rhs._data;
+    }
+
+    std::string str() const noexcept { return std::string(_data.begin(), _data.end()); }
+
+    Bytes() : _data(), _ok(false) {}
+    Bytes(std::vector<char>&& data) : _data(std::move(data)), _ok(true) {}
+    operator bool() const noexcept { return _ok; }
 };
 
 using Super = std::pair<PyObject*, Type>;
@@ -2844,7 +2856,7 @@ namespace pkpy{
 #define POPX()            (s_data.popx())
 #define STACK_VIEW(n)     (s_data.view(n))
 
-Bytes _read_file_cwd(const Str& name, bool* ok);
+Bytes _read_file_cwd(const Str& name);
 
 #define DEF_NATIVE_2(ctype, ptype)                                      \
     template<> inline ctype py_cast<ctype>(VM* vm, PyObject* obj) {     \
@@ -4447,10 +4459,9 @@ __NEXT_STEP:;
             Str source;
             auto it = _lazy_modules.find(name);
             if(it == _lazy_modules.end()){
-                bool ok = false;
-                Bytes b = _read_file_cwd(fmt(name, ".py"), &ok);
-                source = Str(b._data);
-                if(!ok) _error("ImportError", fmt("module ", name.escape(), " not found"));
+                Bytes b = _read_file_cwd(fmt(name, ".py"));
+                if(!b) _error("ImportError", fmt("module ", name.escape(), " not found"));
+                source = Str(b.str());
             }else{
                 source = it->second;
                 _lazy_modules.erase(it);
@@ -6673,18 +6684,14 @@ T py_pointer_cast(VM* vm, PyObject* var){
 
 namespace pkpy{
 
-inline Bytes _read_file_cwd(const Str& name, bool* ok){
+inline Bytes _read_file_cwd(const Str& name){
     std::filesystem::path path(name.sv());
     bool exists = std::filesystem::exists(path);
-    if(!exists){
-        *ok = false;
-        return Bytes();
-    }
+    if(!exists) return Bytes();
     std::ifstream ifs(path);
-    std::string buffer((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+    std::vector<char> buffer(std::istreambuf_iterator<char>(ifs), {});
     ifs.close();
-    *ok = true;
-    return Bytes({std::move(buffer)});
+    return Bytes(std::move(buffer));
 }
 
 struct FileIO {
@@ -6718,10 +6725,15 @@ struct FileIO {
 
         vm->bind_method<0>(type, "read", [](VM* vm, ArgsView args){
             FileIO& io = CAST(FileIO&, args[0]);
-            Bytes buffer;
-            io._fs >> buffer._data;
-            if(io.is_text()) return VAR(Str(buffer._data));
-            return VAR(buffer);
+            std::vector<char> buffer;
+            while(true){
+                char c = io._fs.get();
+                if(io._fs.eof()) break;
+                buffer.push_back(c);
+            }
+            Bytes b(std::move(buffer));
+            if(io.is_text()) return VAR(Str(b.str()));
+            return VAR(std::move(b));
         });
 
         vm->bind_method<1>(type, "write", [](VM* vm, ArgsView args){
@@ -6729,7 +6741,7 @@ struct FileIO {
             if(io.is_text()) io._fs << CAST(Str&, args[1]);
             else{
                 Bytes& buffer = CAST(Bytes&, args[1]);
-                io._fs << buffer._data;
+                io._fs.write(buffer.data(), buffer.size());
             }
             return vm->None;
         });
@@ -6837,8 +6849,7 @@ namespace pkpy{
 inline void add_module_io(VM* vm){}
 inline void add_module_os(VM* vm){}
 
-inline Bytes _read_file_cwd(const Str& name, bool* ok){
-    *ok = false;
+inline Bytes _read_file_cwd(const Str& name){
     return Bytes();
 }
 
@@ -6846,7 +6857,7 @@ inline Bytes _read_file_cwd(const Str& name, bool* ok){
 
 #endif
 
-// generated on 2023-04-24 19:18:19
+// generated on 2023-04-26 12:23:14
 #include <map>
 #include <string>
 
@@ -7201,8 +7212,8 @@ inline void init_builtins(VM* _vm) {
     _vm->bind_method<0>("str", "__iter__", CPP_LAMBDA(vm->PyIter(StringIter(vm, args[0]))));
 
     _vm->bind_method<0>("str", "__repr__", [](VM* vm, ArgsView args) {
-        const Str& _self = CAST(Str&, args[0]);
-        return VAR(_self.escape());
+        const Str& self = CAST(Str&, args[0]);
+        return VAR(self.escape());
     });
 
     _vm->bind_method<0>("str", "__json__", [](VM* vm, ArgsView args) {
@@ -7272,7 +7283,9 @@ inline void init_builtins(VM* _vm) {
 
     _vm->bind_method<0>("str", "encode", [](VM* vm, ArgsView args) {
         const Str& self = CAST(Str&, args[0]);
-        return VAR(Bytes{self.str()});
+        std::vector<char> buffer(self.length());
+        memcpy(buffer.data(), self.data, self.length());
+        return VAR(Bytes(std::move(buffer)));
     });
 
     _vm->bind_method<1>("str", "join", [](VM* vm, ArgsView args) {
@@ -7464,7 +7477,7 @@ inline void init_builtins(VM* _vm) {
     _vm->bind_method<0>("bytes", "decode", [](VM* vm, ArgsView args) {
         const Bytes& self = CAST(Bytes&, args[0]);
         // TODO: check encoding is utf-8
-        return VAR(Str(self._data));
+        return VAR(Str(self.str()));
     });
 
     _vm->bind_method<1>("bytes", "__eq__", [](VM* vm, ArgsView args) {
