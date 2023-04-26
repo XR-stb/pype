@@ -2,6 +2,13 @@
 #include "Framework.h"
 using namespace pkpy;
 
+
+#define PX_DEBUG_SERVER
+#ifdef PX_DEBUG_SERVER
+#include "debugserver.h"
+inline static DebugServer _debug_server;
+#endif
+
 px_uint PX_APPLICATION_SURFACE_SIZE = 680;
 
 px_uint PX_APPLICATION_MEMORYPOOL_UI_SIZE = 1024*1024*8;
@@ -68,6 +75,10 @@ px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width
 	void* PX_ApplicationRuntime = malloc(PX_ApplicationRuntimeSize);
 	if(!PX_RuntimeInitialize(runtime,surface_width,surface_height,window_width,window_height,PX_ApplicationRuntime,PX_ApplicationRuntimeSize,PX_APPLICATION_MEMORYPOOL_UI_SIZE,PX_APPLICATION_MEMORYPOOL_RESOURCES_SIZE,PX_APPLICATION_MEMORYPOOL_GAME_SIZE))
 		return PX_FALSE;
+
+#ifdef PX_DEBUG_SERVER
+	_debug_server.start();
+#endif
 	return PX_TRUE;
 }
 
@@ -128,6 +139,10 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed)
 		std::cerr << e.summary() << std::endl;
 		exit(1);
 	}
+
+#ifdef PX_DEBUG_SERVER
+	_debug_server.update(vm);
+#endif
 }
 
 px_void PX_ApplicationRender(PX_Application *pApp, px_dword elapsed)
