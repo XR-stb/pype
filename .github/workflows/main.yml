@@ -1,0 +1,23 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: CMake Build
+      run: |
+        python preprocess.py
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --config Release
+    - uses: actions/upload-artifact@v3
+      with:
+        path: build/Release/PainterEngine.exe
