@@ -167,7 +167,7 @@ px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 	switch(e.Event){
 		case PX_OBJECT_EVENT_KEYDOWN: {
 			px_uint code = PX_Object_Event_GetKeyDown(e);
-			if(code == 5){
+			if(code == KEYCODE_F5){
 				PyObject* ret = vm->exec("for obj in list(_root.children):\n  destroy(obj)", "<PainterEngine>", EXEC_MODE, g_mod);
 				if(ret == nullptr) exit(1);
 				bool ok = _execute_user_script();

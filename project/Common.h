@@ -27,3 +27,9 @@ inline Type g_tp_node;                      // global Node type cache
 inline void PXError(Str msg){
     vm->_error("PXError", msg);
 }
+
+#ifdef _WIN32
+#define KEYCODE_F5 116
+#else
+#define KEYCODE_F5 5
+#endif
