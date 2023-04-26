@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Button.h"
 #include "Common.h"
 #include "Node.h"
 #include "Vector2.h"
 #include "Input.h"
+
+#include "Button.h"
+#include "Label.h"
 
 using namespace pkpy;
 
@@ -112,7 +114,8 @@ inline void python_init(){
     _register_node_type(vm, g_mod, vm->_t(g_tp_node));
 
     // 注册其他类
-    _register_button_type(vm, g_mod, g_mod->attr("Button"));
+    _register_button_type(vm, g_mod);
+    _register_label_type(vm, g_mod);
 
     // 创建根对象
     g_root = vm->call(vm->_t(g_tp_node));

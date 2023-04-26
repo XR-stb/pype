@@ -1,6 +1,6 @@
 # pype
 
-本仓库提供PainterEngine与 [PocketPy](https://github.com/blueloveTH/pocketpy) 的绑定，
+本仓库提供PainterEngine与 [pocketpy](https://github.com/blueloveTH/pocketpy) 的绑定，
 它允许用户使用高层次的Python语法和特性来编写游戏，同时具有跨平台的能力。
 
 > 运行一个Python解释器需要消耗较多的资源，你的目标平台应具备`50MB`以上的内存和C++17支持。
@@ -120,6 +120,10 @@ class Test(Node):
 
 - [x] `.text`，设置文本
 - [x] [信号] `.clicked`，当按钮被点击时触发
+
+### `Label(Node)`
+
+- [x] `.text`，设置文本
 
 ### `Input`
 

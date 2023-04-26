@@ -47,7 +47,6 @@ set_target_properties(${TARGET_NAME} PROPERTIES
     CXX_EXTENSIONS OFF
 )
 
-find_package(OpenGL REQUIRED)
 find_package(Threads REQUIRED)
 
 if(PLATFORM STREQUAL "windows")
@@ -56,7 +55,6 @@ if(PLATFORM STREQUAL "windows")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O1 /std:c++17 /GR- /EHsc /utf-8")
 
     target_link_libraries(${TARGET_NAME}
-        OpenGL::GL
         Threads::Threads
     )
 else()
@@ -64,6 +62,7 @@ else()
     set(CMAKE_C_COMPILER "clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1 -std=c++17 -fno-rtti -stdlib=libc++")
 
+    find_package(OpenGL REQUIRED)
     find_package(GLUT REQUIRED)
     target_link_libraries(${TARGET_NAME}
         OpenGL::GL

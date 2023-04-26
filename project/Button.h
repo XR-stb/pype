@@ -3,7 +3,8 @@
 #include "Common.h"
 #include "Node.h"
 
-inline void _register_button_type(VM* vm, PyObject* mod, PyObject* type){
+inline void _register_button_type(VM* vm, PyObject* mod){
+    PyObject* type = mod->attr("Button");
     vm->bind_method<0>(type, "_px_obj_init", [](VM* vm, ArgsView args){
         PX_Object* obj = PX_Object_PushButtonCreate(
             &App.runtime.mp_game,
