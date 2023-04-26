@@ -125,6 +125,20 @@ class Test(Node):
 
 - [x] `.text`，设置文本
 
+### `Image(Node)`
+
+- [x] `.texture`，设置纹理
+- [x] `set_native_size()`，设置为原始大小
+
+### `Texture2D`
+
+- [x] [只读] `.width`，获取宽度
+- [x] [只读] `.height`，获取高度
+- [x] [只读] `.limit_left`
+- [x] [只读] `.limit_right`
+- [x] [只读] `.limit_top`
+- [x] [只读] `.limit_bottom`
+
 ### `Input`
 
 - [x] [静态] `get_key(code)`，检查当前帧某个按键是否被按下，返回`bool`

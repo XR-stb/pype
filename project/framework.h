@@ -3,10 +3,12 @@
 #include "Common.h"
 #include "Node.h"
 #include "Vector2.h"
+#include "Texture2D.h"
 #include "Input.h"
 
 #include "Button.h"
 #include "Label.h"
+#include "Image.h"
 
 using namespace pkpy;
 
@@ -35,6 +37,7 @@ inline void python_init(){
     g_mod = vm->new_module("pype");
     Vector2::register_class(vm, g_mod);
     Input::register_class(vm, g_mod);
+    Texture2D::register_class(vm, g_mod);
     GCProxy::register_class(vm, g_mod);
 
     /*************全局私有函数*************/
@@ -57,16 +60,16 @@ inline void python_init(){
             free(tex);
             return vm->None;
         }
-        return VAR_T(VoidP, tex);
+        return VAR_T(Texture2D, tex);
     });
 
     vm->bind_func<4>(g_mod, "_PX_TextureRenderEx", [](VM* vm, ArgsView args){
         px_surface* psurface = &App.runtime.RenderSurface;
-        px_texture* tex = CAST(px_texture*, args[0]);
+        Texture2D& tex = CAST(Texture2D&, args[0]);
         Vector2& pos = CAST(Vector2&, args[1]);
         float angle = CAST(float, args[2]);
         float scale = CAST(float, args[3]);
-        PX_TextureRenderEx(psurface, tex, pos.x, pos.y, PX_ALIGN_LEFTTOP, NULL, scale, angle);
+        PX_TextureRenderEx(psurface, tex.ptr, pos.x, pos.y, PX_ALIGN_LEFTTOP, NULL, scale, angle);
         return vm->None;
     });
 
@@ -116,6 +119,7 @@ inline void python_init(){
     // 注册其他类
     _register_button_type(vm, g_mod);
     _register_label_type(vm, g_mod);
+    _register_image_type(vm, g_mod);
 
     // 创建根对象
     g_root = vm->call(vm->_t(g_tp_node));

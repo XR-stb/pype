@@ -22,3 +22,10 @@ for i in range(4):
     b.height = 50
     b.position = Vector2(100, 100+i*60)
     b.clicked.connect(lambda _: print(_))
+
+tex = load("assets/logo.png")
+print(tex)
+
+img = Image()
+img.texture = tex
+img.set_native_size()
