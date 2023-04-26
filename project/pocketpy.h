@@ -6384,6 +6384,7 @@ inline std::string getline(bool* eof=nullptr) {
     std::string output;
     output.resize(length);
     WideCharToMultiByte(CP_UTF8, 0, wideInput.c_str(), (int)wideInput.length(), &output[0], length, NULL, NULL);
+    if(!output.empty() && output.back() == '\r') output.pop_back();
     return output;
 }
 
@@ -6688,7 +6689,7 @@ inline Bytes _read_file_cwd(const Str& name){
     std::filesystem::path path(name.sv());
     bool exists = std::filesystem::exists(path);
     if(!exists) return Bytes();
-    std::ifstream ifs(path);
+    std::ifstream ifs(path, std::ios::binary);
     std::vector<char> buffer(std::istreambuf_iterator<char>(ifs), {});
     ifs.close();
     return Bytes(std::move(buffer));
@@ -6704,12 +6705,16 @@ struct FileIO {
     bool is_text() const { return mode != "rb" && mode != "wb" && mode != "ab"; }
 
     FileIO(VM* vm, Str file, Str mode): file(file), mode(mode) {
+        std::ios_base::openmode extra = 0;
+        if(mode == "rb" || mode == "wb" || mode == "ab"){
+            extra |= std::ios::binary;
+        }
         if(mode == "rt" || mode == "r" || mode == "rb"){
-            _fs.open(file.sv(), std::ios::in);
+            _fs.open(file.sv(), std::ios::in | extra);
         }else if(mode == "wt" || mode == "w" || mode == "wb"){
-            _fs.open(file.sv(), std::ios::out);
+            _fs.open(file.sv(), std::ios::out | extra);
         }else if(mode == "at" || mode == "a" || mode == "ab"){
-            _fs.open(file.sv(), std::ios::app);
+            _fs.open(file.sv(), std::ios::app | extra);
         }else{
             vm->ValueError("invalid mode");
         }
@@ -6857,7 +6862,7 @@ inline Bytes _read_file_cwd(const Str& name){
 
 #endif
 
-// generated on 2023-04-26 12:23:14
+// generated on 2023-04-26 12:56:11
 #include <map>
 #include <string>
 
