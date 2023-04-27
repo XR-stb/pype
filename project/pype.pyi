@@ -1,19 +1,34 @@
 def destroy():
     pass
 class Node(object):
-    height: property = ...
-    parent: property = ...
+    @property
+    def height(self):
+        pass
+    @property
+    def parent(self):
+        pass
     on_update = ...
     def stop_coroutine():
         pass
     _draw: ellipsis = ...
-    global_angle: property = ...
+    @property
+    def global_angle(self):
+        pass
     def __getitem__():
         pass
-    width: property = ...
-    children: property = ...
-    visible: property = ...
-    child_count: property = ...
+    @property
+    def width(self):
+        pass
+    @property
+    def children(self):
+        pass
+    @property
+    def visible(self):
+        pass
+    @property
+    def child_count(self):
+        """获取子节点数量"""
+        pass
     on_ready = ...
     def _px_obj_init():
         pass
@@ -21,15 +36,24 @@ class Node(object):
         pass
     def start_coroutine():
         pass
-    position: property = ...
-    global_position: property = ...
+    @property
+    def position(self):
+        pass
+    @property
+    def global_position(self):
+        """获取全局坐标"""
+        pass
     on_destroy = ...
-    enabled: property = ...
+    @property
+    def enabled(self):
+        pass
     def stop_all_coroutines():
         pass
     def __init__():
         pass
-    global_scale: property = ...
+    @property
+    def global_scale(self):
+        pass
 
 class Signal(object):
     def disconnect_all():
@@ -46,7 +70,9 @@ class Signal(object):
 def _PX_ObjectDelete():
     pass
 class Image(Node):
-    texture: property = ...
+    @property
+    def texture(self):
+        pass
     def _px_obj_init():
         pass
     def set_native_size():
@@ -75,7 +101,9 @@ _resources: dict = ...
 class Button(Node):
     def on_click():
         pass
-    text: property = ...
+    @property
+    def text(self):
+        pass
     def _px_obj_init():
         pass
     def __init__():
@@ -88,12 +116,24 @@ class Texture2D(object):
         pass
     def __repr__():
         pass
-    height: property = ...
-    limit_right: property = ...
-    limit_left: property = ...
-    limit_bottom: property = ...
-    width: property = ...
-    limit_top: property = ...
+    @property
+    def height(self):
+        pass
+    @property
+    def limit_right(self):
+        pass
+    @property
+    def limit_left(self):
+        pass
+    @property
+    def limit_bottom(self):
+        pass
+    @property
+    def width(self):
+        pass
+    @property
+    def limit_top(self):
+        pass
 
 def WaitForSeconds():
     pass
@@ -131,7 +171,9 @@ def _PX_LoadTextureFromFile():
 def _repl():
     pass
 class Label(Node):
-    text: property = ...
+    @property
+    def text(self):
+        pass
     def _px_obj_init():
         pass
 

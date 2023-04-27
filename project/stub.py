@@ -20,8 +20,12 @@ def parse_class_or_module(obj, depth):
             ret.append(f'class {name}({base_name}):')
             ret.append(INDENT*depth + '\n'.join(parse_class_or_module(field, depth+1)))
             ret.append('')
-        elif type_name in ('function', 'native_func'):
-            ret.append(INDENT*depth + f'def {name}():')
+        elif type_name in ('function', 'native_func', 'property'):
+            args = []
+            if type_name == 'property':
+                ret.append(INDENT*depth + f'@property')
+                args = ['self']
+            ret.append(INDENT*depth + f'def {name}(' + ', '.join(args) + '):')
             if '__doc__' in field.__dict__:
                 doc = field.__doc__
                 doc = doc.replace('\n', '\n' + INDENT*(depth+1))
