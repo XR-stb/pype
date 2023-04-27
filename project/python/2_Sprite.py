@@ -1,7 +1,7 @@
-class Sprite2D(Node):
+class Sprite(Node):
     def __init__(self):
         self.texture = None
-        super(Sprite2D, self).__init__()
+        super(Sprite, self).__init__()
 
     def _draw(self):
         if self.texture is None:

@@ -1,7 +1,7 @@
 from pype import _repl, _root, _print_tree
 from pype import *
 
-class LogoSprite(Sprite2D):
+class LogoSprite(Sprite):
     def on_ready(self):
         self.texture = load("assets/logo.png")
         self.scale = 3

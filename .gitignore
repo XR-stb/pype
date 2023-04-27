@@ -1,6 +1,12 @@
 # Prerequisites
 *.d
 
+# python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
 # Object files
 *.o
 *.ko
