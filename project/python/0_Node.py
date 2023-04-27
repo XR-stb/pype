@@ -52,13 +52,15 @@ class Node:
 
     @property
     def child_count(self):
+        """获取子节点数量"""
         i = 0
-        for child in self.children:
+        for _ in self.children:
             i += 1
         return i
 
     @property
     def global_position(self):
+        """获取全局坐标"""
         pos = self.position
         obj = self.parent
         while obj is not None:

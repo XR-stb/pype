@@ -1,6 +1,6 @@
 def destroy():
     pass
-class Node:
+class Node(object):
     height: property = ...
     parent: property = ...
     on_update = ...
@@ -31,7 +31,7 @@ class Node:
         pass
     global_scale: property = ...
 
-class Signal:
+class Signal(object):
     def disconnect_all():
         pass
     def connect():
@@ -45,7 +45,7 @@ class Signal:
 
 def _PX_ObjectDelete():
     pass
-class Image:
+class Image(Node):
     texture: property = ...
     def _px_obj_init():
         pass
@@ -54,25 +54,25 @@ class Image:
 
 def _print_tree():
     pass
-class Input:
+class Input(object):
     def __new__():
         pass
     def get_key():
         pass
 
-class Time:
+class Time(object):
     delta_time: float = ...
 
 def _PX_TextureRenderEx():
     pass
-class Sprite2D:
+class Sprite2D(Node):
     def _draw():
         pass
     def __init__():
         pass
 
 _resources: dict = ...
-class Button:
+class Button(Node):
     def on_click():
         pass
     text: property = ...
@@ -83,7 +83,7 @@ class Button:
 
 def traverse():
     pass
-class Texture2D:
+class Texture2D(object):
     def __new__():
         pass
     def __repr__():
@@ -103,12 +103,12 @@ def load():
     pass
 def WaitForEndOfFrame():
     pass
-class _GCProxy:
+class _GCProxy(object):
     def __new__():
         pass
 
 __name__: str = ...
-class Vector2:
+class Vector2(object):
     def __new__():
         pass
     def __repr__():
@@ -130,7 +130,7 @@ def _PX_LoadTextureFromFile():
     pass
 def _repl():
     pass
-class Label:
+class Label(Node):
     text: property = ...
     def _px_obj_init():
         pass
