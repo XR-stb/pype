@@ -1,183 +1,119 @@
-def destroy():
-    pass
-class Node(object):
+from typing import *
+
+class Vector2:
+    def __init__(self, x: float, y: float):
+        self.x = x
+        self.y = y
+
+class Texture2D:
     @property
-    def height(self):
-        pass
+    def width(self) -> int: ...
     @property
-    def parent(self):
-        pass
-    on_update = ...
-    def stop_coroutine():
-        pass
-    _draw: ellipsis = ...
+    def height(self) -> int: ...
     @property
-    def global_angle(self):
-        pass
-    def __getitem__():
-        pass
+    def limit_left(self) -> int: ...
     @property
-    def width(self):
-        pass
+    def limit_right(self) -> int: ...
     @property
-    def children(self):
-        pass
+    def limit_top(self) -> int: ...
     @property
-    def visible(self):
-        pass
+    def limit_bottom(self) -> int: ...
+
+class Signal:
+    def connect(self, f) -> None:
+        """连接一个信号处理函数"""
+    def disconnect(self, f) -> None:
+        """断开一个信号处理函数"""
+    def emit(self, *args) -> None:
+        """发射信号"""
+    def disconnect_all(self) -> None:
+        """断开所有信号处理函数"""
+
+class Time:
+    delta_time: float
+
+class Input:
+    @staticmethod
+    def get_key(c: str) -> bool:
+        """检查当前帧某个按键是否被按下"""
+
+#####################################################
+
+def WaitForEndOfFrame() -> Generator:
+    """[协程] 等待当前帧结束"""
+def WaitForSeconds(seconds: float) -> Generator:
+    """[协程] 等待`seconds`秒"""
+
+def load(path: str) -> Any:
+    """加载一个资源并返回一个指针，此函数带有缓存，因此多次调用同一个资源不会重复加载"""
+def traverse() -> Generator[Node, int]:
+    """返回一个可以遍历对象树所有物体的迭代器，每个项`(Node, int)`表示物体及其深度（从0开始）"""
+def destroy(obj: Node) -> None:
+    """销毁一个节点"""
+def memory_usage() -> None:
+    """打印当前的内存使用信息"""
+def _print_tree() -> None:
+    """用于调试，向控制台打印对象树结构"""
+def _repl() -> None:
+    """打开一个简易REPL，`eval`用户输入的代码，并输出结果。可以使用`exit()`退出"""
+
+#####################################################
+
+class Node:
+    name: str           # 节点的名称
+    parent: Node        # 节点的父节点
+    position: Vector2   # 节点的本地坐标
+    angle: float        # 节点的本地角度
+    scale: float        # 节点的本地缩放
+    enabled: bool       # 节点是否激活，激活的节点会触发`on_update`事件
+    visible: bool       # 节点是否可见，可见的节点会触发渲染事件
+    width: int          # 节点的宽度
+    height: int         # 节点的高度
+
+    def children(self) -> Iterable[Node]:
+        """返回子节点的迭代器"""
+
     @property
-    def child_count(self):
-        """获取子节点数量"""
-        pass
-    on_ready = ...
-    def _px_obj_init():
-        pass
-    def _update():
-        pass
-    def start_coroutine():
-        pass
-    @property
-    def position(self):
-        pass
-    @property
-    def global_position(self):
+    def global_position(self) -> Vector2:
         """获取全局坐标"""
-        pass
-    on_destroy = ...
     @property
-    def enabled(self):
-        pass
-    def stop_all_coroutines():
-        pass
-    def __init__():
-        pass
+    def global_angle(self) -> float:
+        """获取全局角度"""
     @property
-    def global_scale(self):
-        pass
+    def global_scale(self) -> float:
+        """获取全局缩放"""
 
-class Signal(object):
-    def disconnect_all():
-        pass
-    def connect():
-        pass
-    def disconnect():
-        pass
-    def emit():
-        pass
-    def __init__():
-        pass
-
-def _PX_ObjectDelete():
-    pass
-class Image(Node):
     @property
-    def texture(self):
-        pass
-    def _px_obj_init():
-        pass
-    def set_native_size():
-        pass
+    def child_count(self) -> int:
+        """获取子节点的数量"""
+    def __getitem__(self, index: int) -> Node:
+        """获取子节点"""
+    
+    # 虚函数
+    def on_ready(self) -> None: ...
+    def on_update(self) -> None: ...
+    def on_destroy(self) -> None: ...
 
-def _print_tree():
-    pass
-class Input(object):
-    def __new__():
-        pass
-    def get_key():
-        pass
+    # 协程
+    def start_coroutine(self, obj) -> Generator:
+        """启动一个协程"""
+    def stop_coroutine(self, obj) -> None:
+        """停止一个协程"""
+    def stop_all_coroutines(self) -> None:
+        """停止所有协程"""
 
-class Time(object):
-    delta_time: float = ...
-
-def _PX_TextureRenderEx():
-    pass
 class Sprite2D(Node):
-    def _draw():
-        pass
-    def __init__():
-        pass
+    texture: Texture2D   # 精灵的纹理
 
-_resources: dict = ...
-class Button(Node):
-    def on_click():
-        pass
-    @property
-    def text(self):
-        pass
-    def _px_obj_init():
-        pass
-    def __init__():
-        pass
-
-def traverse():
-    pass
-class Texture2D(object):
-    def __new__():
-        pass
-    def __repr__():
-        pass
-    @property
-    def height(self):
-        pass
-    @property
-    def limit_right(self):
-        pass
-    @property
-    def limit_left(self):
-        pass
-    @property
-    def limit_bottom(self):
-        pass
-    @property
-    def width(self):
-        pass
-    @property
-    def limit_top(self):
-        pass
-
-def WaitForSeconds():
-    pass
-def memory_usage():
-    pass
-def load():
-    pass
-def WaitForEndOfFrame():
-    pass
-class _GCProxy(object):
-    def __new__():
-        pass
-
-__name__: str = ...
-class Vector2(object):
-    def __new__():
-        pass
-    def __repr__():
-        pass
-    def __mul__():
-        pass
-    def __truediv__():
-        pass
-    def __add__():
-        pass
-    def __eq__():
-        pass
-    def __sub__():
-        pass
-    def __ne__():
-        pass
-
-def _PX_LoadTextureFromFile():
-    pass
-def _repl():
-    pass
 class Label(Node):
-    @property
-    def text(self):
-        pass
-    def _px_obj_init():
-        pass
+    text: str
 
-_root: Node = ...
-_gc_proxy: _GCProxy = ...
-def _PX_WorldObjectXYtoScreenXY():
-    pass
+class Button(Node):
+    text: str
+    clicked: Signal
+
+class Image(Node):
+    texture: Texture2D
+
+    def set_native_size() -> None:
+        """将节点的宽高设置为纹理的宽高"""

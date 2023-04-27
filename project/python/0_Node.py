@@ -8,11 +8,8 @@ class Node:
     parent = ...            # 获取/设置父节点（C实现）
     position = ...          # 获取/设置本地位置（C实现）
     _draw = ...             # 绘制函数
-
-    # 指示如何初始化对应的PX_Object（C实现）
-    def _px_obj_init(self):
-        raise NotImplementedError
-
+    _px_obj_init = ...      # 指示如何初始化对应的PX_Object（C实现）
+    
     def __init__(self):
         # a void_p object ~ PX_Object*
         self._px_obj = self._px_obj_init()
@@ -52,7 +49,6 @@ class Node:
 
     @property
     def child_count(self):
-        """获取子节点数量"""
         i = 0
         for _ in self.children:
             i += 1
@@ -60,7 +56,6 @@ class Node:
 
     @property
     def global_position(self):
-        """获取全局坐标"""
         pos = self.position
         obj = self.parent
         while obj is not None:
