@@ -1,8 +1,6 @@
 from pype import _repl, _root, _print_tree
 from pype import *
 
-import stub
-
 class LogoSprite(Sprite2D):
     def on_ready(self):
         self.texture = load("assets/logo.png")
