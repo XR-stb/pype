@@ -6516,11 +6516,14 @@ public:
 } // namespace pkpy
 
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
+
 namespace pkpy{
 
 #ifdef _WIN32
-
-#include <Windows.h>
 
 inline std::string getline(bool* eof=nullptr) {
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
@@ -7014,7 +7017,7 @@ inline Bytes _read_file_cwd(const Str& name){
 
 #endif
 
-// generated on 2023-04-27 19:25:01
+// generated on 2023-04-27 19:33:26
 #include <map>
 #include <string>
 
