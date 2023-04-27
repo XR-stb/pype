@@ -2112,6 +2112,13 @@ struct Py_ final: PyObject {
     }
 };
 
+struct MappingProxy{
+    PyObject* obj;
+    MappingProxy(PyObject* obj) : obj(obj) {}
+
+    NameDict& attr() noexcept { return obj->attr(); }
+};
+
 #define OBJ_GET(T, obj) (((Py_<T>*)(obj))->_value)
 #define OBJ_MARK(obj) if(!is_tagged(obj)) (obj)->_obj_gc_mark()
 
@@ -2823,6 +2830,10 @@ template<> inline void gc_mark<NameDict>(NameDict& t){
     }
 }
 
+template<> inline void gc_mark<MappingProxy>(MappingProxy& t){
+    OBJ_MARK(t.obj);
+}
+
 template<> inline void gc_mark<BoundMethod>(BoundMethod& t){
     OBJ_MARK(t.self);
     OBJ_MARK(t.func);
@@ -2940,7 +2951,7 @@ public:
     Type tp_list, tp_tuple;
     Type tp_function, tp_native_func, tp_iterator, tp_bound_method;
     Type tp_slice, tp_range, tp_module;
-    Type tp_super, tp_exception, tp_bytes;
+    Type tp_super, tp_exception, tp_bytes, tp_mappingproxy;
 
     const bool enable_os;
 
@@ -3268,6 +3279,7 @@ DEF_NATIVE_2(Range, tp_range)
 DEF_NATIVE_2(Slice, tp_slice)
 DEF_NATIVE_2(Exception, tp_exception)
 DEF_NATIVE_2(Bytes, tp_bytes)
+DEF_NATIVE_2(MappingProxy, tp_mappingproxy)
 
 #define PY_CAST_INT(T)                                  \
 template<> inline T py_cast<T>(VM* vm, PyObject* obj){  \
@@ -3702,6 +3714,7 @@ inline void VM::init_builtin_types(){
     tp_super = _new_type_object("super");
     tp_exception = _new_type_object("Exception");
     tp_bytes = _new_type_object("bytes");
+    tp_mappingproxy = _new_type_object("mappingproxy");
 
     this->None = heap._new<Dummy>(_new_type_object("NoneType"), {});
     this->Ellipsis = heap._new<Dummy>(_new_type_object("ellipsis"), {});
@@ -4588,7 +4601,7 @@ __NEXT_STEP:;
                 source = it->second;
                 _lazy_modules.erase(it);
             }
-            CodeObject_ code = compile(source, name.sv(), EXEC_MODE);
+            CodeObject_ code = compile(source, Str(name.sv())+".py", EXEC_MODE);
             PyObject* new_mod = new_module(name);
             _exec(code, new_mod);
             new_mod->attr()._try_perfect_rehash();
@@ -7017,7 +7030,7 @@ inline Bytes _read_file_cwd(const Str& name){
 
 #endif
 
-// generated on 2023-04-27 19:33:26
+// generated on 2023-04-27 20:35:14
 #include <map>
 #include <string>
 
@@ -7681,6 +7694,58 @@ inline void init_builtins(VM* _vm) {
         ss << CAST(Str, vm->asRepr(self.step)) << ")";
         return VAR(ss.str());
     });
+
+    /************ MappingProxy ************/
+    _vm->bind_method<0>("mappingproxy", "keys", [](VM* vm, ArgsView args) {
+        MappingProxy& self = CAST(MappingProxy&, args[0]);
+        List keys;
+        for(StrName name : self.attr().keys()) keys.push_back(VAR(name.sv()));
+        return VAR(std::move(keys));
+    });
+
+    _vm->bind_method<0>("mappingproxy", "values", [](VM* vm, ArgsView args) {
+        MappingProxy& self = CAST(MappingProxy&, args[0]);
+        List values;
+        for(auto& item : self.attr().items()) values.push_back(item.second);
+        return VAR(std::move(values));
+    });
+
+    _vm->bind_method<0>("mappingproxy", "items", [](VM* vm, ArgsView args) {
+        MappingProxy& self = CAST(MappingProxy&, args[0]);
+        List items;
+        for(auto& item : self.attr().items()){
+            PyObject* t = VAR(Tuple({VAR(item.first.sv()), item.second}));
+            items.push_back(std::move(t));
+        }
+        return VAR(std::move(items));
+    });
+
+    _vm->bind_method<0>("mappingproxy", "__len__", [](VM* vm, ArgsView args) {
+        MappingProxy& self = CAST(MappingProxy&, args[0]);
+        return VAR(self.attr().size());
+    });
+
+    _vm->bind_method<1>("mappingproxy", "__getitem__", [](VM* vm, ArgsView args) {
+        MappingProxy& self = CAST(MappingProxy&, args[0]);
+        StrName key = CAST(Str&, args[1]);
+        PyObject* ret = self.attr().try_get(key);
+        if(ret == nullptr) vm->AttributeError(key.sv());
+        return ret;
+    });
+
+    _vm->bind_method<0>("mappingproxy", "__repr__", [](VM* vm, ArgsView args) {
+        MappingProxy& self = CAST(MappingProxy&, args[0]);
+        std::stringstream ss;
+        ss << "mappingproxy({";
+        bool first = true;
+        for(auto& item : self.attr().items()){
+            if(!first) ss << ", ";
+            first = false;
+            ss << item.first.escape() << ": " << CAST(Str, vm->asRepr(item.second));
+        }
+        ss << "})";
+        return VAR(ss.str());
+    });
 }
 
 #ifdef _WIN32
@@ -7933,6 +7998,12 @@ inline void VM::post_init(){
     }));
     _t(tp_slice)->attr().set("step", property([](VM* vm, ArgsView args){
         return CAST(Slice&, args[0]).step;
+    }));
+    _t(tp_object)->attr().set("__dict__", property([](VM* vm, ArgsView args){
+        if(is_tagged(args[0]) || !args[0]->is_attr_valid()){
+            vm->AttributeError("__dict__");
+        }
+        return VAR(MappingProxy(args[0]));
     }));
 #endif
 }
