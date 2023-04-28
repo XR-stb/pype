@@ -66,6 +66,19 @@ class Node:
             scale *= obj.scale
             obj = obj.parent
         return scale
+    
+    @property
+    def global_transform(self):
+        pos = self.position
+        angle = self.angle
+        scale = self.scale
+        obj = self.parent
+        while obj is not None:
+            pos += obj.position
+            angle += obj.angle
+            scale *= obj.scale
+            obj = obj.parent
+        return pos, angle, scale
 
     def start_coroutine(self, coroutine):
         self._coroutines.append(coroutine)

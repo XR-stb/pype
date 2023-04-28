@@ -68,6 +68,9 @@ class Node:
     @property
     def global_scale(self) -> float:
         """获取全局缩放"""
+    @property
+    def global_transform(self) -> Tuple[Vector2, float, float]:
+        """获取全局变换，返回`(position, angle, scale)`"""
 
     @property
     def child_count(self) -> int:
