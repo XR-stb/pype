@@ -1,5 +1,7 @@
 def destroy(obj):
     assert isinstance(obj, Node)
+    for child in obj.children:
+        destroy(child)
     if obj.on_destroy is not None:
         obj.on_destroy(obj)
     _PX_ObjectDelete(obj)
