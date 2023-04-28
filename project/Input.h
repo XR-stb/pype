@@ -74,7 +74,7 @@ struct Input {
     }
 
     static void end_update_subscribed_keys(){
-        _pressed_keys_last_frame.swap(_pressed_keys);
+        std::swap(_pressed_keys, _pressed_keys_last_frame);
         _pressed_keys.clear();
     }
 };
