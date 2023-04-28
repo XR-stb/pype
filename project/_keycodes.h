@@ -249,57 +249,52 @@ const int _native_key_mapping[] = {
 };
 
 #elif __linux__
-
-#include <X11/keysym.h>
+#include <GL/freeglut.h>
 
 const int _native_key_mapping[] = {
     0,
-
     // numbers
-    XK_0, XK_1, XK_2, XK_3, XK_4, XK_5, XK_6, XK_7, XK_8, XK_9,
-
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
     // letters
-    XK_a, XK_b, XK_c, XK_d, XK_e, XK_f, XK_g, XK_h, XK_i, XK_j, XK_k, XK_l, XK_m, XK_n, XK_o, XK_p,
-    XK_q, XK_r, XK_s, XK_t, XK_u, XK_v, XK_w, XK_x, XK_y, XK_z,
-
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+    'k', 'l', 'm', 'n', 'o','p', 'q', 'r', 's', 't',
+    'u', 'v', 'w', 'x', 'y', 'z',
     // function
-    XK_F1, XK_F2, XK_F3, XK_F4, XK_F5, XK_F6, XK_F7, XK_F8, XK_F9, XK_F10, XK_F11, XK_F12, XK_F13,
-    XK_F14, XK_F15, XK_F16, XK_F17, XK_F18, XK_F19, XK_F20, XK_F21, XK_F22, XK_F23, XK_F24,
+    GLUT_KEY_F1, GLUT_KEY_F2, GLUT_KEY_F3, GLUT_KEY_F4, GLUT_KEY_F5, GLUT_KEY_F6, GLUT_KEY_F7,
+    GLUT_KEY_F8, GLUT_KEY_F9, GLUT_KEY_F10, GLUT_KEY_F11, GLUT_KEY_F12,
+    0,0,0,0,0,0,0,0,0,0,0,0,
 
-    // keypad numbers
-    XK_KP_0, XK_KP_1, XK_KP_2, XK_KP_3, XK_KP_4, XK_KP_5, XK_KP_6, XK_KP_7, XK_KP_8, XK_KP_9,
+    // keypad numbers (glut doesn't have these)
+    0,0,0,0,0,0,0,0,0,0,
 
     // keypad other
-    0, // KeypadClear
-    XK_KP_Decimal, XK_KP_Divide, XK_KP_Enter, XK_KP_Equal, XK_KP_Subtract, XK_KP_Multiply,
-    XK_KP_Add,
+    0, '.', '/', '\r', '=', '-', '*', '+',
 
     // others
-    XK_backslash, XK_comma, XK_equal, XK_grave, XK_bracketleft, XK_minus, XK_period, XK_apostrophe,
-    XK_bracketright, XK_semicolon, XK_slash,
+    '\\', ',', '=', '`', '[', '-', '.', '\'', ']', ';', '/',
+    // XK_backslash, XK_comma, XK_equal, XK_grave, XK_bracketleft, XK_minus, XK_period, XK_apostrophe,
+    // XK_bracketright, XK_semicolon, XK_slash,
 
     // modifiers
-    XK_Super_L, // Meta
-    XK_Control_L,
+    0,
+    GLUT_KEY_CTRL_L,
     0, // Function
-    XK_Alt_L, XK_Shift_L,
-    XK_Super_R, // RightMeta
-    XK_Control_R, XK_Alt_R, XK_Shift_R, XK_Caps_Lock, XK_Num_Lock, XK_Scroll_Lock,
-
+    GLUT_KEY_ALT_L, GLUT_KEY_SHIFT_L,
+    0, // RightMeta
+    GLUT_KEY_CTRL_R, GLUT_KEY_ALT_R, GLUT_KEY_SHIFT_R, 0, 0, 0,
     // arrows
-    XK_Down, XK_Left, XK_Right, XK_Up,
-
+    GLUT_KEY_DOWN, GLUT_KEY_LEFT, GLUT_KEY_RIGHT, GLUT_KEY_UP,
     // navigation
-    XK_End, XK_Home, XK_Page_Down, XK_Page_Up,
+    GLUT_KEY_END, GLUT_KEY_HOME, GLUT_KEY_PAGE_DOWN, GLUT_KEY_PAGE_UP,
 
     // actions
-    XK_Menu, XK_BackSpace, XK_Escape, XK_Delete, XK_Help,
+    0, 0, 27, GLUT_KEY_DELETE, 0,
     0, // Mute
     0, // PrintScreen
-    XK_Return, XK_space, XK_Tab,
+    '\r', ' ', '\t',
     0, // VolumeDown
     0, // VolumeUp
-    XK_Pause, XK_Insert,
+    0, GLUT_KEY_INSERT,
     0, // Sleep
 };
 
