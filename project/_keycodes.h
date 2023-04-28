@@ -257,7 +257,7 @@ const int _native_key_mapping[] = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
     // letters
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-    'k', 'l', 'm', 'n', 'o','p', 'q', 'r', 's', 't',
+    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
     'u', 'v', 'w', 'x', 'y', 'z',
     // function
     GLUT_KEY_F1, GLUT_KEY_F2, GLUT_KEY_F3, GLUT_KEY_F4, GLUT_KEY_F5, GLUT_KEY_F6, GLUT_KEY_F7,
