@@ -1,5 +1,6 @@
 #include "Common.h"
 #include "Framework.h"
+#include "_keycodes.h"
 #include <cstdio>
 using namespace pkpy;
 
@@ -161,7 +162,7 @@ px_void PX_ApplicationRender(PX_Application *pApp, px_dword elapsed)
 	}
 
 	// reset CurrentKeycode at the end of frame
-	Input::PressedKeys.clear();
+	Input::clear_pressed_keys();
 }
 
 px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
@@ -182,8 +183,10 @@ px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 
 	switch(e.Event){
 		case PX_OBJECT_EVENT_KEYDOWN: {
-			px_uint code = PX_Object_Event_GetKeyDown(e);
-			if(code == KEYCODE_F5){
+			int scancode = PX_Object_Event_GetKeyDown(e);
+			Input::press_scancode(scancode);
+			// hot reload via F5
+			if(Input::is_pressed(41)){
 				PyObject* ret = vm->exec("for obj in list(_root.children):\n  destroy(obj)", "<PainterEngine>", EXEC_MODE, g_mod);
 				if(ret == nullptr){
 					std::getchar();
@@ -195,7 +198,6 @@ px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 					return;
 				}
 			}
-			Input::PressedKeys.insert(code);
 		} break;
 	}
 
