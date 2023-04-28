@@ -10,6 +10,7 @@ using namespace pkpy;
 struct Input {
     PY_CLASS(Input, pype, Input)
 
+    inline static std::set<int> _pressed_keys_last_frame;
     inline static std::set<int> _pressed_keys;
 
     static void _register(VM* vm, PyObject* mod, PyObject* type){
@@ -17,15 +18,23 @@ struct Input {
 
         vm->bind_static_method<1>(type, "get_key", [](VM* vm, ArgsView args){
             int code = CAST(int, args[0]);
-            return VAR(is_pressed(code));
+            return VAR(get_key(code));
         });
 
-        vm->bind_static_method<0>(type, "get_pressed_keys", [](VM* vm, ArgsView args){
+        vm->bind_static_method<1>(type, "get_key_down", [](VM* vm, ArgsView args){
+            int code = CAST(int, args[0]);
+            return VAR(get_key_down(code));
+        });
+
+        vm->bind_static_method<1>(type, "get_key_up", [](VM* vm, ArgsView args){
+            int code = CAST(int, args[0]);
+            return VAR(get_key_up(code));
+        });
+
+        vm->bind_static_method<0>(type, "get_all_keys", [](VM* vm, ArgsView args){
             Tuple t(_pressed_keys.size());
             int i = 0;
-            for(auto code : _pressed_keys){
-                t[i++] = VAR(code);
-            }
+            for(int code : _pressed_keys) t[i++] = VAR(code);
             return VAR(std::move(t));
         });
 
@@ -55,10 +64,19 @@ struct Input {
     }
 
     static void clear_pressed_keys(){
+        _pressed_keys_last_frame = std::move(_pressed_keys);
         _pressed_keys.clear();
     }
 
-    static bool is_pressed(int code){
+    static bool get_key(int code){
         return _pressed_keys.count(code) > 0;
+    }
+
+    static bool get_key_down(int code){
+        return _pressed_keys.count(code) > 0 && _pressed_keys_last_frame.count(code) == 0;
+    }
+
+    static bool get_key_up(int code){
+        return _pressed_keys.count(code) == 0 && _pressed_keys_last_frame.count(code) > 0;
     }
 };

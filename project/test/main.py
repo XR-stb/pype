@@ -3,15 +3,15 @@ from pype import *
 
 class Test(Node):
     def on_update(self) -> None:
-        if Input.get_key(KeyCode.Alpha0):
+        if Input.get_key_down(KeyCode.Alpha0):
             print("!!!!");
-        a = Input.get_pressed_keys()
-        if not a:
-            return
-        print(a)
-        for i in a:
-            print(KeyCode.nameof(i), end=' ')
-        print()
+        # a = Input.get_all_keys()
+        # if not a:
+        #     return
+        # print(a)
+        # for i in a:
+        #     print(KeyCode.nameof(i), end=' ')
+        # print()
 
 Test()
 

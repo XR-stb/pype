@@ -175,11 +175,16 @@ class KeyCode:
 class Input:
     @staticmethod
     def get_key(c: int) -> bool:
-        """检查当前帧某个按键是否被按下"""
-
+        """检查当前帧某个按键是否处于按下状态"""
     @staticmethod
-    def get_pressed_keys() -> Tuple[int]:
+    def get_all_keys() -> Tuple[int]:
         """获取当前帧被按下的所有按键"""
+    @staticmethod
+    def get_key_down(c: int) -> bool:
+        """检查某个按键是否刚刚被按下"""
+    @staticmethod
+    def get_key_up(c: int) -> bool:
+        """检查某个按键是否刚刚被释放"""
 
 #####################################################
 

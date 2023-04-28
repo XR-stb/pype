@@ -139,7 +139,7 @@ inline void python_init(){
 
 // 帧率控制
 struct FrameCounter{
-	px_dword update_freq = 1000 / 60;
+	px_dword update_freq = 1000 / 50;
 	px_dword accum_time = 0;
     px_dword elapsed = 0;
 	bool flag = false;

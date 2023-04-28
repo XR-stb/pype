@@ -20,6 +20,8 @@ px_uint PX_APPLICATION_MEMORYPOOL_GAME_SIZE = 1024*1024*8;
 // 这是干啥的？
 px_uint PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = 1024*1024*8;
 
+std::queue<PX_Object_Event> event_queue;
+
 bool _execute_user_script(){
 	Bytes content = _read_file_cwd("main.py");
 	if(!content) return false;
@@ -126,6 +128,26 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 	return ok;
 }
 
+px_void clear_event_queue(){
+	while(!event_queue.empty()){
+		PX_Object_Event e = event_queue.front();
+		event_queue.pop();
+		if(e.Event == PX_OBJECT_EVENT_KEYDOWN){
+			int scancode = PX_Object_Event_GetKeyDown(e);
+			Input::press_scancode(scancode);
+			// hot reload via F5
+			if(Input::get_key_down(41)){
+				PyObject* ret = vm->exec("for obj in list(_root.children):\n  destroy(obj)", "<PainterEngine>", EXEC_MODE, g_mod);
+				if(ret == nullptr){ std::getchar(); return; }
+				bool ok = _execute_user_script();
+				if(!ok){ std::getchar(); return; }
+			}
+		}else{
+			PX_WorldPostEvent(&World, e);
+		}
+	}
+}
+
 px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed)
 {
 	if(!g_frame_counter.do_update(&elapsed)) return;
@@ -136,6 +158,7 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed)
 	g_mod->attr(m_Time)->attr().set(m_deltaTime, VAR(elapsed / 1000.0));
 
 	try{
+		clear_event_queue();
 		PX_WorldUpdate(&World, elapsed);
 	}catch(Exception& e){
 		std::cerr << e.summary() << std::endl;
@@ -181,31 +204,7 @@ px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 		return;
 	}
 
-	switch(e.Event){
-		case PX_OBJECT_EVENT_KEYDOWN: {
-			int scancode = PX_Object_Event_GetKeyDown(e);
-			Input::press_scancode(scancode);
-			// hot reload via F5
-			if(Input::is_pressed(41)){
-				PyObject* ret = vm->exec("for obj in list(_root.children):\n  destroy(obj)", "<PainterEngine>", EXEC_MODE, g_mod);
-				if(ret == nullptr){
-					std::getchar();
-					return;
-				}
-				bool ok = _execute_user_script();
-				if(!ok){
-					std::getchar();
-					return;
-				}
-			}
-		} break;
-	}
-
-	try{
-		PX_WorldPostEvent(&World, e);
-	}catch(Exception& e){
-		std::cerr << e.summary() << std::endl;
-		std::getchar();
-	}
+	// 推入事件队列
+	event_queue.push(e);
 }
 
