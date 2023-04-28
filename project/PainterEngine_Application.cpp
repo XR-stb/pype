@@ -139,11 +139,17 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed) {
 		while(!event_queue.empty()){
 			PX_Object_Event e = event_queue.front();
 			event_queue.pop();
+			if(e.Event == PX_OBJECT_EVENT_CURSORDOWN){
+				Input::_mouse_event[0] = 1;
+			}else if(e.Event == PX_OBJECT_EVENT_CURSORUP){
+				Input::_mouse_event[0] = 2;
+			}
 			PX_WorldPostEvent(&World, e);
 		}
 
 		// hot reload via F5
 		if(Input::get_key_down(41)){
+			Input::end_frame();
 			PyObject* ret = vm->exec("for obj in list(_root.children):\n  destroy(obj)", "<PainterEngine>", EXEC_MODE, g_mod);
 			if(ret == nullptr){ std::getchar(); return; }
 			bool ok = _execute_user_script();
@@ -152,14 +158,15 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed) {
 		}
 
 		PX_WorldUpdate(&World, elapsed);
+		Input::end_frame();
 	}catch(Exception& e){
+		Input::end_frame();
 		std::cerr << e.summary() << std::endl;
 		std::getchar();
 	}
 #ifdef PX_DEBUG_SERVER
 	_debug_server.update(vm);
 #endif
-	Input::end_update_subscribed_keys();
 }
 
 px_void PX_ApplicationRender(PX_Application *pApp, px_dword elapsed) {

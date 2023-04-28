@@ -16,6 +16,9 @@ struct Input {
     inline static std::set<int> _pressed_keys;
     inline static std::set<int> _pressed_keys_last_frame;
 
+    // 鼠标事件，0无，1按下，2释放
+    inline static int _mouse_event[3];
+
     static void _register(VM* vm, PyObject* mod, PyObject* type){
         vm->bind_static_method<-1>(type, "__new__", CPP_NOT_IMPLEMENTED());
 
@@ -32,6 +35,18 @@ struct Input {
         vm->bind_static_method<1>(type, "get_key_up", [](VM* vm, ArgsView args){
             int code = CAST(int, args[0]);
             return VAR(get_key_up(code));
+        });
+
+        vm->bind_static_method<1>(type, "get_mouse_button_down", [](VM* vm, ArgsView args){
+            int button = CAST(int, args[0]);
+            if(button < 0 || button > 2) vm->IndexError("button index out of range");
+            return VAR(_mouse_event[button] == 1);
+        });
+
+        vm->bind_static_method<1>(type, "get_mouse_button_up", [](VM* vm, ArgsView args){
+            int button = CAST(int, args[0]);
+            if(button < 0 || button > 2) vm->IndexError("button index out of range");
+            return VAR(_mouse_event[button] == 2);
         });
 
         PyObject* tp_keycode = vm->new_type_object(mod, "KeyCode", vm->tp_object);
@@ -73,7 +88,9 @@ struct Input {
         }
     }
 
-    static void end_update_subscribed_keys(){
+    static void end_frame(){
+        // 清空鼠标事件
+        memset(_mouse_event, 0, sizeof(_mouse_event));
         std::swap(_pressed_keys, _pressed_keys_last_frame);
         _pressed_keys.clear();
     }

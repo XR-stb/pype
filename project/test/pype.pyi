@@ -182,6 +182,12 @@ class Input:
     @staticmethod
     def get_key_up(c: int) -> bool:
         """检查某个按键是否刚刚被释放"""
+    @staticmethod
+    def get_mouse_button_down(c: int) -> bool:
+        """检查某个鼠标按键是否刚刚被按下"""
+    @staticmethod
+    def get_mouse_button_up(c: int) -> bool:
+        """检查某个鼠标按键是否刚刚被释放"""
 
 #####################################################
 

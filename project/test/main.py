@@ -6,9 +6,11 @@ class Test(Node):
         if Input.get_key_down(KeyCode.Alpha0):
             print("key down");
         if Input.get_key_up(KeyCode.Alpha0):
-            print("key up");
-        # a = Input.get_all_keys()
-        # print(a)
+            print("key up");    
+        if Input.get_mouse_button_down(0):
+            print("mouse down");
+        if Input.get_mouse_button_up(0):
+            print("mouse up");
 
 Test()
 
