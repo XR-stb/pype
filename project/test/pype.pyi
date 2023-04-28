@@ -93,7 +93,7 @@ class Node:
     def stop_all_coroutines(self) -> None:
         """停止所有协程"""
 
-class Sprite(Node):
+class Sprite2D(Node):
     texture: Texture2D   # 精灵的纹理
 
 class Label(Node):

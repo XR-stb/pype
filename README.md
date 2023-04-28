@@ -37,7 +37,7 @@ bash build_dev.sh
 ```python
 from pype import *
 
-class LogoSprite(Sprite):
+class LogoSprite(Sprite2D):
     def on_ready(self):
         self.texture = load("assets/logo.png")
         self.scale = 3  # 放大3倍
@@ -111,7 +111,7 @@ class Test(Node):
         print("Hello World!")
 ```
 
-### `Sprite(Node)`
+### `Sprite2D(Node)`
 
 - [x] `.texture`，设置纹理
 - [ ] `.color`，设置颜色
