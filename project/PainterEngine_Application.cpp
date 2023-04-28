@@ -1,5 +1,6 @@
 #include "Common.h"
 #include "Framework.h"
+#include <cstdio>
 using namespace pkpy;
 
 
@@ -87,8 +88,8 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 	// 设置工作目录
 	bool curr_is_ok = std::filesystem::exists("main.py");
 	if(!curr_is_ok){
-		if(std::filesystem::exists("../../project/main.py")){
-			std::filesystem::current_path("../../project");
+		if(std::filesystem::exists("../../project/test/main.py")){
+			std::filesystem::current_path("../../project/test");
 		}else{
 			std::cerr << "main.py文件未找到" << std::endl;
 			return PX_FALSE;
@@ -137,7 +138,7 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed)
 		PX_WorldUpdate(&World, elapsed);
 	}catch(Exception& e){
 		std::cerr << e.summary() << std::endl;
-		exit(1);
+		std::getchar();
 	}
 
 #ifdef PX_DEBUG_SERVER
@@ -156,7 +157,7 @@ px_void PX_ApplicationRender(PX_Application *pApp, px_dword elapsed)
 		PX_WorldRender(pRenderSurface, &World, elapsed);
 	}catch(Exception& e){
 		std::cerr << e.summary() << std::endl;
-		exit(1);
+		std::getchar();
 	}
 
 	// reset CurrentKeycode at the end of frame
@@ -184,9 +185,15 @@ px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 			px_uint code = PX_Object_Event_GetKeyDown(e);
 			if(code == KEYCODE_F5){
 				PyObject* ret = vm->exec("for obj in list(_root.children):\n  destroy(obj)", "<PainterEngine>", EXEC_MODE, g_mod);
-				if(ret == nullptr) exit(1);
+				if(ret == nullptr){
+					std::getchar();
+					return;
+				}
 				bool ok = _execute_user_script();
-				if(!ok) exit(1);
+				if(!ok){
+					std::getchar();
+					return;
+				}
 			}
 			Input::PressedKeys.insert(code);
 		} break;
@@ -196,7 +203,7 @@ px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 		PX_WorldPostEvent(&World, e);
 	}catch(Exception& e){
 		std::cerr << e.summary() << std::endl;
-		exit(1);
+		std::getchar();
 	}
 }
 

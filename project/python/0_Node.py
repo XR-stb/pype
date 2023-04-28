@@ -4,7 +4,8 @@ class Node:
     on_update = None             # 更新函数
     on_destroy = None            # 销毁函数
 
-    children = ...          # 获取子节点迭代器（C实现）
+    children = ...          # 获取子节点的元组（C实现）
+    child_count = ...       # 获取子节点数量（C实现）
     parent = ...            # 获取/设置父节点（C实现）
     position = ...          # 获取/设置本地位置（C实现）
     _draw = ...             # 绘制函数
@@ -38,21 +39,6 @@ class Node:
                 if c not in self._stopped_coroutines
             ]
             self._stopped_coroutines.clear()
-
-    def __getitem__(self, index):
-        i = 0
-        for child in self.children:
-            if i == index:
-                return child
-            i += 1
-        raise IndexError
-
-    @property
-    def child_count(self):
-        i = 0
-        for _ in self.children:
-            i += 1
-        return i
 
     @property
     def global_position(self):

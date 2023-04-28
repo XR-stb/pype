@@ -17,26 +17,26 @@ inline PX_Object* get_px_obj(PyObject* obj){
     return _get_px_obj(obj);
 }
 
-struct PX_ChildrenIter: BaseIter{
-    PyObject* ref;
-    PX_Object* curr;
+// struct PX_ChildrenIter: BaseIter{
+//     PyObject* ref;
+//     PX_Object* curr;
 
-    PX_ChildrenIter(VM* vm, PyObject* ref): BaseIter(vm){
-        this->ref = ref;
-        curr = get_px_obj(ref)->pChilds;
-    }
+//     PX_ChildrenIter(VM* vm, PyObject* ref): BaseIter(vm){
+//         this->ref = ref;
+//         curr = get_px_obj(ref)->pChilds;
+//     }
 
-    PyObject* next() override{
-        if(curr == NULL) return vm->StopIteration;
-        PyObject* ret = (PyObject*)curr->User_ptr;
-        curr = curr->pNextBrother;
-        return ret;
-    }
+//     PyObject* next() override{
+//         if(curr == NULL) return vm->StopIteration;
+//         PyObject* ret = (PyObject*)curr->User_ptr;
+//         curr = curr->pNextBrother;
+//         return ret;
+//     }
 
-    void _gc_mark() const override {
-        OBJ_MARK(ref);
-    }
-};
+//     void _gc_mark() const override {
+//         OBJ_MARK(ref);
+//     }
+// };
 
 
 inline void traverse(PX_Object* obj, void (*f)(PX_Object*)){
@@ -110,7 +110,24 @@ inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
 
     type->attr().set("children", vm->property(
         [](VM* vm, ArgsView args){
-            return vm->PyIter(PX_ChildrenIter(vm, args[0]));
+            PX_Object* curr = _get_px_obj(args[0])->pChilds;
+            List children;
+            while(curr != NULL){
+                children.push_back((PyObject*)curr->User_ptr);
+                curr = curr->pNextBrother;
+            }
+            return VAR(Tuple(std::move(children)));
+        }));
+
+    type->attr().set("child_count", vm->property(
+        [](VM* vm, ArgsView args){
+            PX_Object* curr = _get_px_obj(args[0])->pChilds;
+            int count = 0;
+            while(curr != NULL){
+                count++;
+                curr = curr->pNextBrother;
+            }
+            return VAR(count);
         }));
 
     type->attr().set("width", vm->property(

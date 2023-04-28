@@ -1,6 +1,6 @@
 """pype核心模块"""
 
-from typing import Any, Callable, Generator, Iterable
+from typing import Any, Callable, Generator, Iterable, Tuple
 
 class Vector2:
     def __init__(self, x: float, y: float):
@@ -59,9 +59,6 @@ class Node:
     width: int          # 节点的宽度
     height: int         # 节点的高度
 
-    def children(self) -> Iterable['Node']:
-        """返回子节点的迭代器"""
-
     @property
     def global_position(self) -> Vector2:
         """获取全局坐标"""
@@ -75,8 +72,9 @@ class Node:
     @property
     def child_count(self) -> int:
         """获取子节点的数量"""
-    def __getitem__(self, index: int) -> 'Node':
-        """获取子节点"""
+    @property
+    def children(self) -> Tuple['Node']:
+        """返回一个包含所有子节点的元组"""
 
     def on_ready(self) -> None:
         """[消息] 当节点被创建时调用"""
