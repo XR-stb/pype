@@ -261,6 +261,10 @@ def WaitForSeconds(seconds: float) -> Generator:
 
 def load(path: str) -> Any:
     """加载一个资源并返回一个指针，此函数带有缓存，因此多次调用同一个资源不会重复加载"""
+def load_frame_animation(path: str, speed=60, loop=True) -> FrameAnimation:
+    """从文件夹加载帧动画，以文件名的字典序决定帧的顺序"""
+
+
 def traverse() -> Generator:
     """返回一个可以遍历对象树所有物体的迭代器，每个项`(Node, int)`表示物体及其深度（从0开始）"""
 def destroy(obj: Node) -> None:
@@ -278,10 +282,6 @@ class FrameAnimation:
     frames: List[Texture2D] # 帧列表
     speed: int              # 每秒播放的帧数
     loop: bool              # 是否循环播放
-
-    @staticmethod
-    def from_dir(path: str, speed: int, loop: bool) -> 'FrameAnimation':
-        """从文件夹加载帧动画，以文件名的字典序决定帧的顺序"""
 
 class FrameAnimator(Node):
     """序列帧动画器，通过控制`parent`节点的`texture`属性播放序列帧动画"""

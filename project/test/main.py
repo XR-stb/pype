@@ -24,7 +24,7 @@ animator = FrameAnimator()
 animator.parent = sprite
 
 # 从文件夹加载序列帧动画，速度为12帧/秒
-animator['fox_run'] = FrameAnimation.from_dir("assets/fox/run", 12)
+animator['fox_run'] = load_frame_animation("assets/fox/run", 12)
 
 # 播放动画
 animator.play("fox_run")
