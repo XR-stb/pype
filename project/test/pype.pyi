@@ -41,7 +41,7 @@ class Signal:
 class Time:
     delta_time: float
 
-class Input:
+class KeyCode:
     Undefined: int = 0
     Alpha0: int = 1
     Alpha1: int = 2
@@ -169,7 +169,12 @@ class Input:
     Sleep: int = 124
 
     @staticmethod
-    def get_key(c: str) -> bool:
+    def nameof(c: int) -> str:
+        """获取键码的字符串名称"""
+
+class Input:
+    @staticmethod
+    def get_key(c: int) -> bool:
         """检查当前帧某个按键是否被按下"""
 
     @staticmethod

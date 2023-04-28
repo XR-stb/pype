@@ -29,7 +29,8 @@ struct Input {
             return VAR(std::move(t));
         });
 
-        vm->bind_static_method<1>(type, "_nameof_keycode", [](VM* vm, ArgsView args){
+        PyObject* tp_keycode = vm->new_type_object(mod, "KeyCode", vm->tp_object);
+        vm->bind_static_method<1>(tp_keycode, "nameof", [](VM* vm, ArgsView args){
             unsigned int code = CAST(unsigned int, args[0]);
             if(code >= KEY_MAPPING_SIZE){
                 vm->ValueError("undefined key code");
@@ -38,7 +39,7 @@ struct Input {
         });
 
         for(int i=0; i<KEY_MAPPING_SIZE; i++){
-            type->attr().set(kVirtualKeyCodes[i], VAR(i));
+            tp_keycode->attr().set(kVirtualKeyCodes[i], VAR(i));
         }
     }
 

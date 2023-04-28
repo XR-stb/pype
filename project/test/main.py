@@ -3,12 +3,14 @@ from pype import *
 
 class Test(Node):
     def on_update(self) -> None:
+        if Input.get_key(KeyCode.Alpha0):
+            print("!!!!");
         a = Input.get_pressed_keys()
         if not a:
             return
         print(a)
         for i in a:
-            print(Input._nameof_keycode(i), end=' ')
+            print(KeyCode.nameof(i), end=' ')
         print()
 
 Test()
