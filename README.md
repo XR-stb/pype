@@ -65,6 +65,8 @@ LogoSprite()
 
 ## API参考
 
+#### 这里的API文档已经过时，请参考[pype.pyi](https://github.com/blueloveTH/pype/blob/master/project/test/pype.pyi)文件中的接口文档。
+
 ### `Node`
 
 - [x] `.name`，获取名字，返回`str`
