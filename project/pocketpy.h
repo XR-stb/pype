@@ -7011,6 +7011,11 @@ inline void add_module_os(VM* vm){
         bool exists = std::filesystem::exists(path);
         return VAR(exists);
     });
+
+    vm->bind_func<1>(path_obj, "basename", [](VM* vm, ArgsView args){
+        std::filesystem::path path(CAST(Str&, args[0]).sv());
+        return VAR(path.filename().string());
+    });
 }
 
 } // namespace pkpy
@@ -7030,7 +7035,7 @@ inline Bytes _read_file_cwd(const Str& name){
 
 #endif
 
-// generated on 2023-04-27 21:04:17
+// generated on 2023-04-28 13:54:02
 #include <map>
 #include <string>
 

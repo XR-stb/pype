@@ -1,6 +1,6 @@
 """pype核心模块"""
 
-from typing import Any, Callable, Generator, Iterable, Tuple
+from typing import Any, Callable, Generator, Iterable, Tuple, List
 
 class Vector2:
     def __init__(self, x: float, y: float):
@@ -131,3 +131,28 @@ def _repl() -> None:
 
 #####################################################
 
+class FrameAnimation:
+    frames: List[Texture2D] # 帧列表
+    speed: int              # 每秒播放的帧数
+    loop: bool              # 是否循环播放
+
+    @staticmethod
+    def from_dir(path: str, speed: int, loop: bool) -> 'FrameAnimation':
+        """从文件夹加载帧动画，以文件名的字典序决定帧的顺序"""
+
+class FrameAnimator(Node):
+    """序列帧动画器，通过控制`parent`节点的`texture`属性播放序列帧动画"""
+
+    def __setitem__(self, name: str, anim: FrameAnimation):
+        """增加一个帧动画"""
+
+    def __getitem__(self, name: str) -> FrameAnimation:
+        """获取一个帧动画"""
+
+    def play(self, name: str) -> None:
+        """播放一个帧动画"""
+
+    def stop(self) -> None:
+        """停止播放"""
+
+#####################################################

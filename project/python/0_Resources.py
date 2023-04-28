@@ -7,6 +7,6 @@ def load(path: str):
     if path.endswith(".bmp") or path.endswith(".jpg") or path.endswith(".png") or path.endswith(".traw"):
         res = _PX_LoadTextureFromFile(path)
     else:
-        raise ValueError("未知的资源类型")
+        return None
     _resources[path] = res
     return res
