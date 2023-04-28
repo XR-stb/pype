@@ -1,7 +1,6 @@
 #include "Common.h"
 #include "Framework.h"
 #include "_keycodes.h"
-#include <cstdio>
 using namespace pkpy;
 
 
@@ -29,8 +28,7 @@ bool _execute_user_script(){
 	return ret != nullptr;
 }
 
-px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width, px_int screen_height)
-{
+px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width, px_int screen_height) {
 	Bytes content = _read_file_cwd("config.py");
 	if(!content){
 		std::cout << "config.py文件未找到" << std::endl;
@@ -86,8 +84,7 @@ px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width
 	return PX_TRUE;
 }
 
-px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int screen_height)
-{
+px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int screen_height) {
 	// 设置工作目录
 	bool curr_is_ok = std::filesystem::exists("main.py");
 	if(!curr_is_ok){
@@ -128,28 +125,8 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 	return ok;
 }
 
-px_void clear_event_queue(){
-	while(!event_queue.empty()){
-		PX_Object_Event e = event_queue.front();
-		event_queue.pop();
-		if(e.Event == PX_OBJECT_EVENT_KEYDOWN){
-			int scancode = PX_Object_Event_GetKeyDown(e);
-			Input::press_scancode(scancode);
-			// hot reload via F5
-			if(Input::get_key_down(41)){
-				PyObject* ret = vm->exec("for obj in list(_root.children):\n  destroy(obj)", "<PainterEngine>", EXEC_MODE, g_mod);
-				if(ret == nullptr){ std::getchar(); return; }
-				bool ok = _execute_user_script();
-				if(!ok){ std::getchar(); return; }
-			}
-		}else{
-			PX_WorldPostEvent(&World, e);
-		}
-	}
-}
-
-px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed)
-{
+px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed) {
+	Input::begin_update_subscribed_keys();
 	if(!g_frame_counter.do_update(&elapsed)) return;
 
 	// 设置Time.delta_time
@@ -158,20 +135,34 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed)
 	g_mod->attr(m_Time)->attr().set(m_deltaTime, VAR(elapsed / 1000.0));
 
 	try{
-		clear_event_queue();
+		// 处理事件
+		while(!event_queue.empty()){
+			PX_Object_Event e = event_queue.front();
+			event_queue.pop();
+			PX_WorldPostEvent(&World, e);
+		}
+
+		// hot reload via F5
+		if(Input::get_key_down(41)){
+			PyObject* ret = vm->exec("for obj in list(_root.children):\n  destroy(obj)", "<PainterEngine>", EXEC_MODE, g_mod);
+			if(ret == nullptr){ std::getchar(); return; }
+			bool ok = _execute_user_script();
+			if(!ok) std::getchar();
+			return;
+		}
+
 		PX_WorldUpdate(&World, elapsed);
 	}catch(Exception& e){
 		std::cerr << e.summary() << std::endl;
 		std::getchar();
 	}
-
 #ifdef PX_DEBUG_SERVER
 	_debug_server.update(vm);
 #endif
+	Input::end_update_subscribed_keys();
 }
 
-px_void PX_ApplicationRender(PX_Application *pApp, px_dword elapsed)
-{
+px_void PX_ApplicationRender(PX_Application *pApp, px_dword elapsed) {
 	if(!g_frame_counter.do_render(&elapsed)) return;
 
 	px_surface *pRenderSurface = &pApp->runtime.RenderSurface;
@@ -183,16 +174,11 @@ px_void PX_ApplicationRender(PX_Application *pApp, px_dword elapsed)
 		std::cerr << e.summary() << std::endl;
 		std::getchar();
 	}
-
-	// reset CurrentKeycode at the end of frame
-	Input::clear_pressed_keys();
 }
 
-px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
-{
+px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e) {
 	// PX_ApplicationEventDefault
-	if (e.Event==PX_OBJECT_EVENT_WINDOWRESIZE)
-	{
+	if (e.Event==PX_OBJECT_EVENT_WINDOWRESIZE) {
 		px_int surface_width=0,surface_height=0;
 		px_double wdh;
 
@@ -203,8 +189,6 @@ px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e)
 		PX_RuntimeResize(&pApp->runtime,surface_width,surface_height,(px_int)PX_Object_Event_GetWidth(e),(px_int)PX_Object_Event_GetHeight(e));
 		return;
 	}
-
-	// 推入事件队列
 	event_queue.push(e);
 }
 

@@ -64,9 +64,12 @@ else()
 
     find_package(OpenGL REQUIRED)
     find_package(GLUT REQUIRED)
+    find_package(X11 REQUIRED)
+
     target_link_libraries(${TARGET_NAME}
         OpenGL::GL
         GLUT::GLUT
         Threads::Threads
+        ${X11_LIBRARIES}
     )
 endif()

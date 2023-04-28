@@ -4,14 +4,11 @@ from pype import *
 class Test(Node):
     def on_update(self) -> None:
         if Input.get_key_down(KeyCode.Alpha0):
-            print("!!!!");
+            print("key down");
+        if Input.get_key_up(KeyCode.Alpha0):
+            print("key up");
         # a = Input.get_all_keys()
-        # if not a:
-        #     return
         # print(a)
-        # for i in a:
-        #     print(KeyCode.nameof(i), end=' ')
-        # print()
 
 Test()
 
