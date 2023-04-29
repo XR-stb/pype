@@ -2069,7 +2069,8 @@ struct PyObject{
     virtual void* value() = 0;
     virtual void _obj_gc_mark() = 0;
 
-    PyObject(Type type) : type(type) {}
+    PyObject(Type type) : type(type), _attr(nullptr) {}
+
     virtual ~PyObject() {
         if(_attr == nullptr) return;
         _attr->~NameDict();
@@ -2081,35 +2082,13 @@ struct PyObject{
     }
 };
 
-template<typename T>
-void gc_mark(T& t);
-
 template <typename T>
 struct Py_ final: PyObject {
     T _value;
-
-    Py_(Type type, const T& val): PyObject(type), _value(val) { _init(); }
-    Py_(Type type, T&& val): PyObject(type), _value(std::move(val)) { _init(); }
-
-    void _init() noexcept {
-        if constexpr (std::is_same_v<T, Type> || std::is_same_v<T, DummyModule>) {
-            _attr = new(pool64.alloc<NameDict>()) NameDict(kTypeAttrLoadFactor);
-        }else if constexpr(std::is_same_v<T, DummyInstance>){
-            _attr = new(pool64.alloc<NameDict>()) NameDict(kInstAttrLoadFactor);
-        }else if constexpr(std::is_same_v<T, Function> || std::is_same_v<T, NativeFunc>){
-            _attr = new(pool64.alloc<NameDict>()) NameDict(kInstAttrLoadFactor);
-        }else{
-            _attr = nullptr;
-        }
-    }
     void* value() override { return &_value; }
-
-    void _obj_gc_mark() override {
-        if(gc.marked) return;
-        gc.marked = true;
-        if(_attr != nullptr) pkpy::gc_mark<NameDict>(*_attr);
-        pkpy::gc_mark<T>(_value);   // handle PyObject* inside _value `T`
-    }
+    void _obj_gc_mark() override {}
+    Py_(Type type, const T& value) : PyObject(type), _value(value) {}
+    Py_(Type type, T&& value) : PyObject(type), _value(std::move(value)) {}
 };
 
 struct MappingProxy{
@@ -2120,7 +2099,22 @@ struct MappingProxy{
 };
 
 #define OBJ_GET(T, obj) (((Py_<T>*)(obj))->_value)
-#define OBJ_MARK(obj) if(!is_tagged(obj)) (obj)->_obj_gc_mark()
+// #define OBJ_GET(T, obj) (*reinterpret_cast<T*>((obj)->value()))
+
+#define OBJ_MARK(obj) \
+    if(!is_tagged(obj) && !(obj)->gc.marked) {                      \
+        (obj)->gc.marked = true;                                    \
+        (obj)->_obj_gc_mark();                                      \
+        if((obj)->is_attr_valid()) gc_mark_namedict((obj)->attr()); \
+    }
+
+inline void gc_mark_namedict(NameDict& t){
+    if(t.size() == 0) return;
+    for(uint16_t i=0; i<t._capacity; i++){
+        if(t._items[i].first.empty()) continue;
+        OBJ_MARK(t._items[i].second);
+    }
+}
 
 Str obj_type_name(VM* vm, Type type);
 
@@ -2152,23 +2146,6 @@ inline bool is_non_tagged_type(PyObject* obj, Type type) {
 #endif
     return !is_tagged(obj) && obj->type == type;
 }
-
-#define PY_CLASS(T, mod, name) \
-    static Type _type(VM* vm) {  \
-        static const StrName __x0(#mod);      \
-        static const StrName __x1(#name);     \
-        return OBJ_GET(Type, vm->_modules[__x0]->attr(__x1));               \
-    }                                                                       \
-    static PyObject* register_class(VM* vm, PyObject* mod) {                \
-        PyObject* type = vm->new_type_object(mod, #name, vm->tp_object);    \
-        if(OBJ_NAME(mod) != #mod) {                                         \
-            auto msg = fmt("register_class() failed: ", OBJ_NAME(mod), " != ", #mod); \
-            throw std::runtime_error(msg);                                  \
-        }                                                                   \
-        T::_register(vm, mod, type);                                        \
-        type->attr()._try_perfect_rehash();                                 \
-        return type;                                                        \
-    }                                                                       
 
 union BitsCvt {
     i64 _int;
@@ -2209,9 +2186,131 @@ __T _py_cast(VM* vm, PyObject* obj) {
 }
 
 #define VAR(x) py_var(vm, x)
-#define VAR_T(T, ...) vm->heap.gcnew<T>(T::_type(vm), T(__VA_ARGS__))
 #define CAST(T, x) py_cast<T>(vm, x)
 #define _CAST(T, x) _py_cast<T>(vm, x)
+
+/*****************************************************************/
+template<>
+struct Py_<List> final: PyObject {
+    List _value;
+    void* value() override { return &_value; }
+
+    Py_(Type type, List&& val): PyObject(type), _value(std::move(val)) {}
+    Py_(Type type, const List& val): PyObject(type), _value(val) {}
+
+    void _obj_gc_mark() override {
+        for(PyObject* obj: _value) OBJ_MARK(obj);
+    }
+};
+
+template<>
+struct Py_<Tuple> final: PyObject {
+    Tuple _value;
+    void* value() override { return &_value; }
+
+    Py_(Type type, Tuple&& val): PyObject(type), _value(std::move(val)) {}
+    Py_(Type type, const Tuple& val): PyObject(type), _value(val) {}
+
+    void _obj_gc_mark() override {
+        for(PyObject* obj: _value) OBJ_MARK(obj);
+    }
+};
+
+template<>
+struct Py_<MappingProxy> final: PyObject {
+    MappingProxy _value;
+    void* value() override { return &_value; }
+    Py_(Type type, MappingProxy val): PyObject(type), _value(val) {}
+    void _obj_gc_mark() override {
+        OBJ_MARK(_value.obj);
+    }
+};
+
+template<>
+struct Py_<BoundMethod> final: PyObject {
+    BoundMethod _value;
+    void* value() override { return &_value; }
+    Py_(Type type, BoundMethod val): PyObject(type), _value(val) {}
+    void _obj_gc_mark() override {
+        OBJ_MARK(_value.self);
+        OBJ_MARK(_value.func);
+    }
+};
+
+template<>
+struct Py_<Slice> final: PyObject {
+    Slice _value;
+    void* value() override { return &_value; }
+    Py_(Type type, Slice val): PyObject(type), _value(val) {}
+    void _obj_gc_mark() override {
+        OBJ_MARK(_value.start);
+        OBJ_MARK(_value.stop);
+        OBJ_MARK(_value.step);
+    }
+};
+
+template<>
+struct Py_<Function> final: PyObject {
+    Function _value;
+    void* value() override { return &_value; }
+    Py_(Type type, Function val): PyObject(type), _value(val) {
+        enable_instance_dict();
+    }
+    void _obj_gc_mark() override {
+        _value.decl->_gc_mark();
+        if(_value._module != nullptr) OBJ_MARK(_value._module);
+        if(_value._closure != nullptr) gc_mark_namedict(*_value._closure);
+    }
+};
+
+template<>
+struct Py_<NativeFunc> final: PyObject {
+    NativeFunc _value;
+    void* value() override { return &_value; }
+    Py_(Type type, NativeFunc val): PyObject(type), _value(val) {
+        enable_instance_dict();
+    }
+    void _obj_gc_mark() override {}
+};
+
+template<>
+struct Py_<Super> final: PyObject {
+    Super _value;
+    void* value() override { return &_value; }
+    Py_(Type type, Super val): PyObject(type), _value(val) {}
+    void _obj_gc_mark() override {
+        OBJ_MARK(_value.first);
+    }
+};
+
+template<>
+struct Py_<DummyInstance> final: PyObject {
+    void* value() override { return nullptr; }
+    Py_(Type type, DummyInstance val): PyObject(type) {
+        enable_instance_dict();
+    }
+    void _obj_gc_mark() override {}
+};
+
+template<>
+struct Py_<Type> final: PyObject {
+    Type _value;
+    void* value() override { return &_value; }
+    Py_(Type type, Type val): PyObject(type), _value(val) {
+        enable_instance_dict(kTypeAttrLoadFactor);
+    }
+    void _obj_gc_mark() override {}
+};
+
+template<>
+struct Py_<DummyModule> final: PyObject {
+    void* value() override { return nullptr; }
+    Py_(Type type, DummyModule val): PyObject(type) {
+        enable_instance_dict(kTypeAttrLoadFactor);
+    }
+    void _obj_gc_mark() override {}
+};
+
 
 }   // namespace pkpy
 
@@ -2809,52 +2908,6 @@ inline void FuncDecl::_gc_mark() const{
     code->_gc_mark();
     for(int i=0; i<kwargs.size(); i++) OBJ_MARK(kwargs[i].value);
 }
-
-template<> inline void gc_mark<List>(List& t){
-    for(PyObject* obj: t){
-        OBJ_MARK(obj);
-    }
-}
-
-template<> inline void gc_mark<Tuple>(Tuple& t){
-    for(PyObject* obj: t){
-        OBJ_MARK(obj);
-    }
-}
-
-template<> inline void gc_mark<NameDict>(NameDict& t){
-    if(t.size() == 0) return;
-    for(uint16_t i=0; i<t._capacity; i++){
-        if(t._items[i].first.empty()) continue;
-        OBJ_MARK(t._items[i].second);
-    }
-}
-
-template<> inline void gc_mark<MappingProxy>(MappingProxy& t){
-    OBJ_MARK(t.obj);
-}
-
-template<> inline void gc_mark<BoundMethod>(BoundMethod& t){
-    OBJ_MARK(t.self);
-    OBJ_MARK(t.func);
-}
-
-template<> inline void gc_mark<Slice>(Slice& t){
-    OBJ_MARK(t.start);
-    OBJ_MARK(t.stop);
-    OBJ_MARK(t.step);
-}
-
-template<> inline void gc_mark<Function>(Function& t){
-    t.decl->_gc_mark();
-    if(t._module != nullptr) OBJ_MARK(t._module);
-    if(t._closure != nullptr) gc_mark<NameDict>(*t._closure);
-}
-
-template<> inline void gc_mark<Super>(Super& t){
-    OBJ_MARK(t.first);
-}
-// NOTE: std::function may capture some PyObject*, they can not be marked
 
 }   // namespace pkpy
 
@@ -6720,72 +6773,25 @@ void gc_mark(T& t) {
 
 namespace pkpy {
 
-// template<typename Ret, typename... Params>
-// struct NativeProxyFunc {
-//     static constexpr int N = sizeof...(Params);
-//     using _Fp = Ret(*)(Params...);
-//     _Fp func;
-//     NativeProxyFunc(_Fp func) : func(func) {}
+#define PY_CLASS(T, mod, name)                  \
+    static Type _type(VM* vm) {                 \
+        static const StrName __x0(#mod);        \
+        static const StrName __x1(#name);       \
+        return OBJ_GET(Type, vm->_modules[__x0]->attr(__x1));               \
+    }                                                                       \
+    static PyObject* register_class(VM* vm, PyObject* mod) {                \
+        PyObject* type = vm->new_type_object(mod, #name, vm->tp_object);    \
+        if(OBJ_NAME(mod) != #mod) {                                         \
+            auto msg = fmt("register_class() failed: ", OBJ_NAME(mod), " != ", #mod); \
+            throw std::runtime_error(msg);                                  \
+        }                                                                   \
+        T::_register(vm, mod, type);                                        \
+        type->attr()._try_perfect_rehash();                                 \
+        return type;                                                        \
+    }                                                                       
 
-//     PyObject* operator()(VM* vm, ArgsView args) {
-//         if (args.size() != N) {
-//             vm->TypeError("expected " + std::to_string(N) + " arguments, but got " + std::to_string(args.size()));
-//         }
-//         return call<Ret>(vm, args, std::make_index_sequence<N>());
-//     }
+#define VAR_T(T, ...) vm->heap.gcnew<T>(T::_type(vm), T(__VA_ARGS__))
 
-//     template<typename __Ret, size_t... Is>
-//     std::enable_if_t<std::is_void_v<__Ret>, PyObject*> call(VM* vm, ArgsView args, std::index_sequence<Is...>) {
-//         func(py_cast<Params>(vm, args[Is])...);
-//         return vm->None;
-//     }
-
-//     template<typename __Ret, size_t... Is>
-//     std::enable_if_t<!std::is_void_v<__Ret>, PyObject*> call(VM* vm, ArgsView args, std::index_sequence<Is...>) {
-//         __Ret ret = func(py_cast<Params>(vm, args[Is])...);
-//         return VAR(std::move(ret));
-//     }
-// };
-
-// template<typename Ret, typename T, typename... Params>
-// struct NativeProxyMethod {
-//     static constexpr int N = sizeof...(Params);
-//     using _Fp = Ret(T::*)(Params...);
-//     _Fp func;
-//     NativeProxyMethod(_Fp func) : func(func) {}
-
-//     PyObject* operator()(VM* vm, ArgsView args) {
-//         int actual_size = args.size() - 1;
-//         if (actual_size != N) {
-//             vm->TypeError("expected " + std::to_string(N) + " arguments, but got " + std::to_string(actual_size));
-//         }
-//         return call<Ret>(vm, args, std::make_index_sequence<N>());
-//     }
-
-//     template<typename __Ret, size_t... Is>
-//     std::enable_if_t<std::is_void_v<__Ret>, PyObject*> call(VM* vm, ArgsView args, std::index_sequence<Is...>) {
-//         T& self = py_cast<T&>(vm, args[0]);
-//         (self.*func)(py_cast<Params>(vm, args[Is+1])...);
-//         return vm->None;
-//     }
-
-//     template<typename __Ret, size_t... Is>
-//     std::enable_if_t<!std::is_void_v<__Ret>, PyObject*> call(VM* vm, ArgsView args, std::index_sequence<Is...>) {
-//         T& self = py_cast<T&>(vm, args[0]);
-//         __Ret ret = (self.*func)(py_cast<Params>(vm, args[Is+1])...);
-//         return VAR(std::move(ret));
-//     }
-// };
-
-// template<typename Ret, typename... Params>
-// auto native_proxy_callable(Ret(*func)(Params...)) {
-//     return NativeProxyFunc<Ret, Params...>(func);
-// }
-
-// template<typename Ret, typename T, typename... Params>
-// auto native_proxy_callable(Ret(T::*func)(Params...)) {
-//     return NativeProxyMethod<Ret, T, Params...>(func);
-// }
 
 struct VoidP{
     PY_CLASS(VoidP, c, void_p)
@@ -6873,16 +6879,16 @@ struct FileIO {
     bool is_text() const { return mode != "rb" && mode != "wb" && mode != "ab"; }
 
     FileIO(VM* vm, Str file, Str mode): file(file), mode(mode) {
-        std::ios_base::openmode extra = 0;
+        std::ios_base::openmode extra = static_cast<std::ios_base::openmode>(0);
         if(mode == "rb" || mode == "wb" || mode == "ab"){
             extra |= std::ios::binary;
         }
         if(mode == "rt" || mode == "r" || mode == "rb"){
-            _fs.open(file.sv(), std::ios::in | extra);
+            _fs.open(file.str(), std::ios::in | extra);
         }else if(mode == "wt" || mode == "w" || mode == "wb"){
-            _fs.open(file.sv(), std::ios::out | extra);
+            _fs.open(file.str(), std::ios::out | extra);
         }else if(mode == "at" || mode == "a" || mode == "ab"){
-            _fs.open(file.sv(), std::ios::app | extra);
+            _fs.open(file.str(), std::ios::app | extra);
         }else{
             vm->ValueError("invalid mode");
         }
@@ -7035,7 +7041,7 @@ inline Bytes _read_file_cwd(const Str& name){
 
 #endif
 
-// generated on 2023-04-28 13:54:02
+// generated on 2023-04-29 14:14:47
 #include <map>
 #include <string>
 
