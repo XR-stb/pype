@@ -52,6 +52,9 @@ px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width
 		PX_APPLICATION_MEMORYPOOL_GAME_SIZE = CAST(i64, val) * 1024 * 1024;
 		val = vm->_main->attr("PX_APPLICATION_MEMORYPOOL_SPACE_SIZE");
 		PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = CAST(i64, val) * 1024 * 1024;
+		/**********************************************/
+		val = vm->_main->attr("frame_rate");
+		g_frame_counter.set_frame_rate(CAST(int, val));
 		delete vm;
 	}
 

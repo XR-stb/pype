@@ -142,6 +142,10 @@ struct FrameCounter{
     px_dword elapsed = 0;
 	bool flag = false;
 
+    void set_frame_rate(int fps){
+        update_freq = 1000 / fps;
+    }
+
 	bool do_update(px_dword* delta){
 		if(flag) throw std::runtime_error("do_update() called twice in one frame");
 		accum_time += *delta;
