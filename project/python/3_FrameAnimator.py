@@ -1,21 +1,8 @@
-import os
-
 class FrameAnimation:
     def __init__(self) -> None:
         self.frames = []        # 帧列表
         self.speed = 60         # 每秒播放的帧数
         self.loop = True        # 是否循环播放
-
-    def from_dir(path: str, speed=60, loop=True):
-        anim = FrameAnimation()
-        anim.speed = speed
-        anim.loop = loop
-        # 按文件名的字典序确定帧的顺序
-        for file in sorted(os.listdir(path)):
-            res = load(os.path.join(path, file))
-            if type(res) is Texture2D:
-                anim.frames.append(res)
-        return anim
 
 class FrameAnimator(Node):
     def __init__(self):
