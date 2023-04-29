@@ -18,16 +18,14 @@ struct GCProxy{
     static void _register(VM* vm, PyObject* mod, PyObject* type){
         vm->bind_static_method<-1>(type, "__new__", CPP_NOT_IMPLEMENTED());
     }
-};
 
-namespace pkpy{
-    template<> inline void gc_mark<GCProxy>(GCProxy& proxy){
+    void _gc_mark(){
         PX_Object* px_root = get_px_obj(g_root);
         traverse(px_root, [](PX_Object* obj){
             OBJ_MARK((PyObject*)obj->User_ptr);
         });
     }
-}
+};
 
 inline void python_init(){
     vm = pkpy_new_vm(true);
