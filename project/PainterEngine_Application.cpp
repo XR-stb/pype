@@ -1,12 +1,12 @@
-#include "Common.h"
-#include "framework.h"
+#include "_common.h"
+#include "_pype.h"
 #include "_keycodes.h"
-using namespace pkpy;
 
+using namespace pkpy;
 
 #define PX_DEBUG_SERVER
 #ifdef PX_DEBUG_SERVER
-#include "debugserver.h"
+#include "_debugserver.h"
 inline static DebugServer _debug_server;
 #endif
 
