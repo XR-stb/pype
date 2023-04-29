@@ -1,34 +1,42 @@
 from pype import _repl, _root, _print_tree
 from pype import *
 
-class Test(Node):
-    def on_update(self) -> None:
-        if Input.get_key_down(KeyCode.Alpha0):
-            print("key down");
-        if Input.get_key_up(KeyCode.Alpha0):
-            print("key up");    
-        if Input.get_mouse_button_down(0):
-            print("mouse down");
-        if Input.get_mouse_button_up(0):
-            print("mouse up");
+# class Test(Node):
+#     def on_update(self) -> None:
+#         if Input.get_key_down(KeyCode.Alpha0):
+#             print("key down");
+#         if Input.get_key_up(KeyCode.Alpha0):
+#             print("key up");    
+#         if Input.get_mouse_button_down(0):
+#             print("mouse down");
+#         if Input.get_mouse_button_up(0):
+#             print("mouse up");
 
-Test()
+tex = load("assets/fox.png")
+print(tex.width, tex.height)
+sp = Sprite2D()
+sp.scale = 0.3
+sp.texture = tex  # 设置为刚刚加载的纹理
+sp.color = Color(1, 0, 0, 0.5)
+sp.angle = 90
+# Test()
 
-# 创建一个精灵对象
-sprite = Sprite2D()
-sprite.scale = 0.5
-sprite.position = Vector2(100, 100)
+# # 创建一个精灵对象
+# sprite = Sprite2D()
+# sprite.scale = 0.5
+# sprite.position = Vector2(100, 100)
 
-# 创建一个序列帧动画器，并将其作为子节点
-animator = FrameAnimator()
-animator.parent = sprite
+# # 创建一个序列帧动画器，并将其作为子节点
+# animator = FrameAnimator()
+# animator.parent = sprite
 
-# 从文件夹加载序列帧动画，速度为12帧/秒
-animator['fox_run'] = load_frame_animation("assets/fox/run", 12)
+# # 从文件夹加载序列帧动画，速度为12帧/秒
+# animator['fox_run'] = load_frame_animation("assets/fox/run", 12)
 
-# 播放动画
-animator.play("fox_run")
+# # 播放动画
+# animator.play("fox_run")
 
+# sprite.color = Color(0, 1, 1, 0.8)
 
 
 

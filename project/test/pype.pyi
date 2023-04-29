@@ -2,6 +2,13 @@
 
 from typing import Any, Callable, Generator, Iterable, Tuple, List
 
+class Color:
+    def __init__(self, r: float, g: float, b: float, a: float = 1.0):
+        self.r = r
+        self.g = g
+        self.b = b
+        self.a = a
+
 class Vector2:
     def __init__(self, x: float, y: float):
         self.x = x
@@ -238,6 +245,7 @@ class Node:
 
 class Sprite2D(Node):
     texture: Texture2D   # 精灵的纹理
+    color: Color         # 精灵的颜色
 
 class Label(Node):
     text: str

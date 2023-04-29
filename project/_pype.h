@@ -36,6 +36,7 @@ inline void python_init(){
     Vector2::register_class(vm, g_mod);
     Input::register_class(vm, g_mod);
     Texture2D::register_class(vm, g_mod);
+    Color::register_class(vm, g_mod);
     GCProxy::register_class(vm, g_mod);
 
     /*************全局私有函数*************/
@@ -63,13 +64,14 @@ inline void python_init(){
         return VAR_T(Texture2D, tex);
     });
 
-    vm->bind_func<4>(g_mod, "_PX_TextureRenderEx", [](VM* vm, ArgsView args){
+    vm->bind_func<5>(g_mod, "_PX_TextureRenderEx", [](VM* vm, ArgsView args){
         px_surface* psurface = &App.runtime.RenderSurface;
         Texture2D& tex = CAST(Texture2D&, args[0]);
         Vector2& pos = CAST(Vector2&, args[1]);
-        float angle = CAST(float, args[2]);
-        float scale = CAST(float, args[3]);
-        PX_TextureRenderEx(psurface, tex.ptr, pos.x, pos.y, PX_ALIGN_LEFTTOP, NULL, scale, angle);
+        float angle = vm->num_to_float(args[2]);
+        float scale = vm->num_to_float(args[3]);
+        Color& color = CAST(Color&, args[4]);
+        PX_TextureRenderEx(psurface, tex.ptr, pos.x, pos.y, PX_ALIGN_LEFTTOP, color.blend(), scale, angle);
         return vm->None;
     });
 

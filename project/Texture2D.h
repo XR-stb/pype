@@ -5,6 +5,36 @@
 
 using namespace pkpy;
 
+
+struct Color{
+    PY_CLASS(Color, pype, Color)
+
+    float r, g, b, a;
+    Color(float r, float g, float b, float a) : r(r), g(g), b(b), a(a) {}
+
+    PX_TEXTURERENDER_BLEND* blend() { return (PX_TEXTURERENDER_BLEND*)&r; }
+
+    static void _register(VM* vm, PyObject* mod, PyObject* type){
+        vm->bind_static_method<-1>(type, "__new__", [](VM* vm, ArgsView args){
+            if(args.size()!=3 && args.size()!=4){
+                vm->TypeError("Color() takes 3 or 4 arguments");
+            }
+            float r = vm->num_to_float(args[0]);
+            float g = vm->num_to_float(args[1]);
+            float b = vm->num_to_float(args[2]);
+            float a = args.size()==4 ? vm->num_to_float(args[3]) : 1.0f;
+            return VAR_T(Color, r, g, b, a);
+        });
+
+        vm->bind_method<0>(type, "__repr__", [](VM* vm, ArgsView args){
+            Color& self = CAST(Color&, args[0]);
+            std::stringstream ss;
+            ss << "Color(" << self.r << ", " << self.g << ", " << self.b << ", " << self.a << ")";
+            return VAR(ss.str());
+        });
+    }
+};
+
 struct Texture2D {
     PY_CLASS(Texture2D, pype, Texture2D)
 
