@@ -31,7 +31,7 @@ bool _execute_user_script(){
 px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width, px_int screen_height) {
 	Bytes content = _read_file_cwd("config.py");
 	if(!content){
-		std::cout << "config.py文件未找到" << std::endl;
+		std::cout << "config.py 文件未找到" << std::endl;
 		return PX_FALSE;
 	}
 
@@ -94,7 +94,7 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 		if(std::filesystem::exists("../../project/test/main.py")){
 			std::filesystem::current_path("../../project/test");
 		}else{
-			std::cerr << "main.py文件未找到" << std::endl;
+			std::cerr << "main.py 文件未找到" << std::endl;
 			return PX_FALSE;
 		}
 	}
