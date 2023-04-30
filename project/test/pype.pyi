@@ -2,6 +2,9 @@
 
 from typing import Any, Callable, Generator, Iterable, Tuple, List
 
+# 根节点
+_root: 'Node' = ...
+
 class Color:
     def __init__(self, r: float, g: float, b: float, a: float = 1.0):
         self.r = r
