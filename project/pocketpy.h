@@ -2043,6 +2043,7 @@ struct Bytes{
 
     Bytes() : _data(), _ok(false) {}
     Bytes(std::vector<char>&& data) : _data(std::move(data)), _ok(true) {}
+    Bytes(const std::string& data) : _data(data.begin(), data.end()), _ok(true) {}
     operator bool() const noexcept { return _ok; }
 };
 
@@ -6688,7 +6689,7 @@ public:
 
 } // namespace pkpy
 
-// generated on 2023-04-30 22:08:19
+// generated on 2023-04-30 22:29:23
 #include <map>
 #include <string>
 
@@ -6946,13 +6947,11 @@ inline void add_module_requests(VM* vm){
         }
 
         auto _to_resp = [=](const httplib::Result& res){
-            std::vector<char> buf(res->body.size());
-            for(int i=0; i<res->body.size(); i++) buf[i] = res->body[i];
             return vm->call(
                 vm->_modules[m_requests]->attr(m_Response),
                 VAR(res->status),
                 VAR(res->reason),
-                VAR(Bytes(std::move(buf)))
+                VAR(Bytes(res->body))
             );
         };
 
