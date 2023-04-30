@@ -250,7 +250,7 @@ inline bool _platform_get_key(int scancode) {
     return GetKeyState(scancode) & 0x8000;
 }
 
-#elif __linux__
+#elif __linux__ && !__ANDROID__
 #include <X11/Xlib.h>
 #include "X11/keysym.h"
 
@@ -317,12 +317,11 @@ inline bool _platform_get_key(int scancode) {
     // XCloseDisplay(dpy);
     return isPressed;
 }
+#else
 
-#elif __EMSCRIPTEN__
-#include <emscripten.h>
-// not implemented yet
-#elif __APPLE__
-// not implemented yet
+const int _native_key_mapping[sizeof(kVirtualKeyCodes)/sizeof(char*)] = {};
+inline bool _platform_get_key(int scancode) { return false; }
+
 #endif
 
 const int KEY_MAPPING_SIZE = sizeof(_native_key_mapping) / sizeof(int);
