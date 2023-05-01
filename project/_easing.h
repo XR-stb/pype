@@ -179,7 +179,7 @@ inline void add_module_easing(VM* vm){
 #define EASE(name)  \
     vm->bind_func<1>(mod, "Ease"#name, [](VM* vm, ArgsView args){  \
         f64 t = CAST(f64, args[0]); \
-        return ease##name(t);   \
+        return VAR(ease##name(t));   \
     });
 
     EASE(InSine)
