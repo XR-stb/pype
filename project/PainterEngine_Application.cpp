@@ -148,9 +148,8 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed) {
 	if(!g_frame_counter.do_update(&elapsed)) return;
 
 	// 设置Time.delta_time
-	static StrName m_Time = "Time";
-	static StrName m_deltaTime = "delta_time";
-	g_mod->attr(m_Time)->attr().set(m_deltaTime, VAR(elapsed / 1000.0));
+	static PyObject* _ticker = g_mod->attr("Time")->attr("_tick");
+	vm->call(_ticker, elapsed / 1000.0);
 
 	try{
 		// 处理事件

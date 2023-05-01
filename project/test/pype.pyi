@@ -50,6 +50,7 @@ class Signal:
 
 class Time:
     delta_time: float
+    time: float
 
 class KeyCode:
     Undefined: int = 0

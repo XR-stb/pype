@@ -1,6 +1,7 @@
 #pragma once
 
 #include "_common.h"
+#include "_easing.h"
 #include "Node.h"
 #include "Vector2.h"
 #include "Texture2D.h"
@@ -28,7 +29,8 @@ struct GCProxy{
 };
 
 inline void python_init(){
-    vm = pkpy_new_vm(true);
+    vm = new VM();
+    add_module_easing(vm);
     vm->bind_builtin_func<0>("input", [](VM* vm, ArgsView args){
         return VAR(pkpy::getline());
     });
