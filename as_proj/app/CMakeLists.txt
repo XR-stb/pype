@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(ANDROID_STL c++_static)
 
 include_directories(${ANDROID_NDK}/sources/android/native_app_glue/)
+include_directories(${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/include)
+include_directories(${ANDROID_NDK}/sources/cxx-stl/llvm-libc++abi/include)
 include_directories(${PAINTERENGINE_DIR})
 include_directories(${PAINTERENGINE_DIR}/platform/android)
 include_directories(${PAINTERENGINE_PROJECT_DIR})
