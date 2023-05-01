@@ -149,7 +149,7 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed) {
 
 	// 设置Time.delta_time
 	static PyObject* _ticker = g_mod->attr("Time")->attr("_tick");
-	vm->call(_ticker, elapsed / 1000.0);
+	vm->call(_ticker, VAR(elapsed / 1000.0));
 
 	try{
 		// 处理事件
