@@ -317,11 +317,14 @@ inline bool _platform_get_key(int scancode) {
     // XCloseDisplay(dpy);
     return isPressed;
 }
-#else
+#elif __ANDROID__
+#include <android/app.h>
 
 const int _native_key_mapping[sizeof(kVirtualKeyCodes)/sizeof(char*)] = {};
 inline bool _platform_get_key(int scancode) { return false; }
 
+#else
+#error "Unsupported platform"
 #endif
 
 const int KEY_MAPPING_SIZE = sizeof(_native_key_mapping) / sizeof(int);

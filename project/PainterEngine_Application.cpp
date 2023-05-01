@@ -5,7 +5,9 @@
 using namespace pkpy;
 
 #define PX_DEBUG_SERVER
-// #define PX_USE_REMOTE_FS
+#ifdef __ANDROID__
+#undef PX_DEBUG_SERVER
+#endif
 
 #ifdef PX_DEBUG_SERVER
 #include "_debugserver.h"
@@ -90,18 +92,17 @@ px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width
 }
 
 px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int screen_height) {
-#if defined(PX_USE_REMOTE_FS) && defined(PX_DEBUG_SERVER)
-	set_read_file_cwd([](const Str& path){
-		httplib::Client client("http://localhost");
-		httplib::Result res = client.Get("/" + path.str());
-		if(res->status != 200){
-			std::cerr << "远程路径 " << path << " 加载失败" << std::endl;
-			return Bytes();
-		}
-		return Bytes(res->body);
-	});
-#else
 	// 设置工作目录
+#ifdef __ANDROID__
+	std::filesystem::path p(android::app::getDownloadsDir().c_str());
+	p /= "PainterEngine";
+	if(std::filesystem::exists(p / "main.py")){
+		std::filesystem::current_path(p);
+	}else{
+		std::cerr << "main.py 文件未找到" << std::endl;
+		return PX_FALSE;
+	}
+#else
 	bool curr_is_ok = std::filesystem::exists("main.py");
 	if(!curr_is_ok){
 		if(std::filesystem::exists("../../project/test/main.py")){
