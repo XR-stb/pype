@@ -71,7 +71,7 @@ class TweenSet:
         if len(self._tweens) == 0:
             return StopIteration
         
-def Node@to(name, target, duration, ease=None, on_complete=None):
+def Node@to(self, name, target, duration, ease=None, on_complete=None):
     tween = Tween(self, name, target, duration)
     if ease:
         tween.ease = ease

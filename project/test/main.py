@@ -16,8 +16,8 @@ animator['fox_run'] = load_frame_animation("assets/fox/run", 12)
 # 播放动画
 animator.play("fox_run")
 
-
-
+# 制作Tween
+sprite.to("scale", 1.0, 4)
 
 # for i in range(4):
 #     b = Button()
