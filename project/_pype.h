@@ -13,21 +13,6 @@
 
 using namespace pkpy;
 
-struct GCProxy{
-    PY_CLASS(GCProxy, pype, _GCProxy)
-
-    static void _register(VM* vm, PyObject* mod, PyObject* type){
-        vm->bind_static_method<-1>(type, "__new__", CPP_NOT_IMPLEMENTED());
-    }
-
-    void _gc_mark(){
-        PX_Object* px_root = get_px_obj(g_root);
-        traverse(px_root, [](PX_Object* obj){
-            OBJ_MARK((PyObject*)obj->User_ptr);
-        });
-    }
-};
-
 inline void python_init(){
     vm = new VM();
     add_module_easing(vm);
@@ -39,7 +24,6 @@ inline void python_init(){
     Input::register_class(vm, g_mod);
     Texture2D::register_class(vm, g_mod);
     Color::register_class(vm, g_mod);
-    GCProxy::register_class(vm, g_mod);
 
     /*************全局私有函数*************/
     vm->bind_func<1>(g_mod, "_PX_ObjectDelete", [](VM* vm, ArgsView args){
@@ -135,7 +119,12 @@ inline void python_init(){
     // 设置相机指向(0, 0)
     PX_WorldSetCamera(&World, px_point{0, 0, 0});
     // 创建GC代理，该代理用于对象树标记
-    g_mod->attr().set("_gc_proxy", VAR_T(GCProxy));
+    vm->_gc_marker_ex = [](VM* vm){
+        PX_Object* px_root = _get_px_obj(g_root);
+        traverse(px_root, [](PX_Object* obj){
+            OBJ_MARK((PyObject*)obj->User_ptr);
+        });
+    };
 }
 
 

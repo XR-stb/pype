@@ -1,136 +1,145 @@
 #pragma once
 
-// https://github.com/nicolausYes/easing-functions
-
 #include <cmath>
 #include "pocketpy.h"
 
 namespace pkpy{
 
+// https://easings.net/
+
 const double PI = 3.1415926545;
 
-double easeInSine( double t ) {
-	return sin( PI/2 * t );
+inline static double easeInSine( double x ) {
+	return 1.0 - std::cos( x * PI / 2 );
 }
 
-double easeOutSine( double t ) {
-	return 1 + sin( PI/2 * (--t) );
+inline static double easeOutSine( double x ) {
+	return std::sin( x * PI / 2 );
 }
 
-double easeInOutSine( double t ) {
-	return 0.5 * (1 + sin( PI * (t - 0.5) ) );
+inline static double easeInOutSine( double x ) {
+	return -( std::cos( PI * x ) - 1 ) / 2;
 }
 
-double easeInQuad( double t ) {
-    return t * t;
+inline static double easeInQuad( double x ) {
+    return x * x;
 }
 
-double easeOutQuad( double t ) { 
-    return t * (2 - t);
+inline static double easeOutQuad( double x ) {
+    return 1 - std::pow( 1 - x, 2 );
 }
 
-double easeInOutQuad( double t ) {
-    return t < 0.5 ? 2 * t * t : t * (4 - 2 * t) - 1;
-}
-
-double easeInCubic( double t ) {
-    return t * t * t;
-}
-
-double easeOutCubic( double t ) {
-    return 1 + (--t) * t * t;
-}
-
-double easeInOutCubic( double t ) {
-    return t < 0.5 ? 4 * t * t * t : 1 + (--t) * (2 * (--t)) * (2 * t);
-}
-
-double easeInQuart( double t ) {
-    t *= t;
-    return t * t;
-}
-
-double easeOutQuart( double t ) {
-    t = (--t) * t;
-    return 1 - t * t;
-}
-
-double easeInOutQuart( double t ) {
-    if( t < 0.5 ) {
-        t *= t;
-        return 8 * t * t;
+inline static double easeInOutQuad( double x ) {
+    if( x < 0.5 ) {
+        return 2 * x * x;
     } else {
-        t = (--t) * t;
-        return 1 - 8 * t * t;
+        return 1 - std::pow( -2 * x + 2, 2 ) / 2;
     }
 }
 
-double easeInQuint( double t ) {
-    double t2 = t * t;
-    return t * t2 * t2;
+inline static double easeInCubic( double x ) {
+    return x * x * x;
 }
 
-double easeOutQuint( double t ) {
-    double t2 = (--t) * t;
-    return 1 + t * t2 * t2;
+inline static double easeOutCubic( double x ) {
+    return 1 - std::pow( 1 - x, 3 );
 }
 
-double easeInOutQuint( double t ) {
-    double t2;
-    if( t < 0.5 ) {
-        t2 = t * t;
-        return 16 * t * t2 * t2;
+inline static double easeInOutCubic( double x ) {
+    if( x < 0.5 ) {
+        return 4 * x * x * x;
     } else {
-        t2 = (--t) * t;
-        return 1 + 16 * t * t2 * t2;
+        return 1 - std::pow( -2 * x + 2, 3 ) / 2;
     }
 }
 
-double easeInExpo( double t ) {
-    return (pow( 2, 8 * t ) - 1) / 255;
+inline static double easeInQuart( double x ) {
+    return std::pow( x, 4 );
 }
 
-double easeOutExpo( double t ) {
-    return 1 - pow( 2, -8 * t );
+inline static double easeOutQuart( double x ) {
+    return 1 - std::pow( 1 - x, 4 );
 }
 
-double easeInOutExpo( double t ) {
-    if( t < 0.5 ) {
-        return (pow( 2, 16 * t ) - 1) / 510;
+inline static double easeInOutQuart( double x ) {
+    if( x < 0.5 ) {
+        return 8 * std::pow( x, 4 );
     } else {
-        return 1 - 0.5 * pow( 2, -16 * (t - 0.5) );
+        return 1 - std::pow( -2 * x + 2, 4 ) / 2;
     }
 }
 
-double easeInCirc( double t ) {
-    return 1 - sqrt( 1 - t );
+inline static double easeInQuint( double x ) {
+    return std::pow( x, 5 );
 }
 
-double easeOutCirc( double t ) {
-    return sqrt( t );
+inline static double easeOutQuint( double x ) {
+    return 1 - std::pow( 1 - x, 5 );
 }
 
-double easeInOutCirc( double t ) {
-    if( t < 0.5 ) {
-        return (1 - sqrt( 1 - 2 * t )) * 0.5;
+inline static double easeInOutQuint( double x ) {
+    if( x < 0.5 ) {
+        return 16 * std::pow( x, 5 );
     } else {
-        return (1 + sqrt( 2 * t - 1 )) * 0.5;
+        return 1 - std::pow( -2 * x + 2, 5 ) / 2;
     }
 }
 
-double easeInBack( double t ) {
-    return t * t * (2.70158 * t - 1.70158);
+inline static double easeInExpo( double x ) {
+    return x == 0 ? 0 : std::pow( 2, 10 * x - 10 );
 }
 
-double easeOutBack( double t ) {
-    return 1 + (--t) * t * (2.70158 * t + 1.70158);
+inline static double easeOutExpo( double x ) {
+    return x == 1 ? 1 : 1 - std::pow( 2, -10 * x );
 }
 
-double easeInOutBack( double t ) {
-    if( t < 0.5 ) {
-        return t * t * (7 * t - 2.5) * 2;
+inline double easeInOutExpo( double x ) {
+    if( x == 0 ) {
+        return 0;
+    } else if( x == 1 ) {
+        return 1;
+    } else if( x < 0.5 ) {
+        return std::pow( 2, 20 * x - 10 ) / 2;
     } else {
-        return 1 + (--t) * t * 2 * (7 * t + 2.5);
+        return (2 - std::pow( 2, -20 * x + 10 )) / 2;
+    }
+}
+
+inline static double easeInCirc( double x ) {
+    return 1 - std::sqrt( 1 - std::pow( x, 2 ) );
+}
+
+inline static double easeOutCirc( double x ) {
+    return std::sqrt( 1 - std::pow( x - 1, 2 ) );
+}
+
+inline static double easeInOutCirc( double x ) {
+    if( x < 0.5 ) {
+        return (1 - std::sqrt( 1 - std::pow( 2 * x, 2 ) )) / 2;
+    } else {
+        return (std::sqrt( 1 - std::pow( -2 * x + 2, 2 ) ) + 1) / 2;
+    }
+}
+
+inline static double easeInBack( double x ) {
+    const double c1 = 1.70158;
+    const double c3 = c1 + 1;
+    return c3 * x * x * x - c1 * x * x;
+}
+
+inline static double easeOutBack( double x ) {
+    const double c1 = 1.70158;
+    const double c3 = c1 + 1;
+    return 1 + c3 * std::pow( x - 1, 3 ) + c1 * std::pow( x - 1, 2 );
+}
+
+inline static double easeInOutBack( double x ) {
+    const double c1 = 1.70158;
+    const double c2 = c1 * 1.525;
+    if( x < 0.5 ) {
+        return (std::pow( 2 * x, 2 ) * ((c2 + 1) * 2 * x - c2)) / 2;
+    } else {
+        return (std::pow( 2 * x - 2, 2 ) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
     }
 }
 

@@ -998,6 +998,7 @@ const StrName __class__ = StrName::get("__class__");
 const StrName __base__ = StrName::get("__base__");
 const StrName __new__ = StrName::get("__new__");
 const StrName __iter__ = StrName::get("__iter__");
+const StrName __next__ = StrName::get("__next__");
 const StrName __str__ = StrName::get("__str__");
 const StrName __repr__ = StrName::get("__repr__");
 const StrName __getitem__ = StrName::get("__getitem__");
@@ -2685,13 +2686,13 @@ struct FastLocals{
     }
 };
 
-struct ValueStack {
-    static const size_t MAX_SIZE = 32768;
-    // We allocate 512 more bytes to keep `_sp` valid when `is_overflow() == true`.
-    PyObject* _begin[MAX_SIZE + 512];
+template<size_t MAX_SIZE>
+struct ValueStackImpl {
+    // We allocate extra MAX_SIZE/128 places to keep `_sp` valid when `is_overflow() == true`.
+    PyObject* _begin[MAX_SIZE + MAX_SIZE/128];
     PyObject** _sp;
 
-    ValueStack(): _sp(_begin) {}
+    ValueStackImpl(): _sp(_begin) {}
 
     PyObject*& top(){ return _sp[-1]; }
     PyObject* top() const { return _sp[-1]; }
@@ -2719,11 +2720,13 @@ struct ValueStack {
     void clear() { _sp = _begin; }
     bool is_overflow() const { return _sp >= _begin + MAX_SIZE; }
     
-    ValueStack(const ValueStack&) = delete;
-    ValueStack(ValueStack&&) = delete;
-    ValueStack& operator=(const ValueStack&) = delete;
-    ValueStack& operator=(ValueStack&&) = delete;
+    ValueStackImpl(const ValueStackImpl&) = delete;
+    ValueStackImpl(ValueStackImpl&&) = delete;
+    ValueStackImpl& operator=(const ValueStackImpl&) = delete;
+    ValueStackImpl& operator=(ValueStackImpl&&) = delete;
 };
+
+using ValueStack = ValueStackImpl<32768>;
 
 struct Frame {
     int _ip = -1;
@@ -3001,6 +3004,7 @@ public:
     ValueStack s_data;
     stack< Frame > callstack;
     std::vector<PyTypeInfo> _all_types;
+    void (*_gc_marker_ex)(VM*) = nullptr;
 
     NameDict _modules;                                  // loaded modules
     std::map<StrName, Str> _lazy_modules;               // lazy loaded modules
@@ -3242,15 +3246,12 @@ public:
         return heap.gcnew<P>(tp_iterator, std::forward<P>(value));
     }
 
-    BaseIter* PyIter_AS_C(PyObject* obj)
-    {
-        check_type(obj, tp_iterator);
-        return static_cast<BaseIter*>(obj->value());
-    }
-
-    BaseIter* _PyIter_AS_C(PyObject* obj)
-    {
-        return static_cast<BaseIter*>(obj->value());
+    PyObject* PyIterNext(PyObject* obj){
+        if(is_non_tagged_type(obj, tp_iterator)){
+            BaseIter* iter = static_cast<BaseIter*>(obj->value());
+            return iter->next();
+        }
+        return call_method(obj, __next__);
     }
     
     /***** Error Reporter *****/
@@ -4115,6 +4116,7 @@ inline void ManagedHeap::mark() {
     for(PyObject* obj: _no_gc) OBJ_MARK(obj);
     for(auto& frame : vm->callstack.data()) frame._gc_mark();
     for(PyObject* obj: vm->s_data) if(obj!=nullptr) OBJ_MARK(obj);
+    if(vm->_gc_marker_ex != nullptr) vm->_gc_marker_ex(vm);
 }
 
 inline Str obj_type_name(VM *vm, Type type){
@@ -4644,22 +4646,15 @@ __NEXT_STEP:;
     /*****************************************/
     TARGET(GET_ITER)
         TOP() = asIter(TOP());
-        check_type(TOP(), tp_iterator);
         DISPATCH();
-    TARGET(FOR_ITER) {
-#if DEBUG_EXTRA_CHECK
-        BaseIter* it = PyIter_AS_C(TOP());
-#else
-        BaseIter* it = _PyIter_AS_C(TOP());
-#endif
-        PyObject* obj = it->next();
-        if(obj != StopIteration){
-            PUSH(obj);
+    TARGET(FOR_ITER)
+        _0 = PyIterNext(TOP());
+        if(_0 != StopIteration){
+            PUSH(_0);
         }else{
-            int target = co_blocks[byte.block].end;
-            frame->jump_abs_break(target);
+            frame->jump_abs_break(co_blocks[byte.block].end);
         }
-    } DISPATCH();
+        DISPATCH();
     /*****************************************/
     TARGET(IMPORT_NAME) {
         StrName name(byte.arg);
@@ -4695,12 +4690,10 @@ __NEXT_STEP:;
     /*****************************************/
     TARGET(UNPACK_SEQUENCE)
     TARGET(UNPACK_EX) {
-        // asIter or iter->next may run bytecode, accidential gc may happen
         auto _lock = heap.gc_scope_lock();  // lock the gc via RAII!!
-        PyObject* obj = asIter(POPX());
-        BaseIter* iter = PyIter_AS_C(obj);
+        PyObject* iter = asIter(POPX());
         for(int i=0; i<byte.arg; i++){
-            PyObject* item = iter->next();
+            PyObject* item = PyIterNext(iter);
             if(item == StopIteration) ValueError("not enough values to unpack");
             PUSH(item);
         }
@@ -4708,23 +4701,22 @@ __NEXT_STEP:;
         if(byte.op == OP_UNPACK_EX){
             List extras;
             while(true){
-                PyObject* item = iter->next();
+                PyObject* item = PyIterNext(iter);
                 if(item == StopIteration) break;
                 extras.push_back(item);
             }
             PUSH(VAR(extras));
         }else{
-            if(iter->next() != StopIteration) ValueError("too many values to unpack");
+            if(PyIterNext(iter) != StopIteration) ValueError("too many values to unpack");
         }
     } DISPATCH();
     TARGET(UNPACK_UNLIMITED) {
         auto _lock = heap.gc_scope_lock();  // lock the gc via RAII!!
-        PyObject* obj = asIter(POPX());
-        BaseIter* iter = PyIter_AS_C(obj);
-        obj = iter->next();
-        while(obj != StopIteration){
-            PUSH(obj);
-            obj = iter->next();
+        PyObject* iter = asIter(POPX());
+        _0 = PyIterNext(iter);
+        while(_0 != StopIteration){
+            PUSH(_0);
+            _0 = PyIterNext(iter);
         }
     } DISPATCH();
     /*****************************************/
@@ -6689,7 +6681,7 @@ public:
 
 } // namespace pkpy
 
-// generated on 2023-04-30 22:29:23
+// generated on 2023-05-02 21:34:49
 #include <map>
 #include <string>
 
@@ -6801,6 +6793,196 @@ inline PyObject* Generator::next(){
 inline void Generator::_gc_mark() const{
     frame._gc_mark();
     for(PyObject* obj: s_backup) OBJ_MARK(obj);
+}
+
+} // namespace pkpy
+
+
+namespace pkpy {
+
+// https://github.com/zhicheng/base64/blob/master/base64.c
+
+#define BASE64_PAD '='
+#define BASE64DE_FIRST '+'
+#define BASE64DE_LAST 'z'
+
+/* BASE 64 encode table */
+static const char base64en[] = {
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+	'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+	'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+	'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+	'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+	'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+	'w', 'x', 'y', 'z', '0', '1', '2', '3',
+	'4', '5', '6', '7', '8', '9', '+', '/',
+};
+
+/* ASCII order for BASE 64 decode, 255 in unused character */
+static const unsigned char base64de[] = {
+	/* nul, soh, stx, etx, eot, enq, ack, bel, */
+	   255, 255, 255, 255, 255, 255, 255, 255,
+
+	/*  bs,  ht,  nl,  vt,  np,  cr,  so,  si, */
+	   255, 255, 255, 255, 255, 255, 255, 255,
+
+	/* dle, dc1, dc2, dc3, dc4, nak, syn, etb, */
+	   255, 255, 255, 255, 255, 255, 255, 255,
+
+	/* can,  em, sub, esc,  fs,  gs,  rs,  us, */
+	   255, 255, 255, 255, 255, 255, 255, 255,
+
+	/*  sp, '!', '"', '#', '$', '%', '&', ''', */
+	   255, 255, 255, 255, 255, 255, 255, 255,
+
+	/* '(', ')', '*', '+', ',', '-', '.', '/', */
+	   255, 255, 255,  62, 255, 255, 255,  63,
+
+	/* '0', '1', '2', '3', '4', '5', '6', '7', */
+	    52,  53,  54,  55,  56,  57,  58,  59,
+
+	/* '8', '9', ':', ';', '<', '=', '>', '?', */
+	    60,  61, 255, 255, 255, 255, 255, 255,
+
+	/* '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', */
+	   255,   0,   1,  2,   3,   4,   5,    6,
+
+	/* 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', */
+	     7,   8,   9,  10,  11,  12,  13,  14,
+
+	/* 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', */
+	    15,  16,  17,  18,  19,  20,  21,  22,
+
+	/* 'X', 'Y', 'Z', '[', '\', ']', '^', '_', */
+	    23,  24,  25, 255, 255, 255, 255, 255,
+
+	/* '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', */
+	   255,  26,  27,  28,  29,  30,  31,  32,
+
+	/* 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', */
+	    33,  34,  35,  36,  37,  38,  39,  40,
+
+	/* 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', */
+	    41,  42,  43,  44,  45,  46,  47,  48,
+
+	/* 'x', 'y', 'z', '{', '|', '}', '~', del, */
+	    49,  50,  51, 255, 255, 255, 255, 255
+};
+
+unsigned int
+base64_encode(const unsigned char *in, unsigned int inlen, char *out)
+{
+	int s;
+	unsigned int i;
+	unsigned int j;
+	unsigned char c;
+	unsigned char l;
+
+	s = 0;
+	l = 0;
+	for (i = j = 0; i < inlen; i++) {
+		c = in[i];
+
+		switch (s) {
+		case 0:
+			s = 1;
+			out[j++] = base64en[(c >> 2) & 0x3F];
+			break;
+		case 1:
+			s = 2;
+			out[j++] = base64en[((l & 0x3) << 4) | ((c >> 4) & 0xF)];
+			break;
+		case 2:
+			s = 0;
+			out[j++] = base64en[((l & 0xF) << 2) | ((c >> 6) & 0x3)];
+			out[j++] = base64en[c & 0x3F];
+			break;
+		}
+		l = c;
+	}
+
+	switch (s) {
+	case 1:
+		out[j++] = base64en[(l & 0x3) << 4];
+		out[j++] = BASE64_PAD;
+		out[j++] = BASE64_PAD;
+		break;
+	case 2:
+		out[j++] = base64en[(l & 0xF) << 2];
+		out[j++] = BASE64_PAD;
+		break;
+	}
+
+	out[j] = 0;
+
+	return j;
+}
+
+unsigned int
+base64_decode(const char *in, unsigned int inlen, unsigned char *out)
+{
+	unsigned int i;
+	unsigned int j;
+	unsigned char c;
+
+	if (inlen & 0x3) {
+		return 0;
+	}
+
+	for (i = j = 0; i < inlen; i++) {
+		if (in[i] == BASE64_PAD) {
+			break;
+		}
+		if (in[i] < BASE64DE_FIRST || in[i] > BASE64DE_LAST) {
+			return 0;
+		}
+
+		c = base64de[(unsigned char)in[i]];
+		if (c == 255) {
+			return 0;
+		}
+
+		switch (i & 0x3) {
+		case 0:
+			out[j] = (c << 2) & 0xFF;
+			break;
+		case 1:
+			out[j++] |= (c >> 4) & 0x3;
+			out[j] = (c & 0xF) << 4; 
+			break;
+		case 2:
+			out[j++] |= (c >> 2) & 0xF;
+			out[j] = (c & 0x3) << 6;
+			break;
+		case 3:
+			out[j++] |= c;
+			break;
+		}
+	}
+
+	return j;
+}
+
+void add_module_base64(VM* vm){
+    PyObject* mod = vm->new_module("base64");
+
+    // b64encode
+    vm->bind_static_method<1>(mod, "b64encode", [](VM* vm, ArgsView args){
+        Bytes& b = CAST(Bytes&, args[0]);
+        std::vector<char> out(b.size() * 2);
+        int size = base64_encode((const unsigned char*)b.data(), b.size(), out.data());
+        out.resize(size);
+        return VAR(Bytes(std::move(out)));
+    });
+
+    // b64decode
+    vm->bind_static_method<1>(mod, "b64decode", [](VM* vm, ArgsView args){
+        Bytes& b = CAST(Bytes&, args[0]);
+        std::vector<char> out(b.size());
+        int size = base64_decode(b.data(), b.size(), (unsigned char*)out.data());
+        out.resize(size);
+        return VAR(Bytes(std::move(out)));
+    });
 }
 
 } // namespace pkpy
@@ -7325,8 +7507,7 @@ inline void init_builtins(VM* _vm) {
     });
 
     _vm->bind_builtin_func<1>("next", [](VM* vm, ArgsView args) {
-        BaseIter* iter = vm->PyIter_AS_C(args[0]);
-        return iter->next();
+        return vm->PyIterNext(args[0]);
     });
 
     _vm->bind_builtin_func<1>("dir", [](VM* vm, ArgsView args) {
@@ -7754,7 +7935,16 @@ inline void init_builtins(VM* _vm) {
     _vm->bind_method<0>("ellipsis", "__repr__", CPP_LAMBDA(VAR("Ellipsis")));
 
     /************ bytes ************/
-    _vm->bind_static_method<1>("bytes", "__new__", CPP_NOT_IMPLEMENTED());
+    _vm->bind_static_method<1>("bytes", "__new__", [](VM* vm, ArgsView args){
+        List& list = CAST(List&, args[0]);
+        std::vector<char> buffer(list.size());
+        for(int i=0; i<list.size(); i++){
+            i64 b = CAST(i64, list[i]);
+            if(b<0 || b>255) vm->ValueError("byte must be in range[0, 256)");
+            buffer[i] = (char)b;
+        }
+        return VAR(Bytes(std::move(buffer)));
+    });
 
     _vm->bind_method<1>("bytes", "__getitem__", [](VM* vm, ArgsView args) {
         const Bytes& self = CAST(Bytes&, args[0]);
@@ -7925,6 +8115,18 @@ inline void add_module_math(VM* vm){
     vm->bind_func<1>(mod, "floor", CPP_LAMBDA(VAR((i64)std::floor(vm->num_to_float(args[0])))));
     vm->bind_func<1>(mod, "ceil", CPP_LAMBDA(VAR((i64)std::ceil(vm->num_to_float(args[0])))));
     vm->bind_func<1>(mod, "sqrt", CPP_LAMBDA(VAR(std::sqrt(vm->num_to_float(args[0])))));
+    vm->bind_func<2>(mod, "gcd", [](VM* vm, ArgsView args) {
+        i64 a = CAST(i64, args[0]);
+        i64 b = CAST(i64, args[1]);
+        if(a < 0) a = -a;
+        if(b < 0) b = -b;
+        while(b != 0){
+            i64 t = b;
+            b = a % b;
+            a = t;
+        }
+        return VAR(a);
+    });
 }
 
 inline void add_module_dis(VM* vm){
@@ -8080,6 +8282,7 @@ inline void VM::post_init(){
     add_module_c(this);
     add_module_gc(this);
     add_module_random(this);
+    add_module_base64(this);
 
     for(const char* name: {"this", "functools", "collections", "heapq", "bisect"}){
         _lazy_modules[name] = kPythonLibs[name];
