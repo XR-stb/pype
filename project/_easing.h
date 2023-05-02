@@ -10,7 +10,7 @@ namespace pkpy{
 const double PI = 3.1415926545;
 
 inline static double easeInSine( double x ) {
-	return 1.0 - std::cos( x * PI / 2 );
+    return 1.0 - std::cos( x * PI / 2 );
 }
 
 inline static double easeOutSine( double x ) {
@@ -143,43 +143,63 @@ inline static double easeInOutBack( double x ) {
     }
 }
 
-double easeInElastic( double t ) {
-    double t2 = t * t;
-    return t2 * t2 * sin( t * PI * 4.5 );
-}
-
-double easeOutElastic( double t ) {
-    double t2 = (t - 1) * (t - 1);
-    return 1 - t2 * t2 * cos( t * PI * 4.5 );
-}
-
-double easeInOutElastic( double t ) {
-    double t2;
-    if( t < 0.45 ) {
-        t2 = t * t;
-        return 8 * t2 * t2 * sin( t * PI * 9 );
-    } else if( t < 0.55 ) {
-        return 0.5 + 0.75 * sin( t * PI * 4 );
+inline static double easeInElastic( double x ) {
+    const double c4 = (2 * PI) / 3;
+    if( x == 0 ) {
+        return 0;
+    } else if( x == 1 ) {
+        return 1;
     } else {
-        t2 = (t - 1) * (t - 1);
-        return 1 - 8 * t2 * t2 * sin( t * PI * 9 );
+        return -std::pow( 2, 10 * x - 10 ) * std::sin( (x * 10 - 10.75) * c4 );
     }
 }
 
-double easeInBounce( double t ) {
-    return pow( 2, 6 * (t - 1) ) * abs( sin( t * PI * 3.5 ) );
-}
-
-double easeOutBounce( double t ) {
-    return 1 - pow( 2, -6 * t ) * abs( cos( t * PI * 3.5 ) );
-}
-
-double easeInOutBounce( double t ) {
-    if( t < 0.5 ) {
-        return 8 * pow( 2, 8 * (t - 1) ) * abs( sin( t * PI * 7 ) );
+inline static double easeOutElastic( double x ) {
+    const double c4 = (2 * PI) / 3;
+    if( x == 0 ) {
+        return 0;
+    } else if( x == 1 ) {
+        return 1;
     } else {
-        return 1 - 8 * pow( 2, -8 * t ) * abs( sin( t * PI * 7 ) );
+        return std::pow( 2, -10 * x ) * std::sin( (x * 10 - 0.75) * c4 ) + 1;
     }
+}
+
+inline double easeInOutElastic( double x ) {
+    const double c5 = (2 * PI) / 4.5;
+    if( x == 0 ) {
+        return 0;
+    } else if( x == 1 ) {
+        return 1;
+    } else if( x < 0.5 ) {
+        return -(std::pow( 2, 20 * x - 10 ) * std::sin( (20 * x - 11.125) * c5 )) / 2;
+    } else {
+        return (std::pow( 2, -20 * x + 10 ) * std::sin( (20 * x - 11.125) * c5 )) / 2 + 1;
+    }
+}
+
+inline static double easeOutBounce( double x ) {
+    const double n1 = 7.5625;
+    const double d1 = 2.75;
+    if( x < 1 / d1 ) {
+        return n1 * x * x;
+    } else if( x < 2 / d1 ) {
+        return n1 * (x -= 1.5 / d1) * x + 0.75;
+    } else if( x < 2.5 / d1 ) {
+        return n1 * (x -= 2.25 / d1) * x + 0.9375;
+    } else {
+        return n1 * (x -= 2.625 / d1) * x + 0.984375;
+    }
+}
+
+inline double easeInBounce( double x ) {
+    return 1 - easeOutBounce(1 - x);
+}
+
+inline static double easeInOutBounce( double x ) {
+    return x < 0.5
+    ? (1 - easeOutBounce(1 - 2 * x)) / 2
+    : (1 + easeOutBounce(2 * x - 1)) / 2;
 }
 
 inline void add_module_easing(VM* vm){
