@@ -2,18 +2,21 @@ cmake_minimum_required(VERSION 3.19)
 
 project(PainterEngine)
 #################################################################
-set(PAINTERENGINE_DIR E:/PainterEngine)
-set(PAINTERENGINE_PROJECT_DIR E:/PainterEngine/project)
+set(PAINTERENGINE_DIR ../../)
+set(PAINTERENGINE_PROJECT_DIR ../../project)
 #################################################################
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(ANDROID_STL c++_static)
 
-include_directories(${ANDROID_NDK}/sources/android/native_app_glue/)
-include_directories(${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/include)
-include_directories(${ANDROID_NDK}/sources/cxx-stl/llvm-libc++abi/include)
-include_directories(${ANDROID_NDK}/sources/android/cpufeatures/)
-include_directories(${ANDROID_NDK}/sources/android/support/include)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -fno-rtti")
+
+include_directories(
+        ${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/include
+        ${ANDROID_NDK}/sources/cxx-stl/llvm-libc++abi/include
+        ${ANDROID_NDK}/sources/android/native_app_glue
+)
 
 include_directories(${PAINTERENGINE_DIR})
 include_directories(${PAINTERENGINE_DIR}/platform/android)
