@@ -318,7 +318,6 @@ inline bool _platform_get_key(int scancode) {
     return isPressed;
 }
 #elif __ANDROID__
-#include <cstring>
 #include <android/app.h>
 
 const int _native_key_mapping[sizeof(kVirtualKeyCodes)/sizeof(char*)] = {};
