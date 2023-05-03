@@ -1,6 +1,7 @@
 """pype核心模块"""
 
 from typing import Any, Callable, Generator, Iterable, Tuple, List
+import easing
 
 # 根节点
 _root: 'Node' = ...
@@ -240,6 +241,9 @@ class Node:
     def on_destroy(self) -> None:
         """[消息] 当节点被销毁时调用"""
 
+    def to(self, name: str, target: Any, duration: float, ease=None) -> 'Tweener':
+        """将`self.name`在`duration`秒内变化到`target`，变化方式由`ease`指定"""
+
     def start_coroutine(self, obj) -> Generator:
         """启动一个协程"""
     def stop_coroutine(self, obj) -> None:
@@ -266,10 +270,32 @@ class Image(Node):
 
 #####################################################
 
+class Tween:
+    completed: Signal   # 完成时触发此信号
+    
+    def play(self) -> None:
+        """开始播放"""
+
+class Tweener(Tween):
+    ease = easing.EaseOutQuad
+    def __init__(self, obj, name, target, duration):
+        self.obj = obj                  # 目标对象
+        self.name = name                # 目标属性
+        self.target = target            # 最终值
+        self.duration = duration        # 持续时间
+
+class TweenList(Tween):
+    def append(self, tween: Tween):
+        """添加一个Tween实例"""
+
+#####################################################
+
 def WaitForEndOfFrame() -> Generator:
     """[协程] 等待当前帧结束"""
 def WaitForSeconds(seconds: float) -> Generator:
     """[协程] 等待`seconds`秒"""
+def WaitForSignal(signal: Signal) -> Generator:
+    """[协程] 等待信号触发"""
 
 def load(path: str) -> Any:
     """加载一个资源并返回一个指针，此函数带有缓存，因此多次调用同一个资源不会重复加载"""

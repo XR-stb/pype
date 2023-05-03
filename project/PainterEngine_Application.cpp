@@ -4,8 +4,8 @@
 
 using namespace pkpy;
 
-#define PX_DEBUG_SERVER
-#ifdef __ANDROID__
+// #define PX_DEBUG_SERVER
+#if defined(__ANDROID__) && defined(PX_DEBUG_SERVER)
 #undef PX_DEBUG_SERVER
 #endif
 

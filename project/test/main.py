@@ -17,7 +17,20 @@ animator['fox_run'] = load_frame_animation("assets/fox/run", 12)
 animator.play("fox_run")
 
 # 制作Tween
-sprite.to("scale", 1.0, 4)
+list = TweenList(sprite, [
+    Tweener(sprite, "position", Vector2(200, 200), 2),
+    Tweener(sprite, "scale", 1.0, 2),
+    Tweener(sprite, "angle", 90, 2),
+])
+# t = sprite.to("scale", 1.0, 4)
+list.completed.connect(lambda _: print("Tween completed!"))
+list.play()
+
+def coro():
+    yield from WaitForSignal(list.completed)
+    print(111)
+
+sprite.start_coroutine(coro())
 
 # for i in range(4):
 #     b = Button()

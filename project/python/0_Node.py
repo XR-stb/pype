@@ -81,7 +81,6 @@ class Node:
         return pos, angle, scale
 
     def start_coroutine(self, coroutine):
-        coroutine = iter(coroutine)
         self._coroutines.append(coroutine)
         return coroutine
 

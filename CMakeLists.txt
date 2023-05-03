@@ -52,7 +52,7 @@ find_package(Threads REQUIRED)
 if(PLATFORM STREQUAL "windows")
     set(CMAKE_CXX_COMPILER "cl")
     set(CMAKE_C_COMPILER "cl")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O1 /std:c++17 /GR- /EHsc /utf-8")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O2 /std:c++17 /GR- /EHsc /utf-8")
 
     target_link_libraries(${TARGET_NAME}
         Threads::Threads
@@ -60,7 +60,7 @@ if(PLATFORM STREQUAL "windows")
 else()
     set(CMAKE_CXX_COMPILER "clang++")
     set(CMAKE_C_COMPILER "clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1 -std=c++17 -fno-rtti -stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -std=c++17 -fno-rtti -stdlib=libc++")
 
     find_package(OpenGL REQUIRED)
     find_package(GLUT REQUIRED)

@@ -57,7 +57,7 @@ inline void python_init(){
         float angle = vm->num_to_float(args[2]);
         float scale = vm->num_to_float(args[3]);
         Color& color = CAST(Color&, args[4]);
-        PX_TextureRenderEx(psurface, tex.ptr, pos.x, pos.y, PX_ALIGN_LEFTTOP, color.blend(), scale, angle);
+        PX_TextureRenderEx(psurface, tex.ptr, pos.x, pos.y, PX_ALIGN_CENTER, color.blend(), scale, angle);
         return vm->None;
     });
 
