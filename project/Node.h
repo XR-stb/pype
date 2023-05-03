@@ -65,13 +65,23 @@ inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
         obj->Func_ObjectUpdate = [](PX_Object* obj, unsigned int _){
             PyObject* self = (PyObject*)obj->User_ptr;
             static StrName m_update = "_update";
-            ::vm->call_method(self, m_update);
+            try{
+                ::vm->call_method(self, m_update);
+            }catch(Exception& e){
+                std::cerr << e.summary() << std::endl;
+                std::getchar();
+            }
         };
         obj->Func_ObjectRender = [](px_surface* psurface, PX_Object* obj, px_uint elpased){
             PyObject* self = (PyObject*)obj->User_ptr;
             static StrName m_draw = "_draw";
             PyObject* method = ::vm->get_unbound_method(self, m_draw, &self);
-            if(self != PY_NULL) ::vm->call(method, self);
+            try{
+                if(self != PY_NULL) ::vm->call(method, self);
+            }catch(Exception& e){
+                std::cerr << e.summary() << std::endl;
+                std::getchar();
+            }
         };
         return VAR(obj);
     });
