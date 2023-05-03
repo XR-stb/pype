@@ -100,3 +100,7 @@ def WaitForSeconds(seconds):
     while total < seconds:
         total += Time.delta_time
         yield None
+
+def WaitUntil(condition):
+    while not condition():
+        yield None

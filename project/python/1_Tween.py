@@ -1,15 +1,32 @@
 import easing
 
 class Tween:
+    Ready = 0
+    Playing = 1
+    Completed = 2
+
     def __init__(self, obj):
         self.obj = obj
         self.completed = Signal()
-        self._used = False
+        self._state = Tween.Ready
+
+    @property
+    def state(self):
+        return self._state
+    
+    def is_ready(self):
+        return self._state == Tween.Ready
+
+    def is_playing(self):
+        return self._state == Tween.Playing
+    
+    def is_completed(self):
+        return self._state == Tween.Completed
 
     def _setup(self):
-        if self._used:
+        if self._state != Tween.Ready:
             raise ValueError("Tween实例只能播放一次")
-        self._used = True
+        self._state = Tween.Playing
 
     def play(self):
         self._setup()
@@ -35,6 +52,7 @@ class Tweener(Tween):
         t = Time.time - self._start_time
         if t >= self.duration:
             setattr(self.obj, self.name, self.target)
+            self._state = Tween.Completed
             self.completed.emit(self)
             return StopIteration
         progress = self.ease(t / self.duration)
@@ -62,6 +80,7 @@ class TweenList(Tween):
             return
         self._i += 1
         if self._i >= len(self.tweens):
+            self._state = Tween.Completed
             self.completed.emit(self)
             return StopIteration
         else:

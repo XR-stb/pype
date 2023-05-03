@@ -271,8 +271,22 @@ class Image(Node):
 #####################################################
 
 class Tween:
+    Ready = 0
+    Playing = 1
+    Completed = 2
+
     completed: Signal   # 完成时触发此信号
-    
+
+    @property
+    def state(self) -> int:
+        """获取当前状态"""
+    def is_ready(self) -> bool:
+        """检查当前状态是否为`Ready`"""
+    def is_playing(self) -> bool:
+        """检查当前状态是否为`Playing`"""
+    def is_completed(self) -> bool:
+        """检查当前状态是否为`Completed`"""
+
     def play(self) -> None:
         """开始播放"""
 
@@ -296,6 +310,8 @@ def WaitForSeconds(seconds: float) -> Generator:
     """[协程] 等待`seconds`秒"""
 def WaitForSignal(signal: Signal) -> Generator:
     """[协程] 等待信号触发"""
+def WaitUntil(condition: Callable) -> Generator:
+    """[协程] 等待`condition`返回`True`"""
 
 def load(path: str) -> Any:
     """加载一个资源并返回一个指针，此函数带有缓存，因此多次调用同一个资源不会重复加载"""

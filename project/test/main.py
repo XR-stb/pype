@@ -27,8 +27,9 @@ list.completed.connect(lambda _: print("Tween completed!"))
 list.play()
 
 def coro():
-    yield from WaitForSignal(list.completed)
-    print(111)
+    # yield from WaitForSignal(list.completed)
+    yield from WaitUntil(lambda: list.is_completed())
+    print("coro completed!")
 
 sprite.start_coroutine(coro())
 
