@@ -92,9 +92,9 @@ px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width
 }
 
 px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int screen_height) {
-	// 设置工作目录
+// 设置工作目录
 #ifdef __ANDROID__
-	std::filesystem::path p(android::app::getDownloadsDir().c_str());
+	std::filesystem::path p(std::filesystem::current_path());
 	p /= "PainterEngine";
 	if(std::filesystem::exists(p / "main.py")){
 		std::filesystem::current_path(p);
