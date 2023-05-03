@@ -9,6 +9,10 @@ namespace pkpy{
 
 const double PI = 3.1415926545;
 
+inline static double easeLinear( double x ) {
+    return x;
+}
+
 inline static double easeInSine( double x ) {
     return 1.0 - std::cos( x * PI / 2 );
 }
@@ -214,6 +218,7 @@ inline void add_module_easing(VM* vm){
         return VAR(ease##name(t));   \
     });
 
+    EASE(Linear)
     EASE(InSine)
     EASE(OutSine)
     EASE(InOutSine)
