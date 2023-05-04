@@ -36,7 +36,8 @@ jobs:
     - name: Build APK
       run: |
         cd as_proj
-        ./gradlew --no-daemon build
+        sudo apt-get install ninja-build
+        ./gradlew --no-daemon assembleDebug
     - uses: actions/upload-artifact@v3
       with:
         path: as_proj/app/build/outputs/apk/debug/app-debug.apk
