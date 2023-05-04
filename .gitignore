@@ -1,6 +1,8 @@
 # Prerequisites
 *.d
 
+as_proj/app/src/main/res/raw
+
 # python
 *.pyc
 *.pyo
