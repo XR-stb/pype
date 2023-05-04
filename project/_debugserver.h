@@ -56,9 +56,6 @@ struct DebugServer {
 
     void update(VM* vm){
         if(_state != DSS_PROCESSING) return;
-        // std::cout << "[" << (_is_eval?"EVAL":"EXEC") << " BEGIN]" << std::endl;
-        // std::cout << _buffer << std::endl;
-        // std::cout << "[" << (_is_eval?"EVAL":"EXEC") << " END]" << std::endl;
         try{
             CodeObject_ code = vm->compile(_buffer, "<remote>", _is_eval?EVAL_MODE:EXEC_MODE);
             PyObject* ret = vm->_exec(code, vm->_main);

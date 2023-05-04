@@ -1,6 +1,7 @@
 #pragma once
 
 #include "_common.h"
+#include "_platform.h"
 #include "Vector2.h"
 #include "pocketpy.h"
 
@@ -68,7 +69,7 @@ inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
             try{
                 ::vm->call_method(self, m_update);
             }catch(Exception& e){
-                std::cerr << e.summary() << std::endl;
+                log_error(e.summary());
                 std::getchar();
             }
         };
@@ -79,7 +80,7 @@ inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
             try{
                 if(self != PY_NULL) ::vm->call(method, self);
             }catch(Exception& e){
-                std::cerr << e.summary() << std::endl;
+                log_error(e.summary());
                 std::getchar();
             }
         };

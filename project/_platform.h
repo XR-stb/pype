@@ -35,6 +35,16 @@ inline PyObject* _platform_list_dir(PyObject* path){
     return VAR(list);
 }
 
+inline void _platform_log_info(const Str& msg){
+    std::string cmsg = msg.str();
+    __android_log_print(ANDROID_LOG_INFO, "pype", "%s", cmsg.c_str());
+}
+
+inline void _platform_log_error(const Str& msg){
+    std::string cmsg = msg.str();
+    __android_log_print(ANDROID_LOG_ERROR, "pype", "%s", cmsg.c_str());
+}
+
 #else
 
 inline Bytes _platform_read_bytes(const Str& path){
@@ -48,4 +58,22 @@ inline PyObject* _platform_list_dir(PyObject* path){
     return vm->call(f, path);
 }
 
+inline void _platform_log_info(const Str& msg){
+    std::cout << msg.str();
+}
+
+inline void _platform_log_error(const Str& msg){
+    std::cerr << msg.str();
+}
+
 #endif
+
+namespace pkpy{
+    void log_error(const Str& msg){
+        _platform_log_error(msg + "\n");
+    }
+
+    void log_info(const Str& msg){
+        _platform_log_info(msg + "\n");
+    }
+};

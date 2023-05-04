@@ -2,7 +2,6 @@
 
 #include "_common.h"
 #include "_easing.h"
-#include "_platform.h"
 #include "Node.h"
 #include "Vector2.h"
 #include "Texture2D.h"
@@ -15,7 +14,7 @@
 using namespace pkpy;
 
 inline void python_init(){
-    vm = new VM();
+    vm = new VM(false, true);
     add_module_easing(vm);
     vm->bind_builtin_func<0>("input", [](VM* vm, ArgsView args){
         return VAR(pkpy::getline());
@@ -90,7 +89,7 @@ inline void python_init(){
         double vm_usage = memory_usage()/1024.0/1024.0;
         vm_usage = (int)(vm_usage * 100 + 0.5) / 100.0;
         ss << "Python VM: " << vm_usage << " MB";
-        (*vm->_stdout) << ss.str() << std::endl;
+        log_info(ss.str());
         return vm->None;
     });
 

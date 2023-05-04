@@ -35,7 +35,7 @@ bool _execute_user_script(){
 px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width, px_int screen_height) {
 	Bytes content = _platform_read_bytes("config.py");
 	if(!content){
-		std::cout << "config.py 文件未找到" << std::endl;
+		log_error("config.py 文件未找到");
 		return PX_FALSE;
 	}
 
@@ -99,7 +99,7 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 		if(std::filesystem::exists("../../project/test/main.py")){
 			std::filesystem::current_path("../../project/test");
 		}else{
-			std::cerr << "main.py 文件未找到" << std::endl;
+			log_error("main.py 文件未找到");
 			return PX_FALSE;
 		}
 	}
@@ -119,7 +119,7 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 		PE_MEMORY_CALC_SIZE		// px_dword calcsize
 	);
 	if(!ok){
-		std::cerr << "PX_WorldInitialize failed" << std::endl;
+		log_error("PX_WorldInitialize failed");
 		return PX_FALSE;
 	}
 
@@ -127,7 +127,7 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 		// 初始化Python环境
 		python_init();
 	}catch(Exception& e){
-		std::cerr << e.summary() << std::endl;
+		log_error(e.summary());
 		return PX_FALSE;
 	}
 
@@ -170,7 +170,7 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed) {
 		Input::end_frame();
 	}catch(Exception& e){
 		Input::end_frame();
-		std::cerr << e.summary() << std::endl;
+		log_error(e.summary());
 		std::getchar();
 	}
 #ifdef PX_DEBUG_SERVER
@@ -187,7 +187,7 @@ px_void PX_ApplicationRender(PX_Application *pApp, px_dword elapsed) {
 	try{
 		PX_WorldRender(pRenderSurface, &World, elapsed);
 	}catch(Exception& e){
-		std::cerr << e.summary() << std::endl;
+		log_error(e.summary());
 		std::getchar();
 	}
 }
