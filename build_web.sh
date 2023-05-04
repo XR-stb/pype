@@ -1,3 +1,4 @@
+python preprocess.py
 rm -rf build/web
 mkdir -p build/web
 cp platform/webassembly/index.html build/web
