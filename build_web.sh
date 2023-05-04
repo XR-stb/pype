@@ -5,4 +5,4 @@ cp platform/webassembly/index.html build/web
 cd build/web
 emcmake cmake ../../CMakeLists.txt
 emmake make
-rm -rf build/web/CMakeFiles
+rm -rf CMakeFiles
