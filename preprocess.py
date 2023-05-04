@@ -34,3 +34,9 @@ namespace pe{
 
 with open("project/_generated.h", "w", encoding='utf-8') as f:
     f.write(generate_python_sources())
+
+import shutil
+shutil.rmtree("as_proj/app/src/main/assets", ignore_errors=True)
+shutil.copytree("game", "as_proj/app/src/main/assets")
+
+print("预处理完成")

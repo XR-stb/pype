@@ -6,6 +6,10 @@ set(TARGET_NAME "PainterEngine")
 set(PROJECT_PATH "project")
 set(PAINTERENGINE_PATH ".")
 
+execute_process(COMMAND python preprocess.py
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+)
+
 if(WIN32)
     set(PLATFORM "windows")
     message("Windows platform detected")

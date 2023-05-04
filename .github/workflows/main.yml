@@ -14,7 +14,6 @@ jobs:
     - name: CMake Build
       run: |
         git submodule update --init --recursive
-        python preprocess.py
         mkdir build
         cd build
         cmake ..
