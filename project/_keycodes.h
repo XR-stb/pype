@@ -321,6 +321,10 @@ inline bool _platform_get_key(int scancode) {
 const int _native_key_mapping[sizeof(kVirtualKeyCodes)/sizeof(char*)] = {};
 inline bool _platform_get_key(int scancode) { return false; }
 
+#elif __EMSCRIPTEN__
+const int _native_key_mapping[sizeof(kVirtualKeyCodes)/sizeof(char*)] = {};
+inline bool _platform_get_key(int scancode) { return false; }
+
 #else
 #error "Unsupported platform"
 #endif

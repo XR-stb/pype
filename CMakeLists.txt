@@ -12,6 +12,9 @@ if(WIN32)
 elseif(ANDROID)
     set(PLATFORM "android")
     message("Android platform detected")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    set(PLATFORM "webassembly")
+    message("Web platform detected")
 elseif(UNIX)
     set(PLATFORM "linux")
     message("Linux platform detected")
@@ -77,6 +80,17 @@ if(PLATFORM STREQUAL "android")
         GLESv3
         OpenSLES
         log)
+elseif(PLATFORM STREQUAL "webassembly")
+    set(CMAKE_C_COMPILER "emcc")
+    set(CMAKE_CXX_COMPILER "em++")
+    set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -O3 -sUSE_SDL -sUSE_SDL_IMAGE -sUSE_SDL_TTF -sUSE_SDL_MIXER --preload-file=${PAINTERENGINE_PATH}/game")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fno-rtti")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -s EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]' -s ALLOW_MEMORY_GROWTH=1")
+
+    add_executable(${TARGET_NAME}
+        ${COMMON_SRC}
+        ${PROJECT_SRC}
+    )
 else()
     add_executable(${TARGET_NAME}
         ${COMMON_SRC}
@@ -88,7 +102,7 @@ else()
     if(PLATFORM STREQUAL "windows")
         set(CMAKE_CXX_COMPILER "cl")
         set(CMAKE_C_COMPILER "cl")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O1 /GR- /EHsc /utf-8")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O2 /GR- /EHsc /utf-8")
 
         target_link_libraries(${TARGET_NAME}
             Threads::Threads
