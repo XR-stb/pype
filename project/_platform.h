@@ -27,6 +27,9 @@ inline void _platform_hook_read_file_cwd(VM* vm){
 
 inline PyObject* _platform_list_dir(PyObject* path){
     std::string cpath = CAST(Str&, path).str();
+    // 删除这些字符，保持兼容性
+    if(!cpath.empty() && cpath[0]=='.') cpath.erase(cpath.begin());
+    if(!cpath.empty() && cpath[0]=='/') cpath.erase(cpath.begin());
     AAssetDir* dir = AAssetManager_openDir(PX_assetManager, cpath.c_str());
     if(!dir) vm->IOError("AAssetManager_openDir() 调用失败");
     List list;
