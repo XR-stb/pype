@@ -62,13 +62,13 @@ if(PLATFORM STREQUAL "android")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
     set(ANDROID_NATIVE_APP_GLUE ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 
-    add_library(PAINTERENGINELIB
+    add_library(PainterEngineForAndroid
         STATIC
         ${ANDROID_NATIVE_APP_GLUE}
         ${COMMON_SRC}
     )
 
-    target_link_libraries(PAINTERENGINELIB
+    target_link_libraries(PainterEngineForAndroid
         android
         ${log-lib}
         EGL
