@@ -309,7 +309,7 @@ def WaitForEndOfFrame() -> Generator:
 def WaitForSeconds(seconds: float) -> Generator:
     """[协程] 等待`seconds`秒"""
 def WaitForSignal(signal: Signal) -> Generator:
-    """[协程] 等待信号触发"""
+    """[协程] 等待信号触发（实验性）"""
 def WaitUntil(condition: Callable) -> Generator:
     """[协程] 等待`condition`返回`True`"""
 

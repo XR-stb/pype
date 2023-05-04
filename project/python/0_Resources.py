@@ -14,7 +14,7 @@ def load(path: str):
     _resources[path] = res
     return res
 
-def load_dir(path: dir):
+def load_dir(path: str):
     assert type(path) is str
     return [
         load(os.path.join(path, file))
