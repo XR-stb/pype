@@ -42,7 +42,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(COMMON_SRC
-    ${PROJECT_SRC}
     ${PAINTERENGINE_SRC_0}
     ${PAINTERENGINE_SRC_1}
     ${PAINTERENGINE_SRC_2}
@@ -62,13 +61,16 @@ if(PLATFORM STREQUAL "android")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
     set(ANDROID_NATIVE_APP_GLUE ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 
-    add_library(PainterEngineForAndroid
+    add_library(PAINTERENGINELIB
         STATIC
         ${ANDROID_NATIVE_APP_GLUE}
         ${COMMON_SRC}
     )
 
+    add_library(PainterEngineForAndroid SHARED ${PROJECT_SRC})
+
     target_link_libraries(PainterEngineForAndroid
+        PAINTERENGINELIB
         android
         ${log-lib}
         EGL
@@ -78,6 +80,7 @@ if(PLATFORM STREQUAL "android")
 else()
     add_executable(${TARGET_NAME}
         ${COMMON_SRC}
+        ${PROJECT_SRC}
     )
 
     find_package(Threads REQUIRED)
