@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ "master" ]
 
+permissions:
+  contents: write
+  deployments: write
+  pages: write
+
 jobs:
   build_windows:
     runs-on: windows-latest
