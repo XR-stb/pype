@@ -86,7 +86,7 @@ elseif(PLATFORM STREQUAL "webassembly")
     set(CMAKE_CXX_COMPILER "em++")
     set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -O3 -sUSE_SDL -sUSE_SDL_IMAGE -sUSE_SDL_TTF -sUSE_SDL_MIXER")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fno-rtti")
-    set(EMCC_LINKER_FLAGS "--preload-file=${CMAKE_CURRENT_LIST_DIR}/game -s EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]' -s ALLOW_MEMORY_GROWTH=1")
+    set(EMCC_LINKER_FLAGS "--preload-file=game -s EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]' -s ALLOW_MEMORY_GROWTH=1")
 
     add_executable(${TARGET_NAME}
         ${COMMON_SRC}
