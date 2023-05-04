@@ -4,8 +4,6 @@ class Signal:
         self._bound_method = type(self.connect)
 
     def connect(self, f):
-        if type(f) is self._bound_method:
-            self.handlers.append(f)
         self.handlers.append(f)
 
     def disconnect(self, f):
