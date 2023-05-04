@@ -30,6 +30,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         java-version: '11'
+        distribution: 'adopt'
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
     - name: Build APK
