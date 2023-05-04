@@ -31,7 +31,7 @@ inline void python_init(){
     /*************全局私有函数*************/
     vm->bind_func<1>(g_mod, "_platform_read_bytes", [](VM* vm, ArgsView args){
         const Str& path = CAST(Str&, args[0]);
-        return VAR(_platform_read_bytes(path));
+        return VAR(_read_file_cwd(path));
     });
 
     vm->bind_func<1>(g_mod, "_platform_list_dir", [](VM* vm, ArgsView args){

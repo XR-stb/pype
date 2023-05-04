@@ -11,15 +11,18 @@ using namespace pkpy;
 
 extern AAssetManager* PX_assetManager;
 
-Bytes _platform_read_bytes(const Str& path){
-    std::string cpath = path.str();
-    AAsset* asset = AAssetManager_open(PX_assetManager, cpath.c_str(), 0);
-    if(!asset) return Bytes();
-    int size = AAsset_getLength(asset);
-    std::vector<char> buffer(size);
-    AAsset_read(asset, buffer.data(), size);
-    AAsset_close(asset);
-    return Bytes(std::move(buffer));
+inline void _platform_hook_read_file_cwd(VM* vm){
+    auto f = [](const Str& path){
+        std::string cpath = path.str();
+        AAsset* asset = AAssetManager_open(PX_assetManager, cpath.c_str(), 0);
+        if(!asset) return Bytes();
+        int size = AAsset_getLength(asset);
+        std::vector<char> buffer(size);
+        AAsset_read(asset, buffer.data(), size);
+        AAsset_close(asset);
+        return Bytes(std::move(buffer));
+    };
+    set_read_file_cwd(f);
 }
 
 inline PyObject* _platform_list_dir(PyObject* path){
@@ -47,9 +50,7 @@ inline void _platform_log_error(const Str& msg){
 
 #else
 
-inline Bytes _platform_read_bytes(const Str& path){
-    return _read_file_cwd(path);
-}
+inline void _platform_hook_read_file_cwd(VM* vm){}
 
 inline PyObject* _platform_list_dir(PyObject* path){
     static StrName m_os = "os";

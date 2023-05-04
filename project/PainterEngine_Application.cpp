@@ -1,4 +1,5 @@
 #include "_common.h"
+#include "_platform.h"
 #include "_pype.h"
 #include "_keycodes.h"
 
@@ -26,14 +27,14 @@ px_uint PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = 1024*1024*8;
 std::queue<PX_Object_Event> event_queue;
 
 bool _execute_user_script(){
-	Bytes content = _platform_read_bytes("main.py");
+	Bytes content = _read_file_cwd("main.py");
 	if(!content) return false;
 	PyObject* ret = vm->exec(content.str(), "main.py", EXEC_MODE);
 	return ret != nullptr;
 }
 
 px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width, px_int screen_height) {
-	Bytes content = _platform_read_bytes("config.py");
+	Bytes content = _read_file_cwd("config.py");
 	if(!content){
 		log_error("config.py 文件未找到");
 		return PX_FALSE;
@@ -92,7 +93,8 @@ px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width
 }
 
 px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int screen_height) {
-// 设置工作目录
+	_platform_hook_read_file_cwd(vm);
+
 #ifndef __ANDROID__
 	bool curr_is_ok = std::filesystem::exists("main.py");
 	if(!curr_is_ok){
