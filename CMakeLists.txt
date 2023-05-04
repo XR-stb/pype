@@ -26,10 +26,16 @@ file(GLOB PAINTERENGINE_PLATFORM_SRC
     "${PAINTERENGINE_PATH}/platform/${PLATFORM}/*.cpp"
 )
 
+aux_source_directory(box2d/src/collision BOX2D_SRC_0)
+aux_source_directory(box2d/src/common BOX2D_SRC_1)
+aux_source_directory(box2d/src/dynamics BOX2D_SRC_2)
+aux_source_directory(box2d/src/rope BOX2D_SRC_3)
+
 include_directories(
     "${PAINTERENGINE_PATH}"
     "${PROJECT_PATH}"
     "${PAINTERENGINE_PATH}/platform/${PLATFORM}"
+    "box2d/include"
 )
 
 add_executable(${TARGET_NAME}
@@ -38,6 +44,10 @@ add_executable(${TARGET_NAME}
     ${PAINTERENGINE_KERNEL_SRC}
     ${PAINTERENGINE_ARCHITECTURE_SRC}
     ${PAINTERENGINE_PLATFORM_SRC}
+    ${BOX2D_SRC_0}
+    ${BOX2D_SRC_1}
+    ${BOX2D_SRC_2}
+    ${BOX2D_SRC_3}
 )
 
 # Set C++17 standard
@@ -52,7 +62,7 @@ find_package(Threads REQUIRED)
 if(PLATFORM STREQUAL "windows")
     set(CMAKE_CXX_COMPILER "cl")
     set(CMAKE_C_COMPILER "cl")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O2 /std:c++17 /GR- /EHsc /utf-8")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O1 /std:c++17 /GR- /EHsc /utf-8")
 
     target_link_libraries(${TARGET_NAME}
         Threads::Threads
@@ -60,7 +70,7 @@ if(PLATFORM STREQUAL "windows")
 else()
     set(CMAKE_CXX_COMPILER "clang++")
     set(CMAKE_C_COMPILER "clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -std=c++17 -fno-rtti -stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1 -std=c++17 -fno-rtti -stdlib=libc++")
 
     find_package(OpenGL REQUIRED)
     find_package(GLUT REQUIRED)

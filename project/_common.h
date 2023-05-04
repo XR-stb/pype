@@ -7,8 +7,8 @@
 #include <fstream>
 
 #include "PainterEngine_Application.h"
-#include "../architecture/PainterEngine.h"
-#include "../kernel/PX_World.h"
+#include "architecture/PainterEngine.h"
+#include "kernel/PX_World.h"
 
 #include "pocketpy.h"
 #include "_generated.h"

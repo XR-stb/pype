@@ -8,7 +8,7 @@ extern "C"{
 #define PX_APPLICATION_NAME "PainterEngine"
 
 //////////////////////////////////////////////////////////////////////////
-#include "../architecture/PainterEngine_Runtime.h"
+#include "architecture/PainterEngine_Runtime.h"
 
 
 	typedef struct
