@@ -32,6 +32,42 @@ struct Color{
             ss << "Color(" << self.r << ", " << self.g << ", " << self.b << ", " << self.a << ")";
             return VAR(ss.str());
         });
+
+        vm->bind_method<1>(type, "__add__", [](VM* vm, ArgsView args){
+            Color& self = CAST(Color&, args[0]);
+            Color& other = CAST(Color&, args[1]);
+            return VAR_T(Color, self.r+other.r, self.g+other.g, self.b+other.b, self.a+other.a);
+        });
+
+        vm->bind_method<1>(type, "__sub__", [](VM* vm, ArgsView args){
+            Color& self = CAST(Color&, args[0]);
+            Color& other = CAST(Color&, args[1]);
+            return VAR_T(Color, self.r-other.r, self.g-other.g, self.b-other.b, self.a-other.a);
+        });
+
+        vm->bind_method<1>(type, "__mul__", [](VM* vm, ArgsView args){
+            Color& self = CAST(Color&, args[0]);
+            float other = vm->num_to_float(args[1]);
+            return VAR_T(Color, self.r*other, self.g*other, self.b*other, self.a*other);
+        });
+
+        vm->bind_method<1>(type, "__truediv__", [](VM* vm, ArgsView args){
+            Color& self = CAST(Color&, args[0]);
+            float other = vm->num_to_float(args[1]);
+            return VAR_T(Color, self.r/other, self.g/other, self.b/other, self.a/other);
+        });
+
+        vm->bind_method<1>(type, "__eq__", [](VM* vm, ArgsView args){
+            Color& self = CAST(Color&, args[0]);
+            Color& other = CAST(Color&, args[1]);
+            return VAR(self.r==other.r && self.g==other.g && self.b==other.b && self.a==other.a);
+        });
+
+        vm->bind_method<1>(type, "__ne__", [](VM* vm, ArgsView args){
+            Color& self = CAST(Color&, args[0]);
+            Color& other = CAST(Color&, args[1]);
+            return VAR(self.r!=other.r || self.g!=other.g || self.b!=other.b || self.a!=other.a);
+        });
     }
 };
 
