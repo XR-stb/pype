@@ -1,3 +1,5 @@
+import os
+
 _resources = {}     # 资源缓存
 
 def load(path: str):
