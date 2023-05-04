@@ -69,11 +69,11 @@ inline void _platform_log_error(const Str& msg){
 #endif
 
 namespace pkpy{
-    void log_error(const Str& msg){
+    inline void log_error(const Str& msg){
         _platform_log_error(msg + "\n");
     }
 
-    void log_info(const Str& msg){
+    inline void log_info(const Str& msg){
         _platform_log_info(msg + "\n");
     }
 };

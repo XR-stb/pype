@@ -14,7 +14,10 @@
 using namespace pkpy;
 
 inline void python_init(){
-    vm = new VM(false, true);
+    vm = new VM(true);
+    // 重定向sys.stdin和sys.stdout
+    vm->_stdout = [](VM* _, const Str& s) { _platform_log_info(s); };
+    vm->_stderr = [](VM* _, const Str& s) { _platform_log_error(s); };
     add_module_easing(vm);
     vm->bind_builtin_func<0>("input", [](VM* vm, ArgsView args){
         return VAR(pkpy::getline());

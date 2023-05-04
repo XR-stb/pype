@@ -3028,6 +3028,8 @@ struct FrameId{
     Frame* operator->() const { return &data->operator[](index); }
 };
 
+typedef void(*PrintFunc)(VM*, const Str&);
+
 class VM {
     VM* vm;     // self reference for simplify code
 public:
@@ -3048,10 +3050,8 @@ public:
     PyObject* StopIteration;
     PyObject* _main;            // __main__ module
 
-    std::stringstream _stdout_buffer;
-    std::stringstream _stderr_buffer;
-    std::ostream* _stdout;
-    std::ostream* _stderr;
+    PrintFunc _stdout;
+    PrintFunc _stderr;
 
     bool _initialized;
 
@@ -3064,29 +3064,14 @@ public:
 
     const bool enable_os;
 
-    VM(bool use_stdio=true, bool enable_os=true) : heap(this), enable_os(enable_os) {
+    VM(bool enable_os=true) : heap(this), enable_os(enable_os) {
         this->vm = this;
-        this->_stdout = use_stdio ? &std::cout : &_stdout_buffer;
-        this->_stderr = use_stdio ? &std::cerr : &_stderr_buffer;
+        _stdout = [](VM* vm, const Str& s) { std::cout << s; };
+        _stderr = [](VM* vm, const Str& s) { std::cerr << s; };
         callstack.reserve(8);
         _initialized = false;
         init_builtin_types();
         _initialized = true;
-    }
-
-    bool is_stdio_used() const { return _stdout == &std::cout; }
-
-    std::string read_output(){
-        if(is_stdio_used()) UNREACHABLE();
-        std::stringstream* s_out = (std::stringstream*)(vm->_stdout);
-        std::stringstream* s_err = (std::stringstream*)(vm->_stderr);
-        pkpy::Str _stdout = s_out->str();
-        pkpy::Str _stderr = s_err->str();
-        std::stringstream ss;
-        ss << '{' << "\"stdout\": " << _stdout.escape(false);
-        ss << ", " << "\"stderr\": " << _stderr.escape(false) << '}';
-        s_out->str(""); s_err->str("");
-        return ss.str();
     }
 
     FrameId top_frame() {
@@ -3150,13 +3135,13 @@ public:
 #endif
             return _exec(code, _module);
         }catch (const Exception& e){
-            *_stderr << e.summary() << '\n';
-
+            _stderr(this, e.summary() + "\n");
         }
 #if !DEBUG_FULL_EXCEPTION
         catch (const std::exception& e) {
-            *_stderr << "An std::exception occurred! It could be a bug.\n";
-            *_stderr << e.what() << '\n';
+            _stderr(this, "An std::exception occurred! It could be a bug.\n");
+            _stderr(this, e.what());
+            _stderr(this, "\n");
         }
 #endif
         callstack.clear();
@@ -4345,7 +4330,10 @@ __NEXT_STEP:;
     TARGET(DUP_TOP) PUSH(TOP()); DISPATCH();
     TARGET(ROT_TWO) std::swap(TOP(), SECOND()); DISPATCH();
     TARGET(PRINT_EXPR)
-        if(TOP() != None) *_stdout << CAST(Str&, asRepr(TOP())) << '\n';
+        if(TOP() != None){
+            _stdout(this, CAST(Str&, asRepr(TOP())));
+            _stdout(this, "\n");
+        }
         POP();
         DISPATCH();
     /*****************************************/
@@ -6681,10 +6669,10 @@ protected:
     VM* vm;
 public:
     REPL(VM* vm) : vm(vm){
-        (*vm->_stdout) << ("pocketpy " PK_VERSION " (" __DATE__ ", " __TIME__ ") ");
-        (*vm->_stdout) << "[" << std::to_string(sizeof(void*) * 8) << " bit]" "\n";
-        (*vm->_stdout) << ("https://github.com/blueloveTH/pocketpy" "\n");
-        (*vm->_stdout) << ("Type \"exit()\" to exit." "\n");
+        vm->_stdout(vm, "pocketpy " PK_VERSION " (" __DATE__ ", " __TIME__ ") ");
+        vm->_stdout(vm, fmt("[", sizeof(void*)*8, " bit]" "\n"));
+        vm->_stdout(vm, "https://github.com/blueloveTH/pocketpy" "\n");
+        vm->_stdout(vm, "Type \"exit()\" to exit." "\n");
     }
 
     bool input(std::string line){
@@ -6721,7 +6709,7 @@ public:
 
 } // namespace pkpy
 
-// generated on 2023-05-04 16:22:17
+// generated on 2023-05-04 16:38:38
 #include <map>
 #include <string>
 
@@ -8151,12 +8139,12 @@ inline void add_module_sys(VM* vm){
     vm->setattr(mod, "stderr", stderr_);
 
     vm->bind_func<1>(stdout_, "write", [](VM* vm, ArgsView args) {
-        (*vm->_stdout) << CAST(Str&, args[0]).sv();
+        vm->_stdout(vm, CAST(Str&, args[0]));
         return vm->None;
     });
 
     vm->bind_func<1>(stderr_, "write", [](VM* vm, ArgsView args) {
-        (*vm->_stderr) << CAST(Str&, args[0]).sv();
+        vm->_stderr(vm, CAST(Str&, args[0]));
         return vm->None;
     });
 }
@@ -8209,7 +8197,7 @@ inline void add_module_dis(VM* vm){
         PyObject* f = args[0];
         if(is_type(f, vm->tp_bound_method)) f = CAST(BoundMethod, args[0]).func;
         CodeObject_ code = CAST(Function&, f).decl->code;
-        (*vm->_stdout) << vm->disassemble(code);
+        vm->_stdout(vm, vm->disassemble(code));
         return vm->None;
     });
 }
@@ -8486,16 +8474,10 @@ extern "C" {
     }
 
     __EXPORT
-    pkpy::VM* pkpy_new_vm(bool use_stdio=true, bool enable_os=true){
-        pkpy::VM* p = new pkpy::VM(use_stdio, enable_os);
+    pkpy::VM* pkpy_new_vm(bool enable_os=true){
+        pkpy::VM* p = new pkpy::VM(enable_os);
         _pk_deleter_map[p] = [](void* p){ delete (pkpy::VM*)p; };
         return p;
-    }
-
-    __EXPORT
-    char* pkpy_vm_read_output(pkpy::VM* vm){
-        std::string json = vm->read_output();
-        return strdup(json.c_str());
     }
 }
 
