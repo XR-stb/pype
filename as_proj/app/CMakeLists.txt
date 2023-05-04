@@ -10,8 +10,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(ANDROID_STL c++_static)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -fno-rtti")
-
 include_directories(${ANDROID_NDK}/sources/android/native_app_glue)
 include_directories(${PAINTERENGINE_DIR})
 include_directories(${PAINTERENGINE_DIR}/platform/android)

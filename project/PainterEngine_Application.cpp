@@ -93,16 +93,7 @@ px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width
 
 px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int screen_height) {
 // 设置工作目录
-#ifdef __ANDROID__
-	std::filesystem::path p(std::filesystem::current_path());
-	p /= "PainterEngine";
-	if(std::filesystem::exists(p / "main.py")){
-		std::filesystem::current_path(p);
-	}else{
-		std::cerr << "main.py 文件未找到" << std::endl;
-		return PX_FALSE;
-	}
-#else
+#ifndef __ANDROID__
 	bool curr_is_ok = std::filesystem::exists("main.py");
 	if(!curr_is_ok){
 		if(std::filesystem::exists("../../project/test/main.py")){
@@ -112,8 +103,9 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 			return PX_FALSE;
 		}
 	}
+#else
+	
 #endif
-
 	px_bool ok = PX_ApplicationInitializeDefault(&pApp->runtime, screen_width, screen_height);
 	if(!ok) return PX_FALSE;
 

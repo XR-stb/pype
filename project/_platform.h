@@ -7,6 +7,7 @@ using namespace pkpy;
 #ifdef __ANDROID__
 
 #include <android/asset_manager.h>
+#include <android/log.h>
 
 extern AAssetManager* PX_assetManager;
 
