@@ -85,12 +85,14 @@ elseif(PLATFORM STREQUAL "webassembly")
     set(CMAKE_CXX_COMPILER "em++")
     set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -O3 -sUSE_SDL -sUSE_SDL_IMAGE -sUSE_SDL_TTF -sUSE_SDL_MIXER")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fno-rtti")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} --preload-file=${PAINTERENGINE_PATH}/game -s EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]' -s ALLOW_MEMORY_GROWTH=1")
+    set(EMCC_LINKER_FLAGS "--preload-file=${PAINTERENGINE_PATH}/game -s EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]' -s ALLOW_MEMORY_GROWTH=1")
 
     add_executable(${TARGET_NAME}
         ${COMMON_SRC}
         ${PROJECT_SRC}
     )
+    
+    set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS ${EMCC_LINKER_FLAGS})
 else()
     add_executable(${TARGET_NAME}
         ${COMMON_SRC}
