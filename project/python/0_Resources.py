@@ -6,20 +6,17 @@ def load(path: str):
     assert type(path) is str
     if path in _resources:
         return _resources[path]
+    data = _platform_read_bytes(path)
     if path.endswith(".bmp") or path.endswith(".jpg") or path.endswith(".png") or path.endswith(".traw"):
-        res = _PX_LoadTextureFromFile(path)
+        res = _PX_TextureCreateFromMemory(data)
     else:
-        return None
+        raise ValueError("未知的资源类型: " + path)
     _resources[path] = res
     return res
 
-def load_frame_animation(path: str, speed=60, loop=True):
-    anim = FrameAnimation()
-    anim.speed = speed
-    anim.loop = loop
-    # 按文件名的字典序确定帧的顺序
-    for file in sorted(os.listdir(path)):
-        res = load(os.path.join(path, file))
-        if type(res) is Texture2D:
-            anim.frames.append(res)
-    return anim
+def load_dir(path: dir):
+    assert type(path) is str
+    return [
+        load(os.path.join(path, file))
+        for file in sorted(_platform_list_dir(path))
+    ]

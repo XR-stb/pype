@@ -26,14 +26,14 @@ px_uint PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = 1024*1024*8;
 std::queue<PX_Object_Event> event_queue;
 
 bool _execute_user_script(){
-	Bytes content = _read_file_cwd("main.py");
+	Bytes content = _platform_read_bytes("main.py");
 	if(!content) return false;
 	PyObject* ret = vm->exec(content.str(), "main.py", EXEC_MODE);
 	return ret != nullptr;
 }
 
 px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width, px_int screen_height) {
-	Bytes content = _read_file_cwd("config.py");
+	Bytes content = _platform_read_bytes("config.py");
 	if(!content){
 		std::cout << "config.py 文件未找到" << std::endl;
 		return PX_FALSE;

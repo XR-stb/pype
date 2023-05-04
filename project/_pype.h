@@ -2,6 +2,7 @@
 
 #include "_common.h"
 #include "_easing.h"
+#include "_platform.h"
 #include "Node.h"
 #include "Vector2.h"
 #include "Texture2D.h"
@@ -26,25 +27,28 @@ inline void python_init(){
     Color::register_class(vm, g_mod);
 
     /*************全局私有函数*************/
+    vm->bind_func<1>(g_mod, "_platform_read_bytes", [](VM* vm, ArgsView args){
+        const Str& path = CAST(Str&, args[0]);
+        return VAR(_platform_read_bytes(path));
+    });
+
+    vm->bind_func<1>(g_mod, "_platform_list_dir", [](VM* vm, ArgsView args){
+        return _platform_list_dir(args[0]);
+    });
+
     vm->bind_func<1>(g_mod, "_PX_ObjectDelete", [](VM* vm, ArgsView args){
         PX_Object* obj = get_px_obj(args[0]);
         PX_ObjectDelete(obj);
         return vm->None;
     });
 
-    vm->bind_func<1>(g_mod, "_PX_LoadTextureFromFile", [](VM* vm, ArgsView args){
-        const Str& path = CAST(Str&, args[0]);
-        Bytes content = _read_file_cwd(path);
-        if(!content){
-            vm->IOError(fmt("cannot read file: ", path));
-            return vm->None;
-        }
-
+    vm->bind_func<1>(g_mod, "_PX_TextureCreateFromMemory", [](VM* vm, ArgsView args){
+        const Bytes& content = CAST(Bytes&, args[0]);
         px_texture* tex = (px_texture*)malloc(sizeof(px_texture));
     	bool ok = PX_TextureCreateFromMemory(&App.runtime.mp_resources, (char*)content.data(), content.size(), tex);
         if(!ok){
             free(tex);
-            PXError(fmt("PX_TextureCreateFromMemory failed: ", path));
+            PXError("PX_TextureCreateFromMemory() 调用失败");
             return vm->None;
         }
         return VAR_T(Texture2D, tex);
