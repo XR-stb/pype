@@ -44,3 +44,21 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         path: as_proj/app/build/outputs/apk/debug/app-debug.apk
+  build_web:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: git submodule update --init --recursive
+    - name: Setup emsdk
+      uses: mymindstorm/setup-emsdk@v12
+      with:
+        version: 3.1.25
+        actions-cache-folder: 'emsdk-cache'
+    - name: Compile
+      run: bash build_web.sh
+    - uses: crazy-max/ghaction-github-pages@v3
+      with:
+        target_branch: gh-pages
+        build_dir: build/web
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
