@@ -9,9 +9,14 @@ set(PAINTERENGINE_PATH ".")
 if(WIN32)
     set(PLATFORM "windows")
     message("Windows platform detected")
-else()
+elseif(ANDROID)
+    set(PLATFORM "android")
+    message("Android platform detected")
+elseif(UNIX)
     set(PLATFORM "linux")
     message("Linux platform detected")
+else()
+    message(FATAL_ERROR "Unsupported platform")
 endif()
 
 file(GLOB PROJECT_SRC
@@ -38,48 +43,79 @@ include_directories(
     "box2d/include"
 )
 
-add_executable(${TARGET_NAME}
-    ${PROJECT_SRC}
-    ${PAINTERENGINE_CORE_SRC}
-    ${PAINTERENGINE_KERNEL_SRC}
-    ${PAINTERENGINE_ARCHITECTURE_SRC}
-    ${PAINTERENGINE_PLATFORM_SRC}
-    ${BOX2D_SRC_0}
-    ${BOX2D_SRC_1}
-    ${BOX2D_SRC_2}
-    ${BOX2D_SRC_3}
-)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set C++17 standard
-set_target_properties(${TARGET_NAME} PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
-)
+########################################################
 
-find_package(Threads REQUIRED)
+if(PLATFORM STREQUAL "android")
+    set(ANDROID_STL c++_static)
+    include_directories(${ANDROID_NDK}/sources/android/native_app_glue)
+    find_library(log-lib log)
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
+    set(ANDROID_NATIVE_APP_GLUE ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 
-if(PLATFORM STREQUAL "windows")
-    set(CMAKE_CXX_COMPILER "cl")
-    set(CMAKE_C_COMPILER "cl")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O1 /std:c++17 /GR- /EHsc /utf-8")
-
-    target_link_libraries(${TARGET_NAME}
-        Threads::Threads
+    add_library(PAINTERENGINELIB
+        STATIC
+        ${ANDROID_NATIVE_APP_GLUE}
+        ${PAINTERENGINE_CORE_SRC}
+        ${PAINTERENGINE_KERNEL_SRC}
+        ${PAINTERENGINE_ARCHITECTURE_SRC}
+        ${PAINTERENGINE_PLATFORM_SRC}
+        ${BOX2D_SRC_0}
+        ${BOX2D_SRC_1}
+        ${BOX2D_SRC_2}
+        ${BOX2D_SRC_3}
     )
+
+    add_library(PainterEngineForAndroid SHARED ${PROJECT_SRC})
+
+    target_link_libraries(PainterEngineForAndroid
+        PAINTERENGINELIB
+        android
+        ${log-lib}
+        EGL
+        GLESv3
+        OpenSLES
+        log)
 else()
-    set(CMAKE_CXX_COMPILER "clang++")
-    set(CMAKE_C_COMPILER "clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1 -std=c++17 -fno-rtti -stdlib=libc++")
-
-    find_package(OpenGL REQUIRED)
-    find_package(GLUT REQUIRED)
-    find_package(X11 REQUIRED)
-
-    target_link_libraries(${TARGET_NAME}
-        OpenGL::GL
-        GLUT::GLUT
-        Threads::Threads
-        ${X11_LIBRARIES}
+    add_executable(${TARGET_NAME}
+        ${PROJECT_SRC}
+        ${PAINTERENGINE_CORE_SRC}
+        ${PAINTERENGINE_KERNEL_SRC}
+        ${PAINTERENGINE_ARCHITECTURE_SRC}
+        ${PAINTERENGINE_PLATFORM_SRC}
+        ${BOX2D_SRC_0}
+        ${BOX2D_SRC_1}
+        ${BOX2D_SRC_2}
+        ${BOX2D_SRC_3}
     )
+
+    find_package(Threads REQUIRED)
+
+    if(PLATFORM STREQUAL "windows")
+        set(CMAKE_CXX_COMPILER "cl")
+        set(CMAKE_C_COMPILER "cl")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O1 /std:c++17 /GR- /EHsc /utf-8")
+
+        target_link_libraries(${TARGET_NAME}
+            Threads::Threads
+        )
+    elseif(PLATFORM STREQUAL "linux")
+        set(CMAKE_CXX_COMPILER "clang++")
+        set(CMAKE_C_COMPILER "clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1 -std=c++17 -fno-rtti -stdlib=libc++")
+
+        find_package(OpenGL REQUIRED)
+        find_package(GLUT REQUIRED)
+        find_package(X11 REQUIRED)
+
+        target_link_libraries(${TARGET_NAME}
+            OpenGL::GL
+            GLUT::GLUT
+            Threads::Threads
+            ${X11_LIBRARIES}
+        )
+    endif()
 endif()

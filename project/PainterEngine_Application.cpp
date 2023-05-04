@@ -98,8 +98,8 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 #ifndef __ANDROID__
 	bool curr_is_ok = std::filesystem::exists("main.py");
 	if(!curr_is_ok){
-		if(std::filesystem::exists("../../project/test/main.py")){
-			std::filesystem::current_path("../../project/test");
+		if(std::filesystem::exists("../../game/main.py")){
+			std::filesystem::current_path("../../game");
 		}else{
 			log_error("main.py 文件未找到");
 			return PX_FALSE;
