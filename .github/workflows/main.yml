@@ -82,7 +82,7 @@ jobs:
     - name: CMake Build
       run: |
         sudo apt install libglu1-mesa-dev freeglut3-dev mesa-common-dev
-        bash build_dev.sh
+        bash build_linux.sh
     - uses: actions/upload-artifact@v3
       with:
         path: build/dev/PainterEngine

@@ -5,7 +5,7 @@
             "type": "shell",
             "label": "C/C++: clang++ build for debug",
             "command": "bash",
-            "args": ["build_dev.sh"],
+            "args": ["build_linux.sh"],
             "options": {
                 "cwd": "${workspaceFolder}"
             },

@@ -18,6 +18,7 @@ class FrameAnimator(Node):
         return self._animations[name]
 
     def play(self, name: str):
+        assert hasattr(self.parent, 'texture')
         self._current_frame = 0
         self._current_animation = self._animations[name]
 
