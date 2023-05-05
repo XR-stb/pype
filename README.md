@@ -1,30 +1,14 @@
 # pype
 
+pype是一个由Python/C++语言编写的完整开源的跨平台图形应用框架，
+可移植到Windows Linux Android iOS 支持WebAssembly的Web端等（嵌入式MCU除外）。
+
 ## 快速开始
 
-要进行构建，首先切换到仓库的根目录。
-
-### Windows构建方法
-
-1. 确保`cl.exe`已安装。
-2. 确认CMake已安装。
-
-```
-python preprocess.py
-mkdir build
-cd build
-cmake ..
-cmake --build . --config Release
-```
-### Linux/WSL构建方法
-
-1. 确保`clang++`和`libc++`已安装。
-2. 确认CMake已安装。
-3. 确保`freeglut3-dev`已安装。
-
-```bash
-bash build_linux.sh
-```
++ [构建Windows版本](https://zhuanlan.zhihu.com/p/627077407)
++ [构建Linux/WSL版本](https://zhuanlan.zhihu.com/p/627079964)
++ [在Linux上构建Web版本](https://zhuanlan.zhihu.com/p/627082462)
++ [在Linux上构建Android版本](https://zhuanlan.zhihu.com/p/627084127)
 
 ### Web演示
 
