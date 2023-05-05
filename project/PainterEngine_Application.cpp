@@ -98,7 +98,9 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 #ifndef __ANDROID__
 	bool curr_is_ok = std::filesystem::exists("main.py");
 	if(!curr_is_ok){
-		if(std::filesystem::exists("../../game/main.py")){
+		if(std::filesystem::exists("../../../game/main.py")){
+			std::filesystem::current_path("../../../game");
+		}else if(std::filesystem::exists("../../game/main.py")){
 			std::filesystem::current_path("../../game");
 		}else if(std::filesystem::exists("game/main.py")){
 			std::filesystem::current_path("game");
