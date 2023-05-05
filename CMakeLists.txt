@@ -28,16 +28,16 @@ aux_source_directory(${PAINTERENGINE_PATH}/kernel PAINTERENGINE_SRC_1)
 aux_source_directory(${PAINTERENGINE_PATH}/architecture PAINTERENGINE_SRC_2)
 aux_source_directory(${PAINTERENGINE_PATH}/platform/${PLATFORM} PAINTERENGINE_SRC_3)
 
-aux_source_directory(box2d/src/collision BOX2D_SRC_0)
-aux_source_directory(box2d/src/common BOX2D_SRC_1)
-aux_source_directory(box2d/src/dynamics BOX2D_SRC_2)
-aux_source_directory(box2d/src/rope BOX2D_SRC_3)
+#aux_source_directory(box2d/src/collision BOX2D_SRC_0)
+#aux_source_directory(box2d/src/common BOX2D_SRC_1)
+#aux_source_directory(box2d/src/dynamics BOX2D_SRC_2)
+#aux_source_directory(box2d/src/rope BOX2D_SRC_3)
 
 include_directories(
     "${PAINTERENGINE_PATH}"
     "${PROJECT_PATH}"
     "${PAINTERENGINE_PATH}/platform/${PLATFORM}"
-    "box2d/include"
+    #"box2d/include"
 )
 
 set(CMAKE_C_STANDARD 11)
@@ -49,10 +49,10 @@ set(COMMON_SRC
     ${PAINTERENGINE_SRC_1}
     ${PAINTERENGINE_SRC_2}
     ${PAINTERENGINE_SRC_3}
-    ${BOX2D_SRC_0}
-    ${BOX2D_SRC_1}
-    ${BOX2D_SRC_2}
-    ${BOX2D_SRC_3}
+    #${BOX2D_SRC_0}
+    #${BOX2D_SRC_1}
+    #${BOX2D_SRC_2}
+    #${BOX2D_SRC_3}
 )
 
 ########################################################
