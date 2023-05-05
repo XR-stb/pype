@@ -72,7 +72,7 @@ jobs:
       if: github.repository == 'blueloveTH/pype'
     - uses: actions/upload-artifact@v3
       with:
-        path: build/web
+        path: build
   build_linux:
     runs-on: ubuntu-latest
     steps:
