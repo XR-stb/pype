@@ -69,6 +69,7 @@ jobs:
         build_dir: build/web
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      if: github.repository == 'blueloveTH/pype'
     - uses: actions/upload-artifact@v3
       with:
         path: build/web
