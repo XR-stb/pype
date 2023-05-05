@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: CI
 
 on:
   push:
@@ -19,15 +19,10 @@ jobs:
       with:
         submodules: true
     - name: CMake Build
-      run: |
-        python preprocess.py
-        mkdir build
-        cd build
-        cmake ..
-        cmake --build . --config Release
+      run: .\build_win.bat
     - uses: actions/upload-artifact@v3
       with:
-        path: build/Release/PainterEngine.exe
+        path: build/win/Release/PainterEngine.exe
   build_android:
     runs-on: ubuntu-latest
     steps:
@@ -85,7 +80,7 @@ jobs:
         bash build_linux.sh
     - uses: actions/upload-artifact@v3
       with:
-        path: build/dev/PainterEngine
+        path: build/linux/PainterEngine
     - uses: actions/upload-artifact@v3
       with:
         path: game

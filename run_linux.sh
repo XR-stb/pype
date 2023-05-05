@@ -1,2 +1,2 @@
-cd build/dev
+cd build/linux
 ./PainterEngine

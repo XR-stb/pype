@@ -1,5 +1,5 @@
 python preprocess.py
-mkdir -p build/dev
-cd build/dev
+mkdir -p build/linux
+cd build/linux
 cmake -Wno-dev ../..
 make
