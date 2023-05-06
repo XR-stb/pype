@@ -2,6 +2,8 @@
 
 #include "_common.h"
 #include "Color.h"
+#include "project/_platform.h"
+#include <sstream>
 
 using namespace pkpy;
 
@@ -209,7 +211,7 @@ inline px_void _PX_TextureRenderEx(px_surface *psurface,px_texture *resTexture,p
     }
 }
 
-px_bool _PX_TextureCreateFromMemory(px_memorypool *mp,px_void *data,px_int size,px_texture *tex)
+inline px_bool _PX_TextureCreateFromMemory(px_memorypool *mp,px_void *data,px_int size,px_texture *tex)
 {
 	px_int width;
 	px_int height;
@@ -274,11 +276,12 @@ px_bool _PX_TextureCreateFromMemory(px_memorypool *mp,px_void *data,px_int size,
 				PX_JpgDecoderFree(&decoder);
 				return PX_TRUE;
 			}
-			PXError("PX_TextureCreate() 失败");
 			PX_JpgDecoderFree(&decoder);
+			PXError("PX_TextureCreate() 失败");
+		}else{
+			PXError("PX_JpgDecoderInitialize() 失败");
 		}
 	}
-
 	PXError("不支持的图片格式");
 	return PX_FALSE;
 }

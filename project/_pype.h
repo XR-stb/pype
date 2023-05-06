@@ -52,7 +52,7 @@ inline void python_init(){
         const Bytes& content = CAST(Bytes&, args[0]);
         px_texture* tex = (px_texture*)malloc(sizeof(px_texture));
     	_PX_TextureCreateFromMemory(&App.runtime.mp_resources, (char*)content.data(), content.size(), tex);
-        // Let tex leak on failure
+        // Let `tex` leak on failure
         return VAR_T(Texture2D, tex);
     });
 
