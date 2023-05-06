@@ -6,6 +6,7 @@
 #include "Vector2.h"
 #include "Texture2D.h"
 #include "Input.h"
+#include "Font.h"
 
 #include "Button.h"
 #include "Label.h"
@@ -56,6 +57,18 @@ inline void python_init(){
             return vm->None;
         }
         return VAR_T(Texture2D, tex);
+    });
+
+    vm->bind_func<1>(g_mod, "_PX_FontCreateFromMemory", [](VM* vm, ArgsView args){
+        const Bytes& content = CAST(Bytes&, args[0]);
+        PX_FontModule* fm = (PX_FontModule*)malloc(sizeof(PX_FontModule));
+        PX_FontModuleInitialize(&App.runtime.mp_resources, fm);
+        if(!PX_FontModuleLoad(fm, (px_byte*)content.data(), content.size())){
+            free(fm);
+            PXError("PX_FontModuleLoad() 调用失败");
+            return vm->None;
+        }
+        return VAR_T(PXFont, fm);
     });
 
     vm->bind_func<5>(g_mod, "_PX_TextureRenderEx", [](VM* vm, ArgsView args){

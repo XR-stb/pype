@@ -47,6 +47,9 @@ class Texture2D:
     @property
     def limit_bottom(self) -> int: ...
 
+class Font:
+    pass
+
 class Signal:
     def connect(self, f: Callable) -> None:
         """连接一个信号处理函数"""
@@ -270,9 +273,11 @@ class Sprite2D(Node):
 
 class Label(Node):
     text: str
+    font: Font
 
 class TextEdit(Node):
     text: str
+    font: Font
     color: Color
     background: Color
     border_color: Color

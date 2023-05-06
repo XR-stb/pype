@@ -1,6 +1,7 @@
 #pragma once
 
 #include "_common.h"
+#include "Font.h"
 #include "Node.h"
 
 inline void _register_label_type(VM* vm, PyObject* mod){
@@ -32,6 +33,19 @@ inline void _register_label_type(VM* vm, PyObject* mod){
             char* value = CAST(Str&, args[1]).c_str_dup();
             PX_Object_LabelSetText(obj, value);
             free(value);
+            return vm->None;
+        }));
+
+    type->attr().set("font", vm->property(
+        [](VM* vm, ArgsView args){
+            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object_Label* label = PX_Object_GetLabel(obj);
+            return VAR_T(PXFont, label->fontModule);
+        },
+        [](VM* vm, ArgsView args){
+            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object_Label* label = PX_Object_GetLabel(obj);
+            label->fontModule = CAST(PXFont&, args[1]).ptr;
             return vm->None;
         }));
 }

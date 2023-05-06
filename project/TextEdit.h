@@ -2,6 +2,7 @@
 
 #include "_common.h"
 #include "Node.h"
+#include "Font.h"
 #include "Color.h"
 
 inline void _register_textedit_type(VM* vm, PyObject* mod){
@@ -59,6 +60,19 @@ inline void _register_textedit_type(VM* vm, PyObject* mod){
             char* value = CAST(Str&, args[1]).c_str_dup();
             PX_Object_EditSetText(obj, value);
             free(value);
+            return vm->None;
+        }));
+
+    type->attr().set("font", vm->property(
+        [](VM* vm, ArgsView args){
+            PX_Object* obj = get_px_obj(args[0]);
+            auto edit = PX_Object_GetEdit(obj);
+            return VAR_T(PXFont, edit->fontModule);
+        },
+        [](VM* vm, ArgsView args){
+            PX_Object* obj = get_px_obj(args[0]);
+            auto edit = PX_Object_GetEdit(obj);
+            edit->fontModule = CAST(PXFont&, args[1]).ptr;
             return vm->None;
         }));
 
