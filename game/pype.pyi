@@ -215,6 +215,8 @@ class Node:
     name: str           # 节点的名称
     parent: 'Node'      # 节点的父节点
     position: Vector2   # 节点的本地坐标
+    x: float            # 节点的本地x坐标
+    y: float            # 节点的本地y坐标
     angle: float        # 节点的本地角度
     scale: float        # 节点的本地缩放
     enabled: bool       # 节点是否激活，激活的节点会触发`on_update`事件

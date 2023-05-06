@@ -99,30 +99,56 @@ inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
 
     type->attr().set("position", vm->property(
         [](VM* vm, ArgsView args){
-            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object* obj = _get_px_obj(args[0]);
             return VAR_T(Vector2, obj->x, obj->y);
         },
         [](VM* vm, ArgsView args){
-            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object* obj = _get_px_obj(args[0]);
             Vector2& pos = CAST(Vector2&, args[1]);
             obj->x = pos.x;
             obj->y = pos.y;
             return vm->None;
         }));
+    
+    // x
+    type->attr().set("x", vm->property(
+        [](VM* vm, ArgsView args){
+            PX_Object* obj = _get_px_obj(args[0]);
+            return VAR(obj->x);
+        },
+        [](VM* vm, ArgsView args){
+            PX_Object* obj = _get_px_obj(args[0]);
+            obj->x = CAST(f64, args[1]);
+            return vm->None;
+        }));
+
+    // y
+    type->attr().set("y", vm->property(
+        [](VM* vm, ArgsView args){
+            PX_Object* obj = _get_px_obj(args[0]);
+            return VAR(obj->y);
+        },
+        [](VM* vm, ArgsView args){
+            PX_Object* obj = _get_px_obj(args[0]);
+            obj->y = CAST(f64, args[1]);
+            return vm->None;
+        }));
 
     type->attr().set("parent", vm->property(
         [](VM* vm, ArgsView args){
-            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object* obj = _get_px_obj(args[0]);
             if(obj->pParent == NULL) return vm->None;
-            return (PyObject*)(obj->pParent->User_ptr);
+            PyObject* p = (PyObject*)(obj->pParent->User_ptr);
+            if(p == g_root) return vm->None;
+            return p;
         },
         [](VM* vm, ArgsView args){
-            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object* obj = _get_px_obj(args[0]);
             PX_Object* pParent;
             if(args[1] == vm->None){
-                pParent = get_px_obj(g_root);
+                pParent = _get_px_obj(g_root);
             }else{
-                pParent = get_px_obj(args[1]);
+                pParent = _get_px_obj(args[1]);
             }
             if(obj == pParent) vm->ValueError("can't set parent to self");
             PX_ObjectSetParent(obj, pParent);
@@ -153,43 +179,43 @@ inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
 
     type->attr().set("width", vm->property(
         [](VM* vm, ArgsView args){
-            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object* obj = _get_px_obj(args[0]);
             return VAR(obj->Width);
         },
         [](VM* vm, ArgsView args){
-            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object* obj = _get_px_obj(args[0]);
             obj->Width = vm->num_to_float(args[1]);
             return vm->None;
         }));
     type->attr().set("height", vm->property(
         [](VM* vm, ArgsView args){
-            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object* obj = _get_px_obj(args[0]);
             return VAR(obj->Height);
         },
         [](VM* vm, ArgsView args){
-            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object* obj = _get_px_obj(args[0]);
             obj->Height = vm->num_to_float(args[1]);
             return vm->None;
         }));
 
     type->attr().set("enabled", vm->property(
         [](VM* vm, ArgsView args){
-            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object* obj = _get_px_obj(args[0]);
             return VAR(obj->Enabled != 0);
         },
         [](VM* vm, ArgsView args){
-            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object* obj = _get_px_obj(args[0]);
             obj->Enabled = (int)CAST(bool, args[1]);
             return vm->None;
         }));
 
     type->attr().set("visible", vm->property(
         [](VM* vm, ArgsView args){
-            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object* obj = _get_px_obj(args[0]);
             return VAR(obj->Visible != 0);
         },
         [](VM* vm, ArgsView args){
-            PX_Object* obj = get_px_obj(args[0]);
+            PX_Object* obj = _get_px_obj(args[0]);
             obj->Visible = (int)CAST(bool, args[1]);
             return vm->None;
         }));
