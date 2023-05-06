@@ -93,7 +93,11 @@ struct Input {
     static void end_frame(){
         // 清空鼠标事件
         memset(_mouse_event, 0, sizeof(_mouse_event));
+#ifndef __EMSCRIPTEN__
         std::swap(_pressed_keys, _pressed_keys_last_frame);
         _pressed_keys.clear();
+#else
+        _pressed_keys_last_frame = _pressed_keys;
+#endif
     }
 };

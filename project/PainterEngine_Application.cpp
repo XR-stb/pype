@@ -163,9 +163,10 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed) {
 #ifdef __EMSCRIPTEN__
 			if(e.Event == PX_OBJECT_EVENT_KEYDOWN){
 				int scancode = PX_Object_Event_GetKeyDown(e);
-				Input::_pressed_keys.insert(
-					_scancode_to_keycode_map[scancode]
-				);
+				Input::_pressed_keys.insert(scancode);
+			}else if(e.Event == PX_OBJECT_EVENT_KEYUP){
+				int scancode = PX_Object_Event_GetKeyDown(e);
+				Input::_pressed_keys.erase(scancode);
 			}
 #endif
 			PX_WorldPostEvent(&World, e);
