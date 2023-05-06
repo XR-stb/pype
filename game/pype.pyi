@@ -270,6 +270,7 @@ class Node:
 class Sprite2D(Node):
     texture: Texture2D   # 精灵的纹理
     color: Color         # 精灵的颜色
+    flip: bool           # 精灵是否翻转
 
 class Label(Node):
     text: str

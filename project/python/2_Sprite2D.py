@@ -1,6 +1,7 @@
 class Sprite2D(Node):
     def __init__(self):
         self.texture = None
+        self.flip = False
         self.color = Color(1.0, 1.0, 1.0)
         super(Sprite2D, self).__init__()
 
@@ -10,5 +11,6 @@ class Sprite2D(Node):
         _PX_TextureRenderEx(
             self.texture,
             *self.global_transform,
-            self.color
+            self.color,
+            self.flip
         )

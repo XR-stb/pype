@@ -109,6 +109,7 @@ px_bool PX_ApplicationInitialize(PX_Application *pApp,px_int screen_width,px_int
 			return PX_FALSE;
 		}
 	}
+	log_info(std::filesystem::current_path().string());
 #else
 	
 #endif

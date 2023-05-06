@@ -26,6 +26,7 @@ class Player(Sprite2D):
             delta_x += 1
         if delta_x != 0:
             self.animator.play('run')
+            self.flip = delta_x < 0
         else:
             self.animator.play('walk')
         self.x += delta_x * Time.delta_time * 200

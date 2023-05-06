@@ -72,14 +72,15 @@ inline void python_init(){
         return VAR_T(PXFont, fm);
     });
 
-    vm->bind_func<5>(g_mod, "_PX_TextureRenderEx", [](VM* vm, ArgsView args){
+    vm->bind_func<6>(g_mod, "_PX_TextureRenderEx", [](VM* vm, ArgsView args){
         px_surface* psurface = &App.runtime.RenderSurface;
         Texture2D& tex = CAST(Texture2D&, args[0]);
         Vector2& pos = CAST(Vector2&, args[1]);
         float angle = vm->num_to_float(args[2]);
         float scale = vm->num_to_float(args[3]);
         Color& color = CAST(Color&, args[4]);
-        PX_TextureRenderEx(psurface, tex.ptr, pos.x, pos.y, PX_ALIGN_CENTER, color.blend(), scale, angle);
+        bool flip = CAST(bool, args[5]);
+        _PX_TextureRenderEx(psurface, tex.ptr, pos.x, pos.y, PX_ALIGN_CENTER, color.blend(), scale, angle, flip);
         return vm->None;
     });
 
