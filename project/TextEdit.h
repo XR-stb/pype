@@ -4,8 +4,8 @@
 #include "Node.h"
 #include "Color.h"
 
-inline void _register_textfield_type(VM* vm, PyObject* mod){
-    PyObject* type = mod->attr("TextEdit");
+inline void _register_textedit_type(VM* vm, PyObject* mod){
+    PyObject* type = vm->new_type_object(mod, "TextEdit", g_tp_node);
     vm->bind_method<0>(type, "_px_obj_init", [](VM* vm, ArgsView args){
         PX_Object* obj = PX_Object_EditCreate(
             &App.runtime.mp_game,

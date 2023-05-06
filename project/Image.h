@@ -6,7 +6,7 @@
 #include "Texture2D.h"
 
 inline void _register_image_type(VM* vm, PyObject* mod){
-    PyObject* type = mod->attr("Image");
+    PyObject* type = vm->new_type_object(mod, "Image", g_tp_node);
     vm->bind_method<0>(type, "_px_obj_init", [](VM* vm, ArgsView args){
         PX_Object* obj = PX_Object_ImageCreate(
             &App.runtime.mp_game,

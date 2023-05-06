@@ -4,7 +4,7 @@
 #include "Node.h"
 
 inline void _register_label_type(VM* vm, PyObject* mod){
-    PyObject* type = mod->attr("Label");
+    PyObject* type = vm->new_type_object(mod, "Label", g_tp_node);
     vm->bind_method<0>(type, "_px_obj_init", [](VM* vm, ArgsView args){
         PX_Object* obj = PX_Object_LabelCreate(
             &App.runtime.mp_game,

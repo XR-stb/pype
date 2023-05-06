@@ -115,7 +115,7 @@ inline void python_init(){
     // 注册其他类
     _register_button_type(vm, g_mod);
     _register_label_type(vm, g_mod);
-    _register_textfield_type(vm, g_mod);
+    _register_textedit_type(vm, g_mod);
     _register_image_type(vm, g_mod);
     _register_progressbar_type(vm, g_mod);
 

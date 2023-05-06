@@ -5,7 +5,7 @@
 #include "Color.h"
 
 inline void _register_progressbar_type(VM* vm, PyObject* mod){
-    PyObject* type = mod->attr("ProgressBar");
+    PyObject* type = vm->new_type_object(mod, "ProgressBar", g_tp_node);
     vm->bind_method<0>(type, "_px_obj_init", [](VM* vm, ArgsView args){
         PX_Object* obj = PX_Object_ProcessBarCreate(
             &App.runtime.mp_game,
