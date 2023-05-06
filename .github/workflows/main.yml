@@ -54,7 +54,7 @@ jobs:
     - name: Setup emsdk
       uses: mymindstorm/setup-emsdk@v12
       with:
-        version: 3.1.25
+        version: 3.1.38
         actions-cache-folder: 'emsdk-cache'
     - name: Compile
       run: bash build_web.sh

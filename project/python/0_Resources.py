@@ -7,9 +7,6 @@ def load(path: str):
     if path in _resources:
         return _resources[path]
     data = _platform_read_bytes(path)
-    print(path)
-    a = [data[i] for i in range(0, 100)]
-    print(a)
     if path.endswith(".bmp") or path.endswith(".jpg") or path.endswith(".png") or path.endswith(".traw"):
         res = _PX_TextureCreateFromMemory(data)
     elif path.endswith(".pxf"):
