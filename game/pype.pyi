@@ -352,7 +352,7 @@ def WaitUntil(condition: Callable) -> Generator:
     """[协程] 等待`condition`返回`True`"""
 
 def load(path: str) -> Any:
-    """加载一个资源并返回一个指针，此函数带有缓存，因此多次调用同一个资源不会重复加载"""
+    """加载一个资源。此函数带有缓存，多次调用同一个路径不会重复加载"""
 def load_dir(path: str) -> List:
     """加载一个目录下的所有资源，返回一个列表"""
 
