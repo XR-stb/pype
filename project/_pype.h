@@ -89,6 +89,12 @@ inline void python_init(){
         return VAR_T(Vector2, ret.x, ret.y);
     });
 
+    vm->bind_func<1>(g_mod, "set_camera_position", [](VM* vm, ArgsView args){
+        const Vector2& vec = CAST(Vector2&, args[0]);
+        PX_WorldSetCamera(&World, vec);
+        return vm->None;
+    });
+
     vm->bind_func<0>(g_mod, "memory_usage", [](VM* vm, ArgsView args){
         auto f = [](px_memorypool* mp){
             size_t used = mp->Size - mp->FreeSize;

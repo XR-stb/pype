@@ -12,6 +12,7 @@ class FrameAnimator(Node):
         super(FrameAnimator, self).__init__()
 
     def __setitem__(self, name: str, anim: FrameAnimation):
+        assert isinstance(anim, FrameAnimation)
         self._animations[name] = anim
 
     def __getitem__(self, name: str) -> FrameAnimation:
@@ -19,8 +20,11 @@ class FrameAnimator(Node):
 
     def play(self, name: str):
         assert hasattr(self.parent, 'texture')
+        anim = self._animations[name]
+        if anim is self._current_animation:
+            return
         self._current_frame = 0
-        self._current_animation = self._animations[name]
+        self._current_animation = anim
 
     def stop(self):
         self._current_animation = None

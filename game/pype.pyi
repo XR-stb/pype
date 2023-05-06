@@ -341,6 +341,8 @@ class TweenList(Tween):
         """添加一个Tween实例"""
 
 #####################################################
+def set_camera_position(pos: Vector2) -> None:
+    """设置摄像机的位置"""
 
 def WaitForEndOfFrame() -> Generator:
     """[协程] 等待当前帧结束"""
