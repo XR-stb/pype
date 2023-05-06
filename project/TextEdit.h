@@ -16,7 +16,7 @@ inline void _register_textedit_type(VM* vm, PyObject* mod){
             40,
             NULL                    // PX_FontModule *fontmodule
         );
-        PX_ObjectSetUserPointer(obj, args[0]);
+        inject_py_object(obj, args[0]);
         return VAR(obj);
     });
 

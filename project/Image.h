@@ -17,7 +17,7 @@ inline void _register_image_type(VM* vm, PyObject* mod){
             40,
             NULL                // texture
         );
-        PX_ObjectSetUserPointer(obj, args[0]);
+        inject_py_object(obj, args[0]);
         return VAR(obj);
     });
 

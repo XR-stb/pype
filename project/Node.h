@@ -56,13 +56,11 @@ inline void traverse(PX_Object* obj, void (*f)(PX_Object*)){
     }
 }
 
-inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
-    vm->bind_method<0>(type, "_px_obj_init", [](VM* vm, ArgsView args){
-        PX_Object* px_root = nullptr;
-        if(g_root != nullptr) px_root = get_px_obj(g_root);
-        PX_Object* obj = PX_ObjectCreate(&App.runtime.mp_game, px_root, 0, 0, 0, 0, 0, 0);
-        PX_ObjectSetUserPointer(obj, args[0]);
-        // 设置Node的回调
+
+inline void inject_py_object(PX_Object* obj, PyObject* py_obj, bool update=true, bool render=false){
+    PX_ObjectSetUserPointer(obj, py_obj);
+
+    if(update){
         obj->Func_ObjectUpdate = [](PX_Object* obj, unsigned int _){
             PyObject* self = (PyObject*)obj->User_ptr;
             static StrName m_update = "_update";
@@ -73,6 +71,9 @@ inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
                 std::getchar();
             }
         };
+    }
+
+    if(render){
         obj->Func_ObjectRender = [](px_surface* psurface, PX_Object* obj, px_uint elpased){
             PyObject* self = (PyObject*)obj->User_ptr;
             static StrName m_draw = "_draw";
@@ -84,6 +85,15 @@ inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
                 std::getchar();
             }
         };
+    }
+}
+
+inline void _register_node_type(VM* vm, PyObject* mod, PyObject* type){
+    vm->bind_method<0>(type, "_px_obj_init", [](VM* vm, ArgsView args){
+        PX_Object* px_root = nullptr;
+        if(g_root != nullptr) px_root = get_px_obj(g_root);
+        PX_Object* obj = PX_ObjectCreate(&App.runtime.mp_game, px_root, 0, 0, 0, 0, 0, 0);
+        inject_py_object(obj, args[0], true, true);
         return VAR(obj);
     });
 

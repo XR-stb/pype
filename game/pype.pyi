@@ -1,6 +1,7 @@
 """pype核心模块"""
 
 from typing import Any, Callable, Generator, Iterable, Tuple, List
+from abc import abstractmethod
 import easing
 
 # 根节点
@@ -241,10 +242,13 @@ class Node:
     def children(self) -> Tuple['Node']:
         """返回一个包含所有子节点的元组"""
 
+    @abstractmethod
     def on_ready(self) -> None:
         """[消息] 当节点被创建时调用"""
+    @abstractmethod
     def on_update(self) -> None:
         """[消息] 每帧调用一次"""
+    @abstractmethod
     def on_destroy(self) -> None:
         """[消息] 当节点被销毁时调用"""
 
@@ -270,7 +274,7 @@ class TextEdit(Node):
     color: Color
     background: Color
     border_color: Color
-    cursor_color: Color
+    cursor_color: Color     # 有BUG，没有作用
 
     def set_max_length(self, length: int) -> None:
         """设置最大长度"""
@@ -281,10 +285,9 @@ class TextEdit(Node):
     def set_auto_newline(self, value: bool, spacing: int) -> None:
         """设置是否自动换行，参见`PX_Object_EditAutoNewLine`"""
 
-class ProgressBar:
+class ProgressBar(Node):
     color: Color
-    value: int
-    max_value: int
+    value: float    # 进度条的值，取值范围为[0, 1]
 
 class Button(Node):
     text: str

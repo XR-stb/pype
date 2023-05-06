@@ -16,8 +16,7 @@ inline void _register_button_type(VM* vm, PyObject* mod){
             "Button",             // const px_char *Text
             NULL                // PX_FontModule *fontmodule
         );
-        PX_ObjectSetUserPointer(obj, args[0]);
-
+        inject_py_object(obj, args[0]);
         PX_ObjectRegisterEvent(obj, PX_OBJECT_EVENT_EXECUTE, [](PX_Object* obj, PX_Object_Event e, void* _){
             PyObject* py_obj = (PyObject*)obj->User_ptr;
             static const StrName m_on_click = "on_click";
