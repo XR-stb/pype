@@ -265,6 +265,22 @@ class Sprite2D(Node):
 class Label(Node):
     text: str
 
+class TextEdit(Node):
+    text: str
+    color: Color
+    background: Color
+    border_color: Color
+    cursor_color: Color
+
+    def set_max_length(self, length: int) -> None:
+        """设置最大长度"""
+    def set_focus(self, value: bool) -> None:
+        """设置是否获取焦点"""
+    def set_border(self, value: bool) -> None:
+        """设置是否显示边框"""
+    def set_auto_newline(self, value: bool, spacing: int) -> None:
+        """设置是否自动换行，参见`PX_Object_EditAutoNewLine`"""
+
 class Button(Node):
     text: str
     clicked: Signal
