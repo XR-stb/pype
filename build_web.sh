@@ -1,3 +1,4 @@
+em++ --version
 python preprocess.py
 rm -rf build/web
 mkdir -p build/web
