@@ -374,6 +374,17 @@ const int _native_key_mapping[sizeof(kVirtualKeyCodes)/sizeof(char*)] = {
 };
 inline bool _platform_get_key(int scancode) { return false; }
 
+#include <map>
+inline std::map<int, int> _scancode_to_keycode_map = [](){
+    std::map<int, int> map;
+    for(int i = 0; i < sizeof(_native_key_mapping)/sizeof(int); i++){
+        int scancode = _native_key_mapping[i];
+        if(scancode == 0) continue;
+        map[scancode] = i;
+    }
+    return map;
+}();
+
 #else
 #error "Unsupported platform"
 #endif
