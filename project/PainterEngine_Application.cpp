@@ -160,6 +160,14 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed) {
 			}else if(e.Event == PX_OBJECT_EVENT_CURSORUP){
 				Input::_mouse_event[0] = 2;
 			}
+#ifdef __EMSCRIPTEN__
+			if(e.Event == PX_OBJECT_EVENT_KEYDOWN){
+				int scancode = PX_Object_Event_GetKeyDown(e);
+				Input::_pressed_keys.insert(
+					_scancode_to_keycode_map[scancode]
+				);
+			}
+#endif
 			PX_WorldPostEvent(&World, e);
 		}
 

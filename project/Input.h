@@ -79,6 +79,7 @@ struct Input {
     }
 
     static void begin_update_subscribed_keys(){
+#ifndef __EMSCRIPTEN__
         for(int code : _subscribed_keys){
             int scancode = keycode_to_scancode(code);
             if(scancode == 0) continue;
@@ -86,6 +87,7 @@ struct Input {
                 _pressed_keys.insert(code);
             }
         }
+#endif
     }
 
     static void end_frame(){

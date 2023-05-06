@@ -322,8 +322,69 @@ const int _native_key_mapping[sizeof(kVirtualKeyCodes)/sizeof(char*)] = {};
 inline bool _platform_get_key(int scancode) { return false; }
 
 #elif __EMSCRIPTEN__
-const int _native_key_mapping[sizeof(kVirtualKeyCodes)/sizeof(char*)] = {};
+#include <emscripten.h>
+
+const int _native_key_mapping[sizeof(kVirtualKeyCodes)/sizeof(char*)] = {
+    0,
+
+    // numbers
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+
+    // letters
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+    'k', 'l', 'm', 'n', 'o', 'p',
+    'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+
+    // function
+    1082, 1083, 1084, 1085, 1086, 1087,
+    1088, 1089, 1090, 1091, 1092, 1093,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+
+    // keypad numbers
+    1122, 1113, 1114, 1115, 1116,
+    1117, 1118, 1119, 1120, 1121,
+
+    // keypad other
+    0, // KeypadClear
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+
+    // others
+    92, 44, 187, 96, 91, 189, 45, 39, 93, 186, 47,
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0,
+    0, 0,
+
+    // arrows
+    1105, 1104, 1103, 1106,
+
+    // navigation
+    0, 0, 0, 0,
+
+    // actions
+    0, 8, 27, 127, 0,
+    0, 0, 13, 32, 9,
+    0, 0, 0, 0, 0
+};
 inline bool _platform_get_key(int scancode) { return false; }
+
+#include <map>
+
+inline std::map<int, int> _scancode_to_keycode_map = [](){
+    std::map<int, int> map;
+    for(int i = 0; i < sizeof(_native_key_mapping)/sizeof(int); i++){
+        int scancode = _native_key_mapping[i];
+        if(scancode == 0) continue;
+        map[scancode] = i;
+    }
+    return map;
+}();
 
 #else
 #error "Unsupported platform"
