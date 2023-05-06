@@ -63,3 +63,4 @@ compile_commands.json
 # MacOS Cache
 .DS_Store
 project/_generated.h
+*.pxf

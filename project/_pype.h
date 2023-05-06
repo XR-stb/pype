@@ -30,6 +30,7 @@ inline void python_init(){
     Input::register_class(vm, g_mod);
     Texture2D::register_class(vm, g_mod);
     Color::register_class(vm, g_mod);
+    PXFont::register_class(vm, g_mod);
 
     /*************全局私有函数*************/
     vm->bind_func<1>(g_mod, "_platform_read_bytes", [](VM* vm, ArgsView args){

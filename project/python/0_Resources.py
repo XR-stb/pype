@@ -9,7 +9,7 @@ def load(path: str):
     data = _platform_read_bytes(path)
     if path.endswith(".bmp") or path.endswith(".jpg") or path.endswith(".png") or path.endswith(".traw"):
         res = _PX_TextureCreateFromMemory(data)
-    if path.endswith(".pxf"):
+    elif path.endswith(".pxf"):
         res = _PX_FontCreateFromMemory(data)
     else:
         raise ValueError("未知的资源类型: " + path)
