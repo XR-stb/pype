@@ -32,7 +32,3 @@ class Player(Sprite2D):
         self.x += delta_x * Time.delta_time * 200
 
 Player()
-
-memory_usage()
-
-

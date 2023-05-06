@@ -24,8 +24,6 @@ px_uint PX_APPLICATION_MEMORYPOOL_GAME_SIZE = 1024*1024*8;
 // 这是干啥的？
 px_uint PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = 1024*1024*8;
 
-std::queue<PX_Object_Event> event_queue;
-
 bool _execute_user_script(){
 	Bytes content = _read_file_cwd("main.py");
 	if(!content) return false;
@@ -151,29 +149,6 @@ px_void PX_ApplicationUpdate(PX_Application *pApp, px_dword elapsed) {
 	vm->call(_ticker, VAR(elapsed / 1000.0));
 
 	try{
-		// 处理事件
-		while(!event_queue.empty()){
-			PX_Object_Event e = event_queue.front();
-			event_queue.pop();
-			if(e.Event == PX_OBJECT_EVENT_CURSORDOWN){
-				Input::_mouse_event[0] = 1;
-			}else if(e.Event == PX_OBJECT_EVENT_CURSORUP){
-				Input::_mouse_event[0] = 2;
-			}
-#ifdef __EMSCRIPTEN__
-			if(e.Event == PX_OBJECT_EVENT_KEYDOWN){
-				int code = PX_Object_Event_GetKeyDown(e);
-				code = _scancode_to_keycode_map[code];
-				Input::_pressed_keys.insert(code);
-			}else if(e.Event == PX_OBJECT_EVENT_KEYUP){
-				int code = PX_Object_Event_GetKeyDown(e);
-				code = _scancode_to_keycode_map[code];
-				Input::_pressed_keys.erase(code);
-			}
-#endif
-			PX_WorldPostEvent(&World, e);
-		}
-
 		// hot reload via F5
 		if(Input::get_key_down(41)){
 			Input::end_frame();
@@ -223,6 +198,23 @@ px_void PX_ApplicationPostEvent(PX_Application *pApp, PX_Object_Event e) {
 		PX_RuntimeResize(&pApp->runtime,surface_width,surface_height,(px_int)PX_Object_Event_GetWidth(e),(px_int)PX_Object_Event_GetHeight(e));
 		return;
 	}
-	event_queue.push(e);
+
+	if(e.Event == PX_OBJECT_EVENT_CURSORDOWN){
+		Input::_mouse_event[0] = 1;
+	}else if(e.Event == PX_OBJECT_EVENT_CURSORUP){
+		Input::_mouse_event[0] = 2;
+	}
+#ifdef __EMSCRIPTEN__
+	if(e.Event == PX_OBJECT_EVENT_KEYDOWN){
+		int code = PX_Object_Event_GetKeyDown(e);
+		code = _scancode_to_keycode_map[code];
+		Input::_pressed_keys.insert(code);
+	}else if(e.Event == PX_OBJECT_EVENT_KEYUP){
+		int code = PX_Object_Event_GetKeyDown(e);
+		code = _scancode_to_keycode_map[code];
+		Input::_pressed_keys.erase(code);
+	}
+#endif
+	PX_WorldPostEvent(&World, e);
 }
 
