@@ -208,3 +208,77 @@ inline px_void _PX_TextureRenderEx(px_surface *psurface,px_texture *resTexture,p
 
     }
 }
+
+px_bool _PX_TextureCreateFromMemory(px_memorypool *mp,px_void *data,px_int size,px_texture *tex)
+{
+	px_int width;
+	px_int height;
+	if (PX_BitmapVerify(data,size))
+	{
+		width=PX_BitmapGetWidth(data);
+		height=PX_BitmapGetHeight(data);
+		if(PX_TextureCreate(mp,tex,width,height))
+		{
+			PX_BitmapRender(tex,data,size,0,0);
+			return PX_TRUE;
+		}
+		else
+		{
+			PXError("PX_TextureCreate() 失败");
+			return PX_FALSE;
+		}
+
+	}
+
+	if (PX_TRawVerify(data,size))
+	{
+		width=PX_TRawGetWidth(data);
+		height=PX_TRawGetHeight(data);
+		if(PX_TextureCreate(mp,tex,width,height))
+		{
+			PX_TRawRender(tex,data,0,0);
+			return PX_TRUE;
+		}
+		else
+		{
+			PXError("PX_TextureCreate() 失败");
+			return PX_FALSE;
+		}
+	}
+
+	if (PX_PngVerify((px_byte *)data,size,&width,&height,0))
+	{
+		if (PX_TextureCreate(mp, tex, width, height))
+		{
+			if (!PX_PngToRenderBuffer(mp, (px_byte*)data, size, tex)){
+				PXError("PX_PngToRenderBuffer() 失败");
+				return PX_FALSE;
+			}
+			return PX_TRUE;
+		}
+		else
+		{
+			PXError("PX_TextureCreate() 失败");
+			return PX_FALSE;
+		}
+	}
+
+	if (PX_JpgVerify((px_byte*)data, size))
+	{
+		PX_JpgDecoder decoder;
+		if (PX_JpgDecoderInitialize(mp, &decoder, (px_byte*)data, size))
+		{
+			if (PX_TextureCreate(mp, tex, decoder.width, decoder.height))
+			{
+				PX_JpgDecoderRenderToSurface(&decoder, tex);
+				PX_JpgDecoderFree(&decoder);
+				return PX_TRUE;
+			}
+			PXError("PX_TextureCreate() 失败");
+			PX_JpgDecoderFree(&decoder);
+		}
+	}
+
+	PXError("不支持的图片格式");
+	return PX_FALSE;
+}

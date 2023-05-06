@@ -51,26 +51,14 @@ inline void python_init(){
     vm->bind_func<1>(g_mod, "_PX_TextureCreateFromMemory", [](VM* vm, ArgsView args){
         const Bytes& content = CAST(Bytes&, args[0]);
         px_texture* tex = (px_texture*)malloc(sizeof(px_texture));
-        if(tex == NULL){
-            PXError("malloc() 失败 size=" + std::to_string(sizeof(px_texture)));
-            return vm->None;
-        }
-    	bool ok = PX_TextureCreateFromMemory(&App.runtime.mp_resources, (char*)content.data(), content.size(), tex);
-        if(!ok){
-            free(tex);
-            PXError("PX_TextureCreateFromMemory() 失败 size=" + std::to_string(content.size()));
-            return vm->None;
-        }
+    	_PX_TextureCreateFromMemory(&App.runtime.mp_resources, (char*)content.data(), content.size(), tex);
+        // Let tex leak on failure
         return VAR_T(Texture2D, tex);
     });
 
     vm->bind_func<1>(g_mod, "_PX_FontCreateFromMemory", [](VM* vm, ArgsView args){
         const Bytes& content = CAST(Bytes&, args[0]);
         PX_FontModule* fm = (PX_FontModule*)malloc(sizeof(PX_FontModule));
-        if(fm == NULL){
-            PXError("malloc() 失败 size=" + std::to_string(sizeof(PX_FontModule)));
-            return vm->None;
-        }
         PX_FontModuleInitialize(&App.runtime.mp_resources, fm);
         if(!PX_FontModuleLoad(fm, (px_byte*)content.data(), content.size())){
             free(fm);
