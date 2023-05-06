@@ -281,6 +281,11 @@ class TextEdit(Node):
     def set_auto_newline(self, value: bool, spacing: int) -> None:
         """设置是否自动换行，参见`PX_Object_EditAutoNewLine`"""
 
+class ProgressBar:
+    color: Color
+    value: int
+    max_value: int
+
 class Button(Node):
     text: str
     clicked: Signal

@@ -11,6 +11,7 @@
 #include "Label.h"
 #include "TextEdit.h"
 #include "Image.h"
+#include "ProgressBar.h"
 
 using namespace pkpy;
 
@@ -116,6 +117,7 @@ inline void python_init(){
     _register_label_type(vm, g_mod);
     _register_textfield_type(vm, g_mod);
     _register_image_type(vm, g_mod);
+    _register_progressbar_type(vm, g_mod);
 
     // 创建根对象
     g_root = vm->call(vm->_t(g_tp_node));
