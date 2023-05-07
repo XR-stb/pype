@@ -74,7 +74,7 @@ class gl:
     def draw_texture(tex: Texture2D, pos: Vector2, angle: float, scale: float, color: Color, flip: bool) -> None:
         """绘制纹理"""
     @staticmethod
-    def draw_line(start: Vector2, end: Vector2, line_width, color: Color) -> None:
+    def draw_line(x0, y0, x1, y1, line_width, color: Color) -> None:
         """绘制线段"""
     @staticmethod
     def draw_rect(rect: Rect, line_width, color: Color, border_radius: float) -> None:
@@ -83,10 +83,10 @@ class gl:
     def draw_solid_rect(rect: Rect, color: Color, border_radius: float) -> None:
         """绘制实心矩形"""
     @staticmethod
-    def draw_circle(pos: Vector2, radius: float, line_width, color: Color) -> None:
+    def draw_circle(x, y, radius: float, line_width, color: Color) -> None:
         """绘制空心圆"""
     @staticmethod
-    def draw_solid_circle(pos: Vector2, radius: float, color: Color) -> None:
+    def draw_solid_circle(x, y, radius: float, color: Color) -> None:
         """绘制实心圆"""
 
 class Signal:

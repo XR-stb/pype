@@ -186,13 +186,15 @@ struct GL {
             return vm->None;
         });
 
-        vm->bind_func<4>(type, "draw_line", [](VM* vm, ArgsView args){
+        vm->bind_func<6>(type, "draw_line", [](VM* vm, ArgsView args){
             px_surface* psurface = &App.runtime.RenderSurface;
-            Vector2& start = CAST(Vector2&, args[0]);
-            Vector2& end = CAST(Vector2&, args[1]);
-            int line_width = CAST(int, args[2]);
-            Color& color = CAST(Color&, args[3]);
-            PX_GeoDrawLine(psurface, start.x, start.y, end.x, end.y, line_width, color);
+            float x0 = vm->num_to_float(args[0]);
+			float y0 = vm->num_to_float(args[1]);
+			float x1 = vm->num_to_float(args[2]);
+			float y1 = vm->num_to_float(args[3]);
+            float line_width = vm->num_to_float(args[4]);
+            Color& color = CAST(Color&, args[5]);
+            PX_GeoDrawLine(psurface, x0, y0, x1, y1, line_width, color);
             return vm->None;
         });
 
@@ -215,22 +217,24 @@ struct GL {
             return vm->None;
         });
 
-        vm->bind_func<4>(type, "draw_circle", [](VM* vm, ArgsView args){
+        vm->bind_func<5>(type, "draw_circle", [](VM* vm, ArgsView args){
             px_surface* psurface = &App.runtime.RenderSurface;
-            Vector2& pos = CAST(Vector2&, args[0]);
-            float radius = vm->num_to_float(args[1]);
-            float line_width = vm->num_to_float(args[2]);
-            Color& color = CAST(Color&, args[3]);
-            PX_GeoDrawCircle(psurface, pos.x, pos.y, radius, line_width, color);
+            float x = vm->num_to_float(args[0]);
+			float y = vm->num_to_float(args[1]);
+            float radius = vm->num_to_float(args[2]);
+            float line_width = vm->num_to_float(args[3]);
+            Color& color = CAST(Color&, args[4]);
+            PX_GeoDrawCircle(psurface, x, y, radius, line_width, color);
             return vm->None;
         });
 
         vm->bind_func<3>(type, "draw_solid_circle", [](VM* vm, ArgsView args){
             px_surface* psurface = &App.runtime.RenderSurface;
-            Vector2& pos = CAST(Vector2&, args[0]);
-            float radius = vm->num_to_float(args[1]);
-            Color& color = CAST(Color&, args[2]);
-            PX_GeoDrawSolidCircle(psurface, pos.x, pos.y, radius, color);
+            float x = vm->num_to_float(args[0]);
+			float y = vm->num_to_float(args[1]);
+            float radius = vm->num_to_float(args[2]);
+            Color& color = CAST(Color&, args[3]);
+            PX_GeoDrawSolidCircle(psurface, x, y, radius, color);
             return vm->None;
         });
     }
