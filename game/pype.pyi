@@ -293,6 +293,9 @@ class Node:
     @abstractmethod
     def on_destroy(self) -> None:
         """[消息] 当节点被销毁时调用"""
+    @abstractmethod
+    def _draw(self) -> None:
+        """[消息] 绘制节点（仅`Node`的直接子类会调用）"""
 
     def to(self, name: str, target: Any, duration: float, ease=None) -> 'Tweener':
         """将`self.name`在`duration`秒内变化到`target`，变化方式由`ease`指定"""
