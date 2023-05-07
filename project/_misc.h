@@ -1,8 +1,8 @@
 #pragma once
 
 #include "_common.h"
-#include "PX_Quicksort.h"
-#include "PX_Memory.h"
+#include "core/PX_Quicksort.h"
+#include "core/PX_Memory.h"
 
 #define PX_HUFFMAN_MAX_BITS 15
 
