@@ -228,7 +228,7 @@ struct GL {
             return vm->None;
         });
 
-        vm->bind_func<3>(type, "draw_solid_circle", [](VM* vm, ArgsView args){
+        vm->bind_func<4>(type, "draw_solid_circle", [](VM* vm, ArgsView args){
             px_surface* psurface = &App.runtime.RenderSurface;
             float x = vm->num_to_float(args[0]);
 			float y = vm->num_to_float(args[1]);

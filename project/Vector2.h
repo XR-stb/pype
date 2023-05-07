@@ -108,7 +108,7 @@ struct Rect{
             if(args.size() == 2){
                 Vector2& pos = CAST(Vector2&, args[0]);
                 Vector2& size = CAST(Vector2&, args[1]);
-                return VAR_T(Rect, pos.x, pos.y, pos.x + size.x, pos.y + size.y);
+                return VAR_T(Rect, pos.x, pos.y, size.x, size.y);
             }
             if(args.size() == 0){
                 return VAR_T(Rect);
@@ -118,7 +118,7 @@ struct Rect{
                 float y = vm->num_to_float(args[1]);
                 float w = vm->num_to_float(args[2]);
                 float h = vm->num_to_float(args[3]);
-                return VAR_T(Rect, x, y, x + w, y + h);
+                return VAR_T(Rect, x, y, w, h);
             }
             vm->TypeError("Rect.__new__ takes 2 or 4 arguments");
             return vm->None;
