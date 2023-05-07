@@ -72,16 +72,16 @@ class gl:
     def draw_texture(tex: Texture2D, pos: Vector2, angle: float, scale: float, color: Color, flip: bool) -> None:
         """绘制纹理"""
     @staticmethod
-    def draw_line(start: Vector2, end: Vector2, line_width: int, color: Color) -> None:
+    def draw_line(start: Vector2, end: Vector2, line_width, color: Color) -> None:
         """绘制线段"""
     @staticmethod
-    def draw_rect(rect: Rect, line_width: int, color: Color, border_radius: float) -> None:
+    def draw_rect(rect: Rect, line_width, color: Color, border_radius: float) -> None:
         """绘制空心矩形"""
     @staticmethod
     def draw_solid_rect(rect: Rect, color: Color, border_radius: float) -> None:
         """绘制实心矩形"""
     @staticmethod
-    def draw_circle(pos: Vector2, radius: float, line_width: int, color: Color) -> None:
+    def draw_circle(pos: Vector2, radius: float, line_width, color: Color) -> None:
         """绘制空心圆"""
     @staticmethod
     def draw_solid_circle(pos: Vector2, radius: float, color: Color) -> None:
@@ -413,22 +413,19 @@ def _repl() -> None:
 #####################################################
 
 class FrameAnimation:
+    """逐帧动画结构体"""
     frames: List[Texture2D] # 帧列表
     speed: int              # 每秒播放的帧数
     loop: bool              # 是否循环播放
 
 class FrameAnimator(Node):
-    """序列帧动画器，通过控制`parent`节点的`texture`属性播放序列帧动画"""
-
+    """逐帧动画控制器，通过控制`parent`节点的`texture`属性播放序列帧动画"""
     def __setitem__(self, name: str, anim: FrameAnimation):
         """增加一个帧动画"""
-
     def __getitem__(self, name: str) -> FrameAnimation:
         """获取一个帧动画"""
-
     def play(self, name: str) -> None:
         """播放一个帧动画"""
-
     def stop(self) -> None:
         """停止播放"""
 
