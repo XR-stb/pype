@@ -24,6 +24,8 @@ px_uint PX_APPLICATION_MEMORYPOOL_GAME_SIZE = 1024*1024*8;
 // 这是干啥的？
 px_uint PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = 1024*1024*8;
 
+px_color PX_DEFAULT_BACKGROUND_COLOR = PX_COLOR(255, 255, 255, 255);
+
 bool _execute_user_script(){
 	Bytes content = _read_file_cwd("main.py");
 	if(!content) return false;
@@ -55,6 +57,13 @@ px_bool PX_ApplicationInitializeDefault(PX_Runtime *runtime, px_int screen_width
 		PX_APPLICATION_MEMORYPOOL_GAME_SIZE = CAST(i64, val) * 1024 * 1024;
 		val = vm->_main->attr("PX_APPLICATION_MEMORYPOOL_SPACE_SIZE");
 		PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = CAST(i64, val) * 1024 * 1024;
+		val = vm->_main->attr("background");
+		Tuple& t = CAST(Tuple&, val);
+		px_uchar r = CAST(unsigned char, t[0]);
+		px_uchar g = CAST(unsigned char, t[1]);
+		px_uchar b = CAST(unsigned char, t[2]);
+		px_uchar a = CAST(unsigned char, t[3]);
+		PX_DEFAULT_BACKGROUND_COLOR = PX_COLOR(a, r, g, b);
 		/**********************************************/
 		val = vm->_main->attr("frame_rate");
 		g_frame_counter.set_frame_rate(CAST(int, val));
@@ -175,7 +184,7 @@ px_void PX_ApplicationRender(PX_Application *pApp, px_dword elapsed) {
 	if(!g_frame_counter.do_render(&elapsed)) return;
 
 	px_surface *pRenderSurface = &pApp->runtime.RenderSurface;
-	PX_RuntimeRenderClear(&pApp->runtime, PX_OBJECT_UI_DEFAULT_BACKGROUNDCOLOR);
+	PX_RuntimeRenderClear(&pApp->runtime, PX_DEFAULT_BACKGROUND_COLOR);
 
 	try{
 		PX_WorldRender(pRenderSurface, &World, elapsed);

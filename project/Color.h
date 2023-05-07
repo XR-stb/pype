@@ -10,7 +10,7 @@ struct Color{
     PY_CLASS(Color, pype, Color)
 
     px_color clr;
-    Color(px_uchar r, px_uchar g, px_uchar b, px_uchar a) : clr(PX_COLOR(r,g,b,a)) {}
+    Color(px_uchar r, px_uchar g, px_uchar b, px_uchar a) : clr(PX_COLOR(a,r,g,b)) {}
     Color(const px_color& c) : clr(c) {}
 
     bool _cached_float_clr = false;

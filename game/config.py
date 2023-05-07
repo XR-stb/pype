@@ -8,3 +8,5 @@ PX_APPLICATION_MEMORYPOOL_GAME_SIZE = 64
 PX_APPLICATION_MEMORYPOOL_SPACE_SIZE = 16
 
 frame_rate = 50     # 帧率
+background = (255, 255, 255, 255) # 背景色
+            # ^R   ^G   ^B   ^A
