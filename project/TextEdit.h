@@ -86,7 +86,7 @@ inline void _register_textedit_type(VM* vm, PyObject* mod){
         [](VM* vm, ArgsView args){                                  \
             PX_Object* obj = _get_px_obj(args[0]);                  \
             PX_Object_Edit* edit = PX_Object_GetEdit(obj);          \
-            edit->cname = CAST(Color&, args[1]).to_px_color();      \
+            edit->cname = CAST(Color&, args[1]);                    \
             return vm->None;                                        \
         }));
 

@@ -2,6 +2,7 @@
 
 #include "_common.h"
 #include "_easing.h"
+#include "gl.h"
 #include "Node.h"
 #include "Vector2.h"
 #include "Texture2D.h"
@@ -26,7 +27,9 @@ inline void python_init(){
         return VAR(pkpy::getline());
     });
     g_mod = vm->new_module("pype");
+    GL::register_class(vm, g_mod);
     Vector2::register_class(vm, g_mod);
+    Rect::register_class(vm, g_mod);
     Input::register_class(vm, g_mod);
     Texture2D::register_class(vm, g_mod);
     Color::register_class(vm, g_mod);
@@ -66,18 +69,6 @@ inline void python_init(){
             return vm->None;
         }
         return VAR_T(PXFont, fm);
-    });
-
-    vm->bind_func<6>(g_mod, "_PX_TextureRenderEx", [](VM* vm, ArgsView args){
-        px_surface* psurface = &App.runtime.RenderSurface;
-        Texture2D& tex = CAST(Texture2D&, args[0]);
-        Vector2& pos = CAST(Vector2&, args[1]);
-        float angle = vm->num_to_float(args[2]);
-        float scale = vm->num_to_float(args[3]);
-        Color& color = CAST(Color&, args[4]);
-        bool flip = CAST(bool, args[5]);
-        _PX_TextureRenderEx(psurface, tex.ptr, pos.x, pos.y, PX_ALIGN_CENTER, color.blend(), scale, angle, flip);
-        return vm->None;
     });
 
     vm->bind_func<1>(g_mod, "_PX_WorldObjectXYtoScreenXY", [](VM* vm, ArgsView args){

@@ -28,7 +28,7 @@ inline void _register_progressbar_type(VM* vm, PyObject* mod){
         [](VM* vm, ArgsView args){
             PX_Object* obj = _get_px_obj(args[0]);
             PX_Object_ProcessBar* bar = PX_Object_GetProcessBar(obj);
-            bar->Color = CAST(Color&, args[1]).to_px_color();
+            bar->Color = CAST(Color&, args[1]);
             return vm->None;
         }));
 

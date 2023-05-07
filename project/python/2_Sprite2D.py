@@ -2,13 +2,13 @@ class Sprite2D(Node):
     def __init__(self):
         self.texture = None
         self.flip = False
-        self.color = Color(1.0, 1.0, 1.0)
+        self.color = Color.White
         super(Sprite2D, self).__init__()
 
     def _draw(self):
         if self.texture is None:
             return
-        _PX_TextureRenderEx(
+        gl.draw_texture(
             self.texture,
             *self.global_transform,
             self.color,

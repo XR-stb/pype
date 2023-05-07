@@ -1,6 +1,6 @@
 """pype核心模块"""
 
-from typing import Any, Callable, Generator, Iterable, Tuple, List
+from typing import Any, Callable, Generator, Iterable, Tuple, List, overload
 from abc import abstractmethod
 import easing
 
@@ -8,12 +8,16 @@ import easing
 _root: 'Node' = ...
 
 class Color:
-    def __init__(self, r: float, g: float, b: float, a: float = 1.0):
-        self.r = r
-        self.g = g
-        self.b = b
-        self.a = a
-
+    White: 'Color' = ...
+    Black: 'Color' = ...
+    Red: 'Color' = ...
+    Green: 'Color' = ...
+    Blue: 'Color' = ...
+    Yellow: 'Color' = ...
+    Cyan: 'Color' = ...
+    Magenta: 'Color' = ...
+    Transparent: 'Color' = ...
+    def __init__(self, r: int, g: int, b: int, a: int=255): ...
     def __add__(self, rhs: 'Color') -> 'Color': ...
     def __sub__(self, rhs: 'Color') -> 'Color': ...
     def __mul__(self, rhs: float) -> 'Color': ...
@@ -22,16 +26,29 @@ class Color:
     def __ne__(self, rhs: 'Color') -> bool: ...
 
 class Vector2:
-    def __init__(self, x: float, y: float):
-        self.x = x
-        self.y = y
-
+    x: float
+    y: float
+    def __init__(self, x: float, y: float): ...
     def __add__(self, rhs: 'Vector2') -> 'Vector2': ...
     def __sub__(self, rhs: 'Vector2') -> 'Vector2': ...
     def __mul__(self, rhs: float) -> 'Vector2': ...
     def __truediv__(self, rhs: float) -> 'Vector2': ...
     def __eq__(self, rhs: 'Vector2') -> bool: ...
     def __ne__(self, rhs: 'Vector2') -> bool: ...
+
+class Rect:
+    x: float
+    y: float
+    w: float
+    h: float
+    @overload
+    def __init__() -> None: ...
+    @overload
+    def __init__(self, pos: Vector2, size: Vector2): ...
+    @overload
+    def __init__(self, x: float, y: float, w: float, h: float): ...
+    def center(self) -> Vector2: ...
+    def size(self) -> Vector2: ...
 
 class Texture2D:
     @property
@@ -49,6 +66,26 @@ class Texture2D:
 
 class Font:
     pass
+
+class gl:
+    @staticmethod
+    def draw_texture(tex: Texture2D, pos: Vector2, angle: float, scale: float, color: Color, flip: bool) -> None:
+        """绘制纹理"""
+    @staticmethod
+    def draw_line(start: Vector2, end: Vector2, line_width: int, color: Color) -> None:
+        """绘制线段"""
+    @staticmethod
+    def draw_rect(rect: Rect, line_width: int, color: Color, border_radius: float) -> None:
+        """绘制空心矩形"""
+    @staticmethod
+    def draw_solid_rect(rect: Rect, color: Color, border_radius: float) -> None:
+        """绘制实心矩形"""
+    @staticmethod
+    def draw_circle(pos: Vector2, radius: float, line_width: int, color: Color) -> None:
+        """绘制空心圆"""
+    @staticmethod
+    def draw_solid_circle(pos: Vector2, radius: float, color: Color) -> None:
+        """绘制实心圆"""
 
 class Signal:
     def connect(self, f: Callable) -> None:
