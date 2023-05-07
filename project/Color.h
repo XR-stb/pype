@@ -89,14 +89,15 @@ struct Color{
             return VAR(self.clr._argb.ucolor != other.clr._argb.ucolor);
         });
 
-        type->attr().set("White", VAR_T(Color, 255, 255, 255, 255));
-        type->attr().set("Black", VAR_T(Color, 0, 0, 0, 255));
-        type->attr().set("Red", VAR_T(Color, 255, 0, 0, 255));
-        type->attr().set("Green", VAR_T(Color, 0, 255, 0, 255));
-        type->attr().set("Blue", VAR_T(Color, 0, 0, 255, 255));
-        type->attr().set("Yellow", VAR_T(Color, 255, 255, 0, 255));
-        type->attr().set("Cyan", VAR_T(Color, 0, 255, 255, 255));
-        type->attr().set("Magenta", VAR_T(Color, 255, 0, 255, 255));
-        type->attr().set("Transparent", VAR_T(Color, 0, 0, 0, 0));
+        PyObject* colors = vm->new_type_object(mod, "Colors", vm->tp_object);
+        colors->attr().set("White", VAR_T(Color, 255, 255, 255, 255));
+        colors->attr().set("Black", VAR_T(Color, 0, 0, 0, 255));
+        colors->attr().set("Red", VAR_T(Color, 255, 0, 0, 255));
+        colors->attr().set("Green", VAR_T(Color, 0, 255, 0, 255));
+        colors->attr().set("Blue", VAR_T(Color, 0, 0, 255, 255));
+        colors->attr().set("Yellow", VAR_T(Color, 255, 255, 0, 255));
+        colors->attr().set("Cyan", VAR_T(Color, 0, 255, 255, 255));
+        colors->attr().set("Magenta", VAR_T(Color, 255, 0, 255, 255));
+        colors->attr().set("Transparent", VAR_T(Color, 0, 0, 0, 0));
     }
 };
